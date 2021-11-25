@@ -3,6 +3,8 @@
 #define MACE4_MSEARCH_H
 
 #include <string>
+#include <iostream>
+#include <fstream>
 #include "../ladr/clock.h"
 #include "../ladr/symbols.h"
 #include "../ladr/top_input.h"
@@ -116,11 +118,14 @@ private:
 
 private:
   // printing functions
+  static std::string interp_file_name;
+  ofstream* models_interp_file_stream = nullptr;
   int  id2val(int id);
   int  f0_val(int base);
   int  f1_val(int base, int i);
   int  f2_val(int base, int i, int j);
   void print_model_standard(std::ostream& os, bool print_head);
+  void print_model_interp(std::ostream& os);
   void p_model(bool print_head);
   void p_matom(Term atom);
   int  eterms_count(Term t);

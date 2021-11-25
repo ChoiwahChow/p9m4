@@ -43,6 +43,7 @@
 
 int Search::next_message = 1;
 int Search::Next_report = 0;
+std::string Search::interp_file_name("models.out");
 
 Search::Search(Mace4VGlobais* g) : Mace4vglobais(g), Domain_size(0), Domain(nullptr), max_models_str("max_models"), all_models_str("all_models"),
   exhausted_str("exhausted"), max_megs_yes_str("max_megs_yes"), max_megs_no_str("max_megs_no"), max_sec_yes_str("max_sec_yes"),
@@ -281,7 +282,9 @@ Search::possible_model(void)
     Models = p_con.plist_append(Models, model);
   }
 
-  if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models))
+  if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models_interp))
+    print_model_interp(*models_interp_file_stream);
+  else if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models))
     print_model_standard(std::cout, true);
   else if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models_tabular))
     p_model(false);
@@ -574,6 +577,10 @@ Search::mace4(Plist clauses)
   Memory::set_max_megs(8000);
 
   initialize_for_search(clauses);
+  if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models_interp)) {
+	  models_interp_file_stream = new ofstream();
+	  models_interp_file_stream->open(Search::interp_file_name);
+  }
 
   int n = next_domain_size(0);  /* returns -1 if we're done */
   int rc = SEARCH_GO_NO_MODELS;
@@ -603,6 +610,10 @@ Search::mace4(Plist clauses)
     n = next_domain_size(n);  /* returns -1 if we're done */
   }
 
+  if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models_interp)) {
+	  models_interp_file_stream->close();
+	  models_interp_file_stream = nullptr;
+  }
   /* free memory used for all domain sizes */
   EScon.free_estack_memory();
   delete Sn_to_mace_sn;
@@ -795,6 +806,47 @@ Search::print_model_standard(std::ostream& fp, bool print_head)
   if (print_head)
     banner::print_separator(fp, "end of model", true);
 
+}
+
+
+void
+Search::print_model_interp(std::ostream& fp)
+{
+  /* Prints the model the same format as interpformat, as isofilter input */
+  fp << "interpretation( " << Domain_size << ", [number=" << Total_models << ", seconds="
+     << static_cast<int>(myClock::user_seconds()) << "], [";
+
+  bool syms_printed = false;
+  InterpContainer   interp_con;
+  SymbolContainer   symbol_con;
+
+  for (Symbol_data s = Symbols; s != nullptr; s = s->next) {
+    if (s->attribute != EQUALITY_SYMBOL) {
+      if (syms_printed)
+        fp << ",";
+      fp << "\n  " << (s->type == type_FUNCTION ? "function" : "relation") << "("
+         << symbol_con.sn_to_str(s->sn) << (s->arity == 0 ? "" : "(_");
+      for (int i = 1; i < s->arity; i++)
+        fp << ",_";
+      fp << (s->arity == 0 ? "" : ")") << ", [" << (s->arity >= 2 ? "\n    " : "");
+
+      int n = interp_con.int_power(Domain_size, s->arity);
+      for (int i = 0; i < n; i++) {
+        int id = s->base + i;
+        if (Cells[id].value == nullptr)
+          fp << "-";
+        else
+          fp << VARNUM(Cells[id].value);
+        if (i < n-1)
+          fp << "," << ((i+1) % Domain_size == 0 ? "\n    " : "");
+        else
+          fp << " ])";
+      }
+      syms_printed = true;
+    }
+  }
+
+  fp << "]).\n";
 }
 
 void

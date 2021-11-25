@@ -8,6 +8,7 @@ struct mace_options {
   /* This structure holds the option IDs, not the option values! */
 
   /* flags */
+  int print_models_interp;
   int print_models;
   int print_models_tabular;
   int lnh;

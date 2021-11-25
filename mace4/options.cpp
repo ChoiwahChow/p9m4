@@ -18,6 +18,7 @@ mace_options::mace_options()
   max_megs          = LADR_GLOBAL_OPTIONS.init_parm("max_megs",          500,  -1, INT_MAX);
   report_stderr     = LADR_GLOBAL_OPTIONS.init_parm("report_stderr",     -1,   -1, INT_MAX);
 
+  print_models_interp    = LADR_GLOBAL_OPTIONS.init_flag("print_models_interp",    false);
   print_models           = LADR_GLOBAL_OPTIONS.init_flag("print_models",           true);
   print_models_tabular   = LADR_GLOBAL_OPTIONS.init_flag("print_models_tabular",   false);
   lnh                    = LADR_GLOBAL_OPTIONS.init_flag("lnh",                    true);
@@ -41,8 +42,12 @@ mace_options::mace_options()
                                                 std::string("all"), std::string("evens"), std::string("odds"), std::string("primes"), std::string("nonprimes"));
 
   /* dependencies */
+  LADR_GLOBAL_OPTIONS.flag_flag_dependency(print_models_interp, true, print_models, false);
+  LADR_GLOBAL_OPTIONS.flag_flag_dependency(print_models_interp, true, print_models_tabular, false);
   LADR_GLOBAL_OPTIONS.flag_flag_dependency(print_models_tabular, true, print_models, false);
+  LADR_GLOBAL_OPTIONS.flag_flag_dependency(print_models_tabular, true, print_models_interp, false);
   LADR_GLOBAL_OPTIONS.flag_flag_dependency(print_models, true, print_models_tabular, false);
+  LADR_GLOBAL_OPTIONS.flag_flag_dependency(print_models, true, print_models_interp, false);
 
   LADR_GLOBAL_OPTIONS.flag_flag_dependency(iterate_primes, true, iterate_nonprimes, false);
   LADR_GLOBAL_OPTIONS.flag_flag_dependency(iterate_nonprimes, true, iterate_primes, false);
