@@ -376,7 +376,7 @@ Search::mace4_skolem_check(int id)
  */
 
 int
-Search::search(int max_constrained, int depth)
+Search::search(int max_constrained, int depth, Partition& cutter)
 {
   int rc = check_time_memory();
   if (rc != SEARCH_GO_NO_MODELS)
@@ -386,6 +386,8 @@ Search::search(int max_constrained, int depth)
     int id = selector.select_cell(max_constrained, First_skolem_cell, Number_of_cells, Ordered_cells, propagator); // TODO: [choiwah] check correctness
 
     if (id == -1) {
+      if (!cutter.validate_model())
+    	return SEARCH_GO_NO_MODELS;
       rc = possible_model();
       return rc;
     }
@@ -419,12 +421,18 @@ Search::search(int max_constrained, int depth)
           pc.fwrite_term(std::cout, Cells[id].eterm);
           std::cout << "=" << i << " (" << last << ") depth=" << depth << "\n";
         }
+        //std::cout << "debug ************************ " << id << " ** " << Cells[id].value->private_symbol << std::endl;
+        //if (!cutter.good_to_go(Cells, id, i))
+        //	continue;
 
         stk = propagator->assign_and_propagate(id, Domain[i]);
 
         if (stk != nullptr) {
           /* no contradiction found during propagation, so we recurse */
-          rc = search(std::max(max_constrained, i), depth+1);
+          if (cutter.good_to_continue())
+        	  rc = search(std::max(max_constrained, i), depth+1, cutter);
+          else
+        	  rc = SEARCH_GO_NO_MODELS;
           /* undo assign_and_propagate changes */
           EScon.restore_from_stack(stk);
           if (rc == SEARCH_GO_MODELS)
@@ -496,10 +504,12 @@ Search::mace4n(Plist clauses, int order)
     std::flush(std::cout);
   }
 
+  Partition cutter(order, Cells);
+
   /* Here we go! */
   int rc = SEARCH_GO_NO_MODELS;
   if (initial_state->ok)
-    rc = search(Max_domain_element_in_input, 0);
+    rc = search(Max_domain_element_in_input, 0, cutter);
   else
     rc = SEARCH_GO_NO_MODELS;  /* contradiction in initial state */
 
@@ -812,7 +822,7 @@ Search::print_model_standard(std::ostream& fp, bool print_head)
 void
 Search::print_model_interp(std::ostream& fp)
 {
-  /* Prints the model the same format as interpformat, as isofilter input */
+  /* Prints the model the same format as interpformat, to be used as inputs to isofilter directly*/
   fp << "interpretation( " << Domain_size << ", [number=" << Total_models << ", seconds="
      << static_cast<int>(myClock::user_seconds()) << "], [";
 

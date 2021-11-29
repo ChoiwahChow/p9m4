@@ -39,6 +39,10 @@ private:
 
 public:
   cell() : symbol(nullptr), max_index(0), possible(nullptr), occurrences(nullptr), value(nullptr), eterm(nullptr), id(0) {}
+  inline size_t get_base() const {return symbol->get_base();}
+  inline int get_sn() const {return symbol->get_sn();}
+  inline bool has_value() const {return value != nullptr;}
+  inline int get_value() const {return value->private_symbol;}
 
 public:
   friend class Ground;
@@ -50,7 +54,7 @@ public:
 
 class CellContainer {
 private:
-  static bool Skolems_last;  // TODO: [Choiwah] we need to get rid of this member variable to make it thread-safe
+  static bool Skolems_last;  // TODO: [Choiwah] we may need to get rid of this member variable to make it thread-safe, although it is set only once
 
 private:
   static int sum_indexes(Term t);

@@ -25,7 +25,7 @@ typedef struct symbol_data* Symbol_data;
 //TODO: [choiwah] reduce number of friends
 class symbol_data {   /* SORT */
 private:
-  int sn;             /* ordinary symbol ID */
+  int sn;             /* ordinary symbol ID - entry in ladr's symbol table */
   int mace_sn;        /* MACE symbol ID */
   int arity;
   int type;           /* type_FUNCTION or type_RELATION */
@@ -40,6 +40,8 @@ public:
   symbol_data() : sn(0), mace_sn(0), arity(0), type(0), base(0), attribute(ORDINARY_SYMBOL), next(nullptr) {};
 
   inline int get_type() const {return type;}
+  inline size_t get_base() const {return base;}
+  inline int get_sn() const {return sn;}
 
 public:
   friend class Symbol_dataContainer;
@@ -66,6 +68,7 @@ public:
   static int         max_index(int id, Symbol_data s, int Domain_size);
 
   static Symbol_data init_built_in_symbols(Symbol_data cur_ptr);  // Starts the chain of symbols
+  static std::string& get_op_symbol(int sn);
 };
 
 #endif

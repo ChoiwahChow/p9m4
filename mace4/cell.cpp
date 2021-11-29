@@ -18,7 +18,7 @@ CellContainer::id_to_domain_size(int id, Cell Cells, int Domain_size)
 int
 CellContainer::sum_indexes(Term t)
 {
-  // Assume t is an eterm, that is, nonvariable with variable arguments.
+  // Assume t is an eterm, that is, non-variable with variable arguments.
   if (ARITY(t) == 0)
     return -1;
   else {
@@ -32,7 +32,7 @@ CellContainer::sum_indexes(Term t)
 OrderType
 CellContainer::compare_cells(Cell a, Cell b)
 {
-  // TODO: [Choiwah] we need to change the compare_cells prototype to include a extra
+  // TODO: [Choiwah] we need to change the compare_cells prototype to include an extra
   // param to hold Skolems_last.  This requires a change in merge_sort to include an optional param void*
   if (a->symbol->attribute == EQUALITY_SYMBOL &&
       b->symbol->attribute != EQUALITY_SYMBOL)       return OrderType::GREATER_THAN;

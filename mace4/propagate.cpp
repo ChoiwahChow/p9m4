@@ -687,7 +687,7 @@ propagate::assign_and_propagate(int id, Term value)
   if (Cells[id].value == value)
     fatal::fatal_error("assign_and_propagate: repeated assignment");
   if (Cells[id].value != nullptr)
-      fatal::fatal_error("assign_and_propagate: contradictory assignment");
+    fatal::fatal_error("assign_and_propagate: contradictory assignment");
 
   /* First make the assignment and initialize the job list. */
 
