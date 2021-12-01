@@ -407,12 +407,18 @@ Search::search(int max_constrained, int depth, Partition& cutter, Cube& splitter
         last = std::min(max_constrained+1, Domain_size-1);
       else
         last = Domain_size-1;
-
       bool go = true;
       ParseContainer   pc;
       int from_index = 0;
-      int value = splitter.value(id);
-      if (value > 0) {
+      int value = splitter.value(depth);
+      if (value >= 0) {
+    	  if (last < value) {
+        	  std::cout << "debug Search::search exceeded bounds ***************************** do cell id = " << id << std::endl;
+    		  return SEARCH_GO_NO_MODELS;
+    	  }
+    	  std::cout << "debug Search::search ***************************** do cell id = " << id
+    			    << ", cell value = " << value << ",  op = " << Symbol_dataContainer::get_op_symbol(Cells[id].get_sn())
+    	  	  	    << ", depth = " << depth << std::endl;
     	  from_index = value;
     	  last = value;
       }
@@ -510,7 +516,7 @@ Search::mace4n(Plist clauses, int order)
   }
 
   Partition cutter(order, Cells);
-  Cube splitter(order, Cells);
+  Cube splitter;
 
   /* Here we go! */
   int rc = SEARCH_GO_NO_MODELS;

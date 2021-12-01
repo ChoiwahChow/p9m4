@@ -7,17 +7,14 @@
 
 Partition::~Partition() {
 	// TODO Auto-generated destructor stub
-	std::cerr << "debug************* consulted = " << consulted << std::endl;
 	std::cerr << "debug************* too_few = " << too_few << std::endl;
 	std::cerr << "debug************* too_many = " << too_many << std::endl;
 	std::cerr << "debug************* good_continue = " << good_continue << std::endl;
-	std::cerr << "debug************* removed at the end = " << removed_models << std::endl;
-	std::cerr << "debug************* validate models = " << validate_count << std::endl;
 }
 
 Partition::Partition(size_t domain_size, Cell Cells): domain_size(domain_size), op("*"), num_diag(4),
-		num_idempotent(1), base(0), Cells(Cells), consulted(0), good_continue(0), too_few(0), too_many(0),
-		removed_models(0), validate_count(0), diagonal(std::vector<size_t>(domain_size, 0)) {
+		num_idempotent(1), base(0), Cells(Cells), good_continue(0), too_few(0), too_many(0),
+		diagonal(std::vector<size_t>(domain_size, 0)) {
 	ifstream config("diag.config");
 	config >> num_diag;
 	config >> num_idempotent;
@@ -131,7 +128,7 @@ Partition::good_to_go(Cell Cells, int id, int el) {
 	size_t column = (id - base) % domain_size;
 	if (row != column)
 		return true;
-	consulted++;
+
 	int counter = count_diagonal(el);
 	if (counter > num_diag)
 		return false;
@@ -145,12 +142,10 @@ bool
 Partition::validate_model() {
 	if (num_diag <= 0 && num_idempotent < 0)
 		return true;
-	validate_count++;
-	//return true;
+
 	if (count_diagonal(-1) == num_diag &&
 			(num_idempotent < 0 || count_idempotent() == num_idempotent))
 		return true;
-	removed_models++;
 	// std::cerr << "debug ******************************** failed validate_model() " << count_diagonal(-1) << std::endl;
 	return false;
 }

@@ -9,14 +9,23 @@ Cube::~Cube() {
 	// TODO Auto-generated destructor stub
 }
 
-Cube::Cube(size_t domain_size, Cell Cells): domain_size(domain_size), op("*"), base(0), cell_id(-1), cell_value(-1) {
+Cube::Cube() {
 	ifstream config("cube.config");
-	config >> cell_id;
-	config >> cell_value;
-	config.close();
-	std::cout << "debug Cube***********************cell_id = " << cell_id << ", cell value = " << cell_value << std::endl;
-	if (cell_id < 0)
+	if (!config.is_open())
 		return;
+	std::cout << "debug Cube ************** values = ";
+	int cell_value;
+	config >> cell_value;
+	while (!config.eof()) {
+		cell_values.push_back(cell_value);
+		std::cout << cell_value << " ";
+		config >> cell_value;
+	}
+	config.close();
+	std::cout << "\ndebug Cube*********************** max_depth = " << cell_values.size() - 1<< std::endl;
+
+
+	/*
 	size_t id = 0;
 	bool base_initialized = false;
 	while( !base_initialized ) {
@@ -27,14 +36,34 @@ Cube::Cube(size_t domain_size, Cell Cells): domain_size(domain_size), op("*"), b
 		}
 		id ++;
 	}
+	int cell_id;
+	int cell_value;
+	config >> cell_id;
+	while (cell_id >= 0) {
+		cell_ids.push_back(cell_id + base);
+		config >> cell_value;
+		cell_values.push_back(cell_value);
+		config >> cell_id;
+	}
+	config.close();
+	std::cout << "debug Cube***********************base = " << base << ", number of cells = " << cell_values.size() << std::endl;
+	if (cell_ids.size() == 0)
+		return;
 	cell_id += base;
+	*/
 }
 
 
 int
-Cube::value(int id) {
-	if (cell_id != id)
+Cube::value(size_t depth) {
+	if (cell_values.size() <= depth)
 		return -1;
-	else
-		return cell_value;
+	return cell_values[depth];
+	/*
+	for( size_t idx = 0; idx < cell_ids.size(); ++idx ) {
+		if (cell_ids[idx] == id)
+			return cell_values[idx];
+	}
+	return -1;
+	*/
 }

@@ -14,12 +14,9 @@ private:
 	int    num_diag;
 	int    num_idempotent;
 	Cell   Cells;
-	size_t consulted;
 	size_t too_few;
 	size_t too_many;
 	size_t good_continue;
-	size_t removed_models;
-	size_t validate_count;
 	std::vector<size_t> diagonal;
 
 	int count_diagonal(int el);
