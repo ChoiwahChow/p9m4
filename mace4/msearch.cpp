@@ -376,7 +376,7 @@ Search::mace4_skolem_check(int id)
  */
 
 int
-Search::search(int max_constrained, int depth, Partition& cutter)
+Search::search(int max_constrained, int depth, Partition& cutter, Cube& splitter)
 {
   int rc = check_time_memory();
   if (rc != SEARCH_GO_NO_MODELS)
@@ -386,8 +386,6 @@ Search::search(int max_constrained, int depth, Partition& cutter)
     int id = selector.select_cell(max_constrained, First_skolem_cell, Number_of_cells, Ordered_cells, propagator); // TODO: [choiwah] check correctness
 
     if (id == -1) {
-      if (!cutter.validate_model())
-    	return SEARCH_GO_NO_MODELS;
       rc = possible_model();
       return rc;
     }
@@ -412,7 +410,14 @@ Search::search(int max_constrained, int depth, Partition& cutter)
 
       bool go = true;
       ParseContainer   pc;
-      for (int i = 0, go = true; i <= last && go; i++) {
+      int from_index = 0;
+      int value = splitter.value(id);
+      if (value > 0) {
+    	  from_index = value;
+    	  last = value;
+      }
+
+      for (int i = from_index, go = true; i <= last && go; i++) {
         Estack stk;
         Mstats.assignments++;
 
@@ -430,7 +435,7 @@ Search::search(int max_constrained, int depth, Partition& cutter)
         if (stk != nullptr) {
           /* no contradiction found during propagation, so we recurse */
           if (cutter.good_to_continue())
-        	  rc = search(std::max(max_constrained, i), depth+1, cutter);
+        	  rc = search(std::max(max_constrained, i), depth+1, cutter, splitter);
           else
         	  rc = SEARCH_GO_NO_MODELS;
           /* undo assign_and_propagate changes */
@@ -505,11 +510,12 @@ Search::mace4n(Plist clauses, int order)
   }
 
   Partition cutter(order, Cells);
+  Cube splitter(order, Cells);
 
   /* Here we go! */
   int rc = SEARCH_GO_NO_MODELS;
   if (initial_state->ok)
-    rc = search(Max_domain_element_in_input, 0, cutter);
+    rc = search(Max_domain_element_in_input, 0, cutter, splitter);
   else
     rc = SEARCH_GO_NO_MODELS;  /* contradiction in initial state */
 

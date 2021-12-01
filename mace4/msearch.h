@@ -12,6 +12,7 @@
 #include "mace4vglobais.h"
 #include "propagate.h"
 #include "partition.h"
+#include "cube.h"
 
 #include "syms.h"
 
@@ -144,7 +145,7 @@ private:
   int  mace_megs(void);
   int  check_time_memory(void);
   bool mace4_skolem_check(int id);
-  int  search(int max_constrained, int depth, Partition& cutter);
+  int  search(int max_constrained, int depth, Partition& cutter, Cube& splitter);
   int  mace4n(Plist clauses, int order);
   bool iterate_ok(int n, const std::string& class_name);
   int  next_domain_size(int n);

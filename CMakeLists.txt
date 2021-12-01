@@ -28,7 +28,7 @@ add_executable(prover9 ./main.cpp ./provers.cpp ./search.cpp
 
 add_executable(mace4 ./mace4/smallprime.cpp ./mace4/mace4globalvalues.cpp ./mace4/options.cpp  ./mace4/mstats.h ./mace4/syms.cpp ./mace4/cell.cpp ./mace4/estack.cpp ./mace4/mstate.cpp
                ./mace4/mstats.cpp ./mace4/ground.cpp  ./mace4/arithmetic.cpp  ./mace4/negpropindex.cpp ./mace4/propagate.cpp ./mace4/select.cpp ./mace4/mace4vglobais.cpp ./mace4/msearch.cpp
-               ./mace4/cmdline.cpp ./mace4/partition.cpp ./mace4/mace4.cpp ./mace4/main.cpp 
+               ./mace4/cmdline.cpp ./mace4/partition.cpp ./mace4/cube.cpp ./mace4/mace4.cpp ./mace4/main.cpp 
               )
               
 add_executable(clausefilter ./apps/inputs_util.cpp ./apps/clausefilter.cpp)
