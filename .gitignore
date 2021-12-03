@@ -33,3 +33,5 @@
 
 # local
 build/
+
+.project
