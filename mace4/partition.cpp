@@ -6,21 +6,24 @@
 
 
 Partition::~Partition() {
-	// TODO Auto-generated destructor stub
+	if (num_diag <= 0 && num_idempotent < 0)
+		return;
 	std::cerr << "debug************* too_few = " << too_few << std::endl;
 	std::cerr << "debug************* too_many = " << too_many << std::endl;
 	std::cerr << "debug************* good_continue = " << good_continue << std::endl;
 }
 
-Partition::Partition(size_t domain_size, Cell Cells): domain_size(domain_size), op("*"), num_diag(4),
-		num_idempotent(1), base(0), Cells(Cells), good_continue(0), too_few(0), too_many(0),
+Partition::Partition(size_t domain_size, Cell Cells): domain_size(domain_size), op("*"), num_diag(0),
+		num_idempotent(-1), base(0), Cells(Cells), good_continue(0), too_few(0), too_many(0),
 		diagonal(std::vector<size_t>(domain_size, 0)) {
 	ifstream config("diag.config");
+	if (!config.is_open())
+		return;
 	config >> num_diag;
 	config >> num_idempotent;
 	config.close();
 	std::cout << "debug Partition***********************num_diag = " << num_diag << ", num idempotent = " << num_idempotent << std::endl;
-	if (num_diag <= 0)
+	if (num_diag <= 0 && num_idempotent < 0)
 		return;
 	size_t id = 0;
 	bool base_initialized = false;
