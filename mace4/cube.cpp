@@ -9,7 +9,7 @@ Cube::~Cube() {
 	// TODO Auto-generated destructor stub
 }
 
-Cube::Cube() {
+Cube::Cube(): initialized(false) {
 	ifstream config("cube.config");
 	if (!config.is_open())
 		return;
@@ -22,6 +22,7 @@ Cube::Cube() {
 		config >> cell_value;
 	}
 	config.close();
+	initialized = true;
 	std::cout << "\ndebug Cube*********************** max_depth = " << cell_values.size() - 1<< std::endl;
 
 
@@ -56,7 +57,7 @@ Cube::Cube() {
 
 int
 Cube::value(size_t depth) {
-	if (cell_values.size() <= depth)
+	if (initialized && cell_values.size() > depth)
 		return -1;
 	return cell_values[depth];
 	/*

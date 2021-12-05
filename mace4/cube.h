@@ -9,6 +9,7 @@
 class Cube {
 private:
 	std::vector<int> cell_values;
+	bool             initialized;
 
 public:
 	Cube();
