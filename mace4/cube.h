@@ -8,14 +8,17 @@
 
 class Cube {
 private:
-	std::vector<int> cell_values;
+	std::vector<int>     cell_values;
+	size_t           order;
+	size_t           max_depth;
+	Cell             Cells;
 	bool             initialized;
 
 public:
-	Cube();
+	Cube(size_t domain_size, Cell Cells);
 	virtual ~Cube();
 
-	int value(size_t depth);
+	int value(size_t depth, size_t id);
 };
 
 
