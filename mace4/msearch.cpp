@@ -41,7 +41,7 @@
    list of occurrences of f(3,4) by looking in Cells[ID].occurrences.
 */
 
-int Search::next_message = 1;
+long long Search::next_message = 1;
 int Search::Next_report = 0;
 std::string Search::interp_file_name("models.out");
 
@@ -376,7 +376,7 @@ Search::mace4_skolem_check(int id)
  */
 
 int
-Search::search(int max_constrained, int depth, Partition& cutter, Cube& splitter)
+Search::search(int max_constrained, int depth, Cube& splitter)
 {
   int rc = check_time_memory();
   if (rc != SEARCH_GO_NO_MODELS)
@@ -422,8 +422,26 @@ Search::search(int max_constrained, int depth, Partition& cutter, Cube& splitter
     	  from_index = value;
     	  last = value;
       }
-
+      // debug1
+      int skip1 = -1;
+      /*
+      if (depth == 1) {
+    	  if (Cells[0].has_value() && Cells[0].get_value() == 1) {
+    		  skip1 = 1;
+    	  }
+      }
+      else if (depth == 3) {
+    	  if (Cells[Domain_size].has_value() && Cells[0].get_value() == 0 && Cells[1].get_value() == 1
+    			  && Cells[Domain_size].get_value() == 1)
+    		  skip1 = 1;
+      }
+      // end debug1
+       */
       for (int i = from_index, go = true; i <= last && go; i++) {
+    	// debug1
+    	if (skip1 == i)
+    		continue;
+    	// end debug1
         Estack stk;
         Mstats.assignments++;
 
@@ -432,18 +450,13 @@ Search::search(int max_constrained, int depth, Partition& cutter, Cube& splitter
           pc.fwrite_term(std::cout, Cells[id].eterm);
           std::cout << "=" << i << " (" << last << ") depth=" << depth << "\n";
         }
-        //std::cout << "debug ************* " << id << " ** " << Cells[id].value->private_symbol << std::endl;
-        //if (!cutter.good_to_go(Cells, id, i))
-        //	continue;
 
         stk = propagator->assign_and_propagate(id, Domain[i]);
 
         if (stk != nullptr) {
           /* no contradiction found during propagation, so we recurse */
-          if (cutter.good_to_continue())
-        	  rc = search(std::max(max_constrained, i), depth+1, cutter, splitter);
-          else
-        	  rc = SEARCH_GO_NO_MODELS;
+          rc = search(std::max(max_constrained, i), depth+1, splitter);
+
           /* undo assign_and_propagate changes */
           EScon.restore_from_stack(stk);
           if (rc == SEARCH_GO_MODELS)
@@ -515,13 +528,12 @@ Search::mace4n(Plist clauses, int order)
     std::flush(std::cout);
   }
 
-  Partition cutter(order, Cells);
-  Cube splitter(order, Cells);
+  Cube splitter(order, Cells, Ordered_cells);
 
   /* Here we go! */
   int rc = SEARCH_GO_NO_MODELS;
   if (initial_state->ok)
-    rc = search(Max_domain_element_in_input, 0, cutter, splitter);
+    rc = search(Max_domain_element_in_input, 0, splitter);
   else
     rc = SEARCH_GO_NO_MODELS;  /* contradiction in initial state */
 

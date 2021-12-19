@@ -29,6 +29,22 @@ CellContainer::sum_indexes(Term t)
   }
 }
 
+// cube-and-conquer related change
+bool
+CellContainer::equal_index(Term t)
+{
+	// returns true if all arguments to an n-ary function are the same. E.g. f(1,1) returns true, f(2,3) returns false
+	if (ARITY(t) > 1) {
+		int index = VARNUM(ARG(t, 0));
+		for (int idx = 1; idx < ARITY(t); idx++) {
+			if (VARNUM(ARG(t,idx)) != index)
+				return false;
+		}
+	}
+	return true;
+}
+// end of cube-and-conquer related change
+
 OrderType
 CellContainer::compare_cells(Cell a, Cell b)
 {
@@ -51,6 +67,14 @@ CellContainer::compare_cells(Cell a, Cell b)
   else if (a->max_index < b->max_index)              return OrderType::LESS_THAN;
 
   else if (a->max_index > b->max_index)              return OrderType::GREATER_THAN;
+
+  // cube-and-conquer related change, f(1,1) is searched before f(0,1) and f(1,0)
+  else if (equal_index(a->eterm) &&
+		  !equal_index(b->eterm))                    return OrderType::LESS_THAN;
+
+  else if (!equal_index(a->eterm) &&
+		  equal_index(b->eterm))                     return OrderType::GREATER_THAN;
+  // end of cube-and-conquer related change
 
   else if (a->symbol->mace_sn < b->symbol->mace_sn)  return OrderType::LESS_THAN;
 

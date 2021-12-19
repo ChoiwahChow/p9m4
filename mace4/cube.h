@@ -12,13 +12,15 @@ private:
 	size_t           order;
 	size_t           max_depth;
 	Cell             Cells;
+	Cell*			 Ordered_cells;
 	bool             initialized;
 
 public:
-	Cube(size_t domain_size, Cell Cells);
+	Cube(size_t domain_size, Cell Cells, Cell*& Ordered_cells);
 	virtual ~Cube();
 
 	int value(size_t depth, size_t id);
+	void reOrderCells(int Number_of_cells);
 };
 
 
