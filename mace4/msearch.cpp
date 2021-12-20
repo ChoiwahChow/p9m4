@@ -384,8 +384,7 @@ Search::search(int max_constrained, int depth, Cube& splitter)
   else {
 	int id = splitter.next_id(depth);
 	if (id < -1) {
-	  rc = possible_model();
-	  return rc;
+	  return SEARCH_GO_NO_MODELS;
 	}
 	else if (id < 0) {
       Selection selector(Domain_size, Domain, Cells, &EScon, &Mstats, Mace4vglobais->Opt);
