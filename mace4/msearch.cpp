@@ -382,8 +382,16 @@ Search::search(int max_constrained, int depth, Cube& splitter)
   if (rc != SEARCH_GO_NO_MODELS)
     return rc;
   else {
-    Selection selector(Domain_size, Domain, Cells, &EScon, &Mstats, Mace4vglobais->Opt);
-    int id = selector.select_cell(max_constrained, First_skolem_cell, Number_of_cells, Ordered_cells, propagator); // TODO: [choiwah] check correctness
+	int id = splitter.next_id(depth);
+	if (id < -1) {
+	  rc = possible_model();
+	  return rc;
+	}
+	else if (id < 0) {
+      Selection selector(Domain_size, Domain, Cells, &EScon, &Mstats, Mace4vglobais->Opt);
+      // TODO: [choiwah] check correctness of conversion to C++
+      id = selector.select_cell(max_constrained, First_skolem_cell, Number_of_cells, Ordered_cells, propagator);
+	}
 
     if (id == -1) {
       rc = possible_model();

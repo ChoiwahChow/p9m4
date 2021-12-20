@@ -14,32 +14,46 @@ Cube::Cube(size_t domain_size, Cell Cells, Cell*& Ordered_cells): initialized(fa
 	ifstream config("cube.config");
 	if (!config.is_open())
 		return;
-	std::vector<size_t> cell_ids = {0, order+1, 1, order, 2};
-	//cell_ids.push_back(order);
-	//cell_ids.push_back(order+1);
 
-	cell_values.insert(cell_values.end(), order+1+1, -1);
-	std::cout << "debug Cube ************** values = ";
 	int cell_value;
 	config >> cell_value;
 	int pos = 0;
 	max_depth = -1;
 	while (!config.eof()) {
-		cell_values[cell_ids[pos++]] = cell_value;
-		std::cout << cell_value << " ";
+		cell_values.push_back(cell_value);
 		config >> cell_value;
 		max_depth++;
 	}
 	config.close();
 	initialized = true;
+
 	std::cout << "\ndebug Cube*********************** max_depth = " << max_depth << std::endl;
-	reOrderCells(8);
+	print_ordered_cells(4);
+}
+
+int
+Cube::next_id(size_t depth) {
+	// returns the id in the cube if no conflicts
+	// returns -1 if no id fixed by the cube - already passed the cube length
+	// returns -2 if no id is possible - the propagated cell value does not fit the cube mandate
+	if (initialized && max_depth >= depth) {
+		int id = Ordered_cells[depth]->get_id();
+		if (!Cells[id].has_value())
+			return id;
+		else if (Cells[id].get_value() == cell_values[depth])
+			return -1;
+		else {
+			std::cout << "debug Cube::value, propagated cell value conflict id: " << Ordered_cells[depth]->get_id()
+					<< " = " << Cells[id].get_value() << " vs cube: " << cell_values[depth] << std::endl;
+			return -2;
+		}
+	}
+	return -1;
 }
 
 
 int
 Cube::value(size_t depth, size_t id) {
-	std::cout << "debug Cube::value, depth " << depth << ", in-coming id " << id << ", expecting " << Ordered_cells[depth]->get_id() << std::endl;
 	if (initialized && max_depth >= depth) {
 		int value_to_set = cell_values[depth];
 		if (Ordered_cells[depth]->get_id() == id)
@@ -55,27 +69,14 @@ Cube::value(size_t depth, size_t id) {
 		else
 			return -2; // don't continue
 	}
-	/*
-	if (initialized && max_depth >= depth && id < cell_values.size()) {
-		if (cell_values[id] == -1) {
-			if (Cells[(depth / 2) * order + depth % 2].has_value())
-				std::cout << "debug* depth " << depth << " propagated id=" << id << " value = " << Cells[(depth / 2) * order + depth % 2].get_value() << std::endl;
-			else
-				std::cout << "debug* cell not assigned, depth " << depth << " propagated id=" << id << std::endl;
-		}
-		return cell_values[id];
-	}
-	if (initialized && depth <= max_depth && Cells[(depth / 2) * order + depth % 2].has_value()) {
-		std::cout << "debug** depth " << depth << " propagated id=" << id << " value = " << Cells[(depth / 2) * order + depth % 2].get_value() << std::endl;
-	}
-	*/
 	return -1;
 }
 
 void
-Cube::reOrderCells(int Number_of_cells) {
-	std::cout << "debug reOrderCells***********"
-			<< Ordered_cells[0]->get_id() << "(" << Ordered_cells[0]->get_index(0) << ", " << Ordered_cells[0]->get_index(1)
-			<< ")** " << Ordered_cells[1]->get_id() << "("  << Ordered_cells[1]->get_index(0)<< ", " << Ordered_cells[1]->get_index(1)
-			<< ")** " << Ordered_cells[2]->get_id() << "("  << Ordered_cells[2]->get_index(0) << ", " << Ordered_cells[2]->get_index(1) << ")**" << std::endl;
+Cube::print_ordered_cells(int number_of_cells) {
+	std::cout << "debug print_ordered_cells***********";
+	for (int ndx = 0; ndx < number_of_cells; ndx++) {
+		std::cout << Ordered_cells[ndx]->get_id() << " (" << Ordered_cells[ndx]->get_index(0) << ", " << Ordered_cells[ndx]->get_index(1) << ") ** ";
+	}
+	cout << std::endl;
 }

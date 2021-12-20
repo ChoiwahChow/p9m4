@@ -20,7 +20,8 @@ public:
 	virtual ~Cube();
 
 	int value(size_t depth, size_t id);
-	void reOrderCells(int Number_of_cells);
+	void print_ordered_cells(int number_of_cells);
+	int next_id(size_t depth);
 };
 
 
