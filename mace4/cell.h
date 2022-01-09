@@ -59,6 +59,7 @@ private:
 private:
   static int sum_indexes(Term t);
   static OrderType compare_cells(Cell a, struct cell* b);
+  static bool equal_index(Term t);
 
 public:
   static int id_to_domain_size(int id, Cell Cells, int Domain_size);

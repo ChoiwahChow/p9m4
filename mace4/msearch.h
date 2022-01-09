@@ -90,6 +90,7 @@ private:
   Cell*       Ordered_cells;     /* (pointers to) permutation of Cells */
   int         First_skolem_cell;
   int         Domain_size;       /* domain size to search */
+  int         print_cubes;		 // print the cubes of length "print_cubes". -1 means do not print
   Term*       Domain;            /* array of terms representing (shared) domain elements  */
   bool        Skolems_last;
   Plist       Models;

@@ -50,7 +50,7 @@ Search::Search(Mace4VGlobais* g) : Mace4vglobais(g), Domain_size(0), Domain(null
   max_sec_no_str("max_sec_no"), mace_sigint_str("mace_sigint"), mace_sigsegv_str("mace_sigsegv"), unknown_str("???"), Skolems_last(false),
   Number_of_cells(0), Cells(nullptr), Ordered_cells(nullptr), First_skolem_cell(0), Max_domain_element_in_input(0),
   Symbols(nullptr), Sn_to_mace_sn(nullptr), Sn_map_size(0), Models(nullptr), Grounder(nullptr),
-  Total_models(0), Start_domain_seconds(0), Start_seconds(0), Start_megs(0), propagator(nullptr)
+  Total_models(0), Start_domain_seconds(0), Start_seconds(0), Start_megs(0), propagator(nullptr), print_cubes(-2)
 {
 
 }
@@ -106,6 +106,7 @@ Search::initialize_for_search(Plist clauses) {
   for (Symbol_data s = Symbols; s != nullptr; s = s->next) {
     Sn_to_mace_sn[s->sn] = s;
   }
+  print_cubes = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_cubes);
 }
 
 
@@ -421,6 +422,14 @@ Search::search(int max_constrained, int depth, Partition& cutter, Cube& splitter
     	  	  	    << ", updated max_constrained " << max_constrained << ", depth = " << depth << std::endl;
     	  from_index = value;
     	  last = value;
+      }
+      if (depth == print_cubes + 1) {
+    	  size_t order = Domain_size;
+    	  std::cout << "cube";
+    	  for (int idx = 0; idx < print_cubes; ++idx)
+    		  std::cout << " " << Cells[splitter.cell_ids[idx]].get_value();
+    	  std::cout << std::endl;
+    	  return SEARCH_GO_NO_MODELS;
       }
 
       for (int i = from_index, go = true; i <= last && go; i++) {
