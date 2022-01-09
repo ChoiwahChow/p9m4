@@ -15,6 +15,7 @@ public:
   static constexpr int SELECT_LINEAR          = 0;  /* selection orders */
   static constexpr int SELECT_CONCENTRIC      = 1;
   static constexpr int SELECT_CONCENTRIC_BAND = 2;
+  static constexpr int SELECT_BY_ORDER		  = 3;  // added for cube-and-conquer
 
   static constexpr int NO_MEASURE          = 0;    /* selection measures */
   static constexpr int MOST_OCCURRENCES    = 1;
@@ -53,6 +54,7 @@ public:
   int select_concentric(int min_id, int max_id, Cell Ordered_cells[], propagate* prop);
   int select_concentric_band(int min_id, int max_id, int max_constrained, Cell Ordered_cells[], propagate* prop);
   int select_cell(int max_constrained, int First_skolem_cell, int Number_of_cells, Cell Ordered_cells[], propagate* prop);
+  int select_by_order(int min_id, int max_id, Cell Ordered_cells[]);
 };
 
 #endif

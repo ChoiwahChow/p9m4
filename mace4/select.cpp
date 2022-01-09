@@ -162,6 +162,19 @@ Selection::select_concentric(int min_id, int max_id, Cell Ordered_cells[], propa
   }
 }
 
+// added for cube-and-conquer, cell selection is strictly as ordered by indices of the cells
+int
+Selection::select_by_order(int min_id, int max_id, Cell Ordered_cells[])
+{
+  int i = min_id;
+  while (i <= max_id && Ordered_cells[i]->value != nullptr)
+	i++;
+  if (i <= max_id)
+	return Ordered_cells[i]->id;
+  else
+	return -1;
+}
+
 int
 Selection::select_concentric_band(int min_id, int max_id, int max_constrained, Cell Ordered_cells[], propagate* prop)
 {
@@ -174,8 +187,9 @@ Selection::select_concentric_band(int min_id, int max_id, int max_constrained, C
       selection_measure(Ordered_cells[i]->id, &max, &id_of_max, prop);
     i++;
   }
-  if (id_of_max >= 0)
+  if (id_of_max >= 0) {
     return id_of_max;
+  }
   else
     /* There is nothing in the band, so revert to select_concentric.
        This is a bit redundant, because it will scan (again) the full cells.
@@ -191,6 +205,7 @@ Selection::select_cell(int max_constrained, int First_skolem_cell, int Number_of
   case SELECT_LINEAR: id = select_linear(0, First_skolem_cell-1, prop); break;
   case SELECT_CONCENTRIC: id = select_concentric(0, First_skolem_cell-1, Ordered_cells, prop); break;
   case SELECT_CONCENTRIC_BAND: id = select_concentric_band(0, First_skolem_cell-1, max_constrained, Ordered_cells, prop); break;
+  case SELECT_BY_ORDER: id = select_by_order(0, First_skolem_cell-1, Ordered_cells); break;   // added for cube-and-conquer
   default: fatal::fatal_error("bad selection order");
   }
 
@@ -201,6 +216,7 @@ Selection::select_cell(int max_constrained, int First_skolem_cell, int Number_of
   case SELECT_LINEAR: id = select_linear(First_skolem_cell, Number_of_cells-1, prop); break;
   case SELECT_CONCENTRIC: id = select_concentric(First_skolem_cell, Number_of_cells-1, Ordered_cells, prop); break;
   case SELECT_CONCENTRIC_BAND: id = select_concentric_band(First_skolem_cell, Number_of_cells-1, max_constrained, Ordered_cells, prop); break;
+  case SELECT_BY_ORDER: id = select_by_order(0, Number_of_cells-1, Ordered_cells); break;   // added for cube-and-conquer
   default: fatal::fatal_error("bad selection order");
   }
 
