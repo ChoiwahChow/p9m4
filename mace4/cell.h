@@ -43,6 +43,8 @@ public:
   inline int get_sn() const {return symbol->get_sn();}
   inline bool has_value() const {return value != nullptr;}
   inline int get_value() const {return value->private_symbol;}
+  inline int get_id() const {return id;}
+  inline int get_index(int pos) const {if (ARITY(eterm) > pos) return VARNUM(ARG(eterm, pos)); else return -1;}
 
 public:
   friend class Ground;
@@ -57,9 +59,9 @@ private:
   static bool Skolems_last;  // TODO: [Choiwah] we may need to get rid of this member variable to make it thread-safe, although it is set only once
 
 private:
-  static int sum_indexes(Term t);
-  static OrderType compare_cells(Cell a, struct cell* b);
+  static int  sum_indexes(Term t);
   static bool equal_index(Term t);
+  static OrderType compare_cells(Cell a, struct cell* b);
 
 public:
   static int id_to_domain_size(int id, Cell Cells, int Domain_size);

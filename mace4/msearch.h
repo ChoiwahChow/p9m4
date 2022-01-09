@@ -61,8 +61,8 @@ private:
     SEARCH_DOMAIN_OUT_OF_RANGE  /* stop */
   };
 
-  static int next_message;    //TODO: [choiwah] take care of this to make it thread-safe
-  static int Next_report;     //TODO: [choiwah] take care of this too
+  static long long next_message;    //TODO: [choiwah] take care of this to make it thread-safe
+  static int Next_report;     		//TODO: [choiwah] take care of this too
 
   /* stats for entire run */
   unsigned Total_models;      //TODO: [choiwah] take care of this - may not be meaningful for mult-threading
@@ -146,7 +146,7 @@ private:
   int  mace_megs(void);
   int  check_time_memory(void);
   bool mace4_skolem_check(int id);
-  int  search(int max_constrained, int depth, Partition& cutter, Cube& splitter);
+  int  search(int max_constrained, int depth, Cube& splitter);
   int  mace4n(Plist clauses, int order);
   bool iterate_ok(int n, const std::string& class_name);
   int  next_domain_size(int n);

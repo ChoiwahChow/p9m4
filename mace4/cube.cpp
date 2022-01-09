@@ -21,8 +21,6 @@ Cube::Cube(size_t domain_size, Cell Cells): initialized(false), order(domain_siz
 		cell_ids = t;
 		return;
 	}
-
-	std::cout << "debug Cube ************** values = ";
 	int cell_value;
 	config >> cell_value;
 	int pos = 0;
@@ -34,9 +32,9 @@ Cube::Cube(size_t domain_size, Cell Cells): initialized(false), order(domain_siz
 	}
 	config.close();
 	initialized = true;
+
 	std::cout << "\ndebug Cube*********************** max_depth = " << cell_ids.size() << std::endl;
 }
-
 
 int
 Cube::value(size_t depth, size_t id) {
