@@ -1,9 +1,17 @@
 #!/usr/bin/python3
+"""
+To generate cubes:
+date; build/mace4 -n7 -N7 -m-1 -A1 -C16 -O3 -f inputs/semi.in > 16.out; date
+The models generated in this step must be kept
+
+Remove duplicate cubes
+grep "^cube" 2.out | sort | uniq | sed 's/[^ ]* //' > cubes2.out
+"""
 
 import sys
 import copy
 import json
-	
+from itertools import permutations
 
 def permute(s, a):
 	if len(s) > a:
@@ -32,37 +40,22 @@ def find_cube_mdn(cube):
 	return m
 
 
-def equivalent_cube(cube, permutation):
-	"""
-		cube (List[List[int], int]): a cube
-		permutations(List[int]): a permutation
-	"""
-	eq_cube = list()
-	for x in cube:
-		cell = tuple(permute(permutation, y) for y in x[0])
-		term = tuple([cell, permute(permutation, x[1])])
-		eq_cube.append(term)
-	return tuple(sorted(eq_cube))				
-					
+def find_permutation_mdn(p):
+	return len(p) - 1
 
-def has_iso(x, permutations, mdn, r, non_iso):
-	"""  check isomorphism against all given permutations
-		x (List(List[int, int], int]]): a cube
-		permuations (List[list[int]]): a list of permutations
-		mdn (int):   mdn
-		r (int):     radius
-		non_iso (dict): dictionary of non-isomorphic cubes
-	"""
-	if x in non_iso and non_iso[x][0] == mdn:
-		return True
-	for p in permutations:
-		eq_cube = equivalent_cube(x, p)
-		if not eq_cube in non_iso:
-			continue
-		y = non_iso[eq_cube]
-		if mdn == y[0]:
-			return True
-	return False
+
+def simplify_permutation(p):
+	l = len(p) - 1
+	p = list(p)
+	while l >= 0 and p[l] == l:
+		p.pop()
+		l -= 1
+	return p
+
+
+def shorten_permutations(ps):
+	x = [simplify_permutation(p) for p in ps]
+	return [y for y in x if y]
 
 
 def ordering_cells_1(max_depth):
@@ -78,94 +71,84 @@ def ordering_cells_1(max_depth):
 	return tuple(seq);
 
 
-def ordering_cells_2(max_depth):
+def ordering_cells_2(length):
 	""" ordering: diagonal first, then minimum row, then minimum column,
 	  then next minimum row, then next minimum column ...
 	  e.g. (0, 0), (1, 1), (0, 1), (1, 0), (2, 2), (0, 2), (2, 0), (1, 2), (2, 1), (3, 3)...
 	Args:
-		max_depth (int): maximum depth of the search search, note count starts from 0,
+		length (int): maximum depth of the search search, note count starts from 0,
 						 so a max depth of 2 is 0 and 1.
 	"""
 	seq = list()
 	d = 0
-	while len(seq) < max_depth:
+	while len(seq) < length:
 		seq.append((d, d))
-		if len(seq) >= max_depth:
+		if len(seq) >= length:
 			return seq
 		for x in range(0, d):
 			seq.append((x, d))
-			if len(seq) >= max_depth:
+			if len(seq) >= length:
 				return seq
 			seq.append((d, x))
-			if len(seq) >= max_depth:
+			if len(seq) >= length:
 				return seq
 		d += 1
 	return tuple(seq)
 
 
-def extend_sequence(n, depth, mdn, ordered_cells, purged_cubes, branch, tree):
+def equivalent_cube(cube, permutation):
 	"""
-		n (int): order of the algebra
-		depth (int): depth of the current search node
+		cube (List[List[int], int]): a cube
+		permutation(List[int]): a permutation
 	"""
-	if depth == len(ordered_cells):
-		tree.append(branch)
-		return 1, 0
-	cell = ordered_cells[depth]
-	mdn = max(mdn, max(cell))
-	max_range = min(n-1, mdn+1)
-	count = 0
-	count_found = 0
+	eq_cube = list()
+	for x in cube:
+		cell = tuple(permute(permutation, y) for y in x[0])
+		term = tuple([cell, permute(permutation, x[1])])
+		eq_cube.append(term)
+	return tuple(sorted(eq_cube))		
+					
 
-	for x in range(max_range+1):
-		new_branch = copy.deepcopy(branch)
-		new_branch.append((cell, x))
-		if tuple(sorted(new_branch)) in purged_cubes:
-			count_found += 1
+def has_iso(x, all_permutations, mdn, r, non_iso):
+	"""  check isomorphism against all given permutations
+		x (List(List[int, int], int]]): a cube
+		all_permutations (List[list[int]]): a list of permutations
+		mdn (int):   mdn
+		r (int):     radius
+		non_iso (dict): dictionary of non-isomorphic cubes
+	"""
+	if x in non_iso and non_iso[x][0] == mdn:
+		return True
+	for p in all_permutations:
+		mdn_p = find_permutation_mdn(p)
+		if mdn_p > r:
 			continue
-		count_1, count_found_1 = extend_sequence(n, depth+1, max(mdn, x), ordered_cells, purged_cubes, new_branch, tree)
-		count += count_1
-		count_found += count_found_1
-	# print(f"*******************found {count_found} from {count}")
-	return count, count_found
+		eq_cube = equivalent_cube(x, p)
+		if not eq_cube in non_iso:
+			continue
+		if mdn == non_iso[eq_cube][0]:
+			return True
+	return False
 
 
-def remove_isomorphic(cubes, permutations):
+def remove_isomorphic(cubes, all_permutations):
 	non_iso = dict()
 	non_iso_unsorted = list()
-	purged_cubes = list()
 	for x in cubes:
 		mdn = find_cube_mdn(x)
 		r = find_cube_radius(x)
 		y = tuple(sorted(x))
-		if not has_iso(y, permutations, mdn, r, non_iso):
+		if not has_iso(y, all_permutations, mdn, r, non_iso):
 			non_iso_unsorted.append(tuple(x))
 			non_iso[y] = [mdn, r]
-		else:
-			purged_cubes.append(y)
-	return tuple(non_iso_unsorted), purged_cubes
-		
-		
-def gen_sequence_2(n, depth, permutations, purged_cubes, purged_cubes_out_filepath, cubes_filepath):
-	"""
-		n (int): order of the algebra
-		depth (int): maximum depth of the search sequence
-		permutations (List[List[int, int]]): list of permutations
-	"""
-	mdn = -1
-	ordered_cells = ordering_cells_2(depth)
-	seq = list()
-	extend_sequence(n, 0, mdn, ordered_cells, purged_cubes, [], seq)
-	#for x in seq:
-	#	print_short(x)
-	print(f"gen_sequence_2, number of tables: {len(seq)}, {len(ordered_cells)}", flush=True)
-	seq, additional_purged = remove_isomorphic(seq, permutations)
-	if purged_cubes_out_filepath:
-		write_purged_cubes(purged_cubes_out_filepath, list(purged_cubes)+additional_purged)
-	with (open(cubes_filepath, "w")) as fp:
-		for x in seq:
-			fp.write(f"{x}\n")
-	print(f"gen_sequence_2, number of tables: {len(seq)}, {len(ordered_cells)}")
+	return tuple(non_iso_unsorted)
+
+
+def is_in_prev(all_cubes, x):
+	for prefix in all_cubes:
+		if x.startswith(prefix):
+			return True
+	return False
 					
 
 def gen_sequence_1(n, depth, purged_cubes, purged_cubes_out_filepath, cubes_filepath):
@@ -173,18 +156,50 @@ def gen_sequence_1(n, depth, purged_cubes, purged_cubes_out_filepath, cubes_file
 	ordered_cells = ordering_cells_1(depth)
 	# print(ordered_cells)
 	seq = list()
-	extend_sequence(n, 0, mdn, ordered_cells, purged_cubes, [], seq)
 	if purged_cubes_out_filepath:
 		write_purged_cubes(purged_cubes_out_filepath, list(purged_cubes)+additional_purged)
 	with (open(cubes_filepath, "w")) as fp:
 		for x in seq:
 			fp.write(f"{x}\n")
 	print(f"gen_sequence_1, number of tables: {len(seq)}, {len(ordered_cells)}")
+		
+		
+def gen_sequence_2(n, cube_length, all_permutations, prev_cubes_filepath, in_cubes_filepath, out_cubes_filepath):
+	"""
+		n (int): order of the algebra
+		cube_length (int): length of the search sequence
+		prev_cubes_filepath (str): file path of a file containing all cubes of shorter length to build on
+		in_cubes_filepath (str): file path of the file containing the cubes generated by Mace4
+		out_cubes_filepath (str): file for output cubes of length "cube_length"
+		all_permutations (List[List[int, int]]): list of permutations
+	"""
+	prev_str = read_cubes_file(prev_cubes_filepath)	
+	in_cubes_str = read_cubes_file(in_cubes_filepath)
+	
+	# filter out those whose parents are already filtered out
+	full_cubes_str = [x for x in in_cubes_str if is_in_prev(prev_str, x)]
+	
+	ordered_cells = ordering_cells_2(cube_length)
+	all_cubes = list()
+	for cube_str in full_cubes_str:
+		cell_values = [int(x) for x in cube_str.split(" ")]
+		cube = list()
+		for index, x in enumerate(ordered_cells):
+			cube.append((x, cell_values[index]))
+		all_cubes.append(cube)
+	
+	print(f"gen_sequence_2, starting number of cubes: {len(in_cubes_str)}, {len(ordered_cells)}", flush=True)
+	seq = remove_isomorphic(all_cubes, all_permutations)
+	with (open(out_cubes_filepath, "w")) as fp:
+		for cube in seq:
+			for term in cube:
+				fp.write(f"{term[1]} ")
+			fp.write("\n")
+	print(f"gen_sequence_2, final number of cubes: {len(seq)}, {len(ordered_cells)}")
 
-def read_purged_cubes(file_path):
+def read_cubes_file(file_path):
 	with (open(file_path)) as fp:
-		c = json.load(fp)
-	p = [tuple(tuple([tuple(y[0]), y[1]]) for y in x) for x in c]
+		p = fp.read().splitlines()
 	# print(p)
 	return p
 
@@ -221,29 +236,39 @@ def equal_terms(x, y):
 	for t in x:
 		if not has_term(y, t):
 			return False
-	return True		
+	return True
+
+
+def remove0(ps):
+	return [x for x in ps if x[0] == 0]
 	
 
 if __name__ == "__main__":	
-	# permutations = [[1, 0]]
+	permutations2 = [[1, 0]]
+	permutations3 = permutations2 + [[0,2,1],[1,2,0],[2,1,0],[2,0,1]]
 	# permutations = [[0, 2, 1]]
-	# permutations =  [[0, 2, 1], [1, 0], [1, 2, 0], [2, 1, 0], [2, 0, 1]]
-	permutations =  [[0, 2, 1], [1, 0], [1, 2, 0], [2, 1, 0], [2, 0, 1], 
-					[0, 1, 3, 2], [0, 2, 3, 1], [0, 3, 1, 2], [0, 3, 2, 1],
-					[1, 0, 3, 2], [1, 2, 3, 0], [1, 3, 0, 2], [1, 3, 2, 0],
-					[2, 0, 3, 1], [2, 1, 3, 0], [2, 3, 0, 1], [2, 3, 1, 0],
-					[3, 0, 2, 1], [3, 1, 2, 0], [3, 2, 0, 1], [3, 2, 1, 0]]
-	order = 7
-	cube_length = 14
-	purged_file = "purged_cubes_2_7_12.json"
-	out_purged_file = f"./purged_cubes_2_7_{cube_length}.json"
-	out_cube_file = f"./cubes_2_7_{cube_length}.json"
-	if purged_file:
-		c = read_purged_cubes(purged_file)
-		p = {x: 1 for x in c}
-	else:
-		p = dict()
-	print(f"order: {order}, cube_length: {cube_length}, purged file: {purged_file}")
-	print(f"permutations: {permutations}")
-	gen_sequence_2(order, cube_length, permutations, p, out_purged_file, out_cube_file)
+	permutations4 =  shorten_permutations(list(permutations(range(0, 3))))
+	permutations5 = shorten_permutations(list(permutations(range(0, 4))))
+	permutations6 = shorten_permutations(list(permutations(range(0, 5))))
+	perm = {2: permutations2, 4: permutations2, 9: permutations3, 16: permutations4, 25: permutations5}
+	
+	order = 9
+	prev_cube_length = 16
+	cube_length = 25
+	
+	all_permutations = remove0(perm[cube_length])
+	
+	algebra = "semi"
+	algebra = "semizero"
+	algebra = "tarski"
+	algebra = "quasi"
+	algebra = "hilbert"
+
+	cube_file = f"{algebra}{order}/cubes{cube_length}.out"
+	prev_file = f"{algebra}{order}/cubes_2_{order}_{prev_cube_length}.out"
+	out_cube_file = f"{algebra}{order}/cubes_2_{order}_{cube_length}.out"
+
+	print(f"order: {order}, cube_length: {cube_length}, previous file: {prev_file}")
+	print(f"permutations: {all_permutations}")
+	gen_sequence_2(order, cube_length, all_permutations, prev_file, cube_file, out_cube_file)
 	

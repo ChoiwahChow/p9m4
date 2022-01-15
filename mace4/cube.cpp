@@ -11,9 +11,13 @@ Cube::~Cube() {
 }
 
 Cube::Cube(size_t domain_size, Cell Cells): initialized(false), order(domain_size), Cells(Cells) {
-	//std::vector<size_t> cell_ids = {0, 1, order, order+1};
-	std::vector<size_t> t = {0, order+1, 1, order, 2*order+2, 2, 2*order, order+2, 2*order+1};
+	std::vector<size_t> t_b2 = {0, order+1, 1, order, 2*order+2, 2, 2*order, order+2, 2*order+1,
+							 3*order+3, 3, 3*order, order+3, 3*order+1, 2*order+3, 3*order+2, 4*order+4,
+							 4, 4*order, order+4, 4*order+1, 2*order+4, 4*order+2, 3*order+4, 4*order+3, 5*order+5};
+	std::vector<size_t> t_u1_b2 = {0, order, 1, 2*order+1, order+1, 2*order, 2,
+								   3*order+2, order+2, 3*order, 2*order+2, 3*order+1};
 
+	std::vector<size_t>& t = t_b2;
 	cell_values.insert(cell_values.end(), *max_element(t.begin(), t.end())+1, -1);
 
 	ifstream config("cube.config");
@@ -39,13 +43,15 @@ Cube::Cube(size_t domain_size, Cell Cells): initialized(false), order(domain_siz
 int
 Cube::value(size_t depth, size_t id) {
 	if (initialized && cell_ids.size() > 0) {
+		std::cout << "Debug, Cube::value, incoming id " << id << std::endl;
 		while (cell_ids.size() > 0 && id != cell_ids[0]) {
-			if (Cells[cell_ids[0]].get_value() < cell_values[cell_ids[0]]) {
+			if (Cells[cell_ids[0]].get_value() != cell_values[cell_ids[0]]) {
 				std::cout << "Debug, Cube::value, Mis-matched cell id =" << cell_ids[0] << ", cell value = " << cell_values[cell_ids[0]]
 						  << "  vs  " << Cells[cell_ids[0]].get_value() << std::endl;
 				cell_ids.erase(cell_ids.begin());
 				return order+1;
 			}
+			std::cout << "Debug, Cube::value, matched, cell id = "  << cell_ids[0] << std::endl;
 			cell_ids.erase(cell_ids.begin());
 		}
 		if (cell_ids.size() > 0 && id == cell_ids[0]) {

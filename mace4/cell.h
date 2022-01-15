@@ -45,6 +45,7 @@ public:
   inline int get_value() const {return value->private_symbol;}
   inline int get_id() const {return id;}
   inline int get_index(int pos) const {if (ARITY(eterm) > pos) return VARNUM(ARG(eterm, pos)); else return -1;}
+  inline std::string& get_symbol() const {return Symbol_dataContainer::get_op_symbol(get_sn()); }
 
 public:
   friend class Ground;

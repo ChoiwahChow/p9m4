@@ -425,7 +425,10 @@ Search::search(int max_constrained, int depth, Cube& splitter)
     	  last = value;
       }
       if (depth == print_cubes + 1) {
-    	  size_t order = Domain_size;
+    	  std::cout << "cell";
+    	  for (int idx = 0; idx < print_cubes; ++idx)
+    		  std::cout << " " << splitter.cell_ids[idx];  // Cells[splitter.cell_ids[idx]].get_symbol();
+    	  std::cout << std::endl;
     	  std::cout << "cube";
     	  for (int idx = 0; idx < print_cubes; ++idx)
     		  std::cout << " " << Cells[splitter.cell_ids[idx]].get_value();
@@ -605,7 +608,7 @@ Search::mace4(Plist clauses)
   initialize_for_search(clauses);
   if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models_interp)) {
 	  models_interp_file_stream = new ofstream();
-	  models_interp_file_stream->open(Search::interp_file_name);
+	  models_interp_file_stream->open(Search::interp_file_name, std::ios_base::app);
   }
 
   int n = next_domain_size(0);  /* returns -1 if we're done */
