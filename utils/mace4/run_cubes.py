@@ -82,13 +82,16 @@ def run_mace(input_file, order, cubes, working_dir, max_threads):
 __all__ =["run_mace"]
 
 if __name__ == "__main__":
-    order = 9
-    cube_length = 16
+    order = 8
+    cube_length = 20
     algebra = "semi"
-    algebra = "semizero"
     algebra = "quasi"
     algebra = "tarski"
+    algebra = "semizero"
     algebra = "hilbert"
+    algebra = "quasi_ordered"
+    algebra = "loops"
+    algebra = "inv_semi"
     
     run_mace(f"inputs/{algebra}.in", order, f"utils/mace4/{algebra}{order}/cubes_2_{order}_{cube_length}.out", f"{algebra}_working", 8)
     

@@ -427,7 +427,7 @@ Search::search(int max_constrained, int depth, Cube& splitter)
       if (depth == print_cubes + 1) {
     	  std::cout << "cell";
     	  for (int idx = 0; idx < print_cubes; ++idx)
-    		  std::cout << " " << splitter.cell_ids[idx];  // Cells[splitter.cell_ids[idx]].get_symbol();
+    		  std::cout << " " << splitter.cell_ids[idx] << "|" << Cells[splitter.cell_ids[idx]].get_symbol();
     	  std::cout << std::endl;
     	  std::cout << "cube";
     	  for (int idx = 0; idx < print_cubes; ++idx)
