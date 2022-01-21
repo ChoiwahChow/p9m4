@@ -239,7 +239,7 @@ if __name__ == "__main__":
 	
 	algebra = "inv_semi"
 	
-	order = 8
+	order = 9
 	prev_cube_length = 12
 	cube_length = 20
 	
