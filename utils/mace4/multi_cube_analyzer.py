@@ -50,6 +50,8 @@ def find_permutation_mdn(p):
 
 
 def simplify_permutation(p):
+	""" simplify, e.g. [0, 2, 1, 3, 4] to [0, 2, 1] because it does not move 3 or 4.
+	"""
 	l = len(p) - 1
 	p = list(p)
 	while l >= 0 and p[l] == l:
@@ -124,6 +126,8 @@ def has_iso(x, is_relation, all_permutations, mdn, r, non_iso):
 			continue
 		if is_relation or mdn == non_iso[eq_cube][0]:  # same mdn or is a relation
 			return True
+		else:
+			print(f"***************************Found it {eq_cube}\n{non_iso[eq_cube]}")
 	return False
 
 

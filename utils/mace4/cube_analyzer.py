@@ -132,6 +132,8 @@ def has_iso(x, is_relation, all_permutations, mdn, r, non_iso):
 			continue
 		if is_relation or mdn == non_iso[eq_cube][0]:  # same mdn or is a relation
 			return True
+		else:
+			print(f"***************************Found it {eq_cube}\n{non_iso[eq_cube]}")
 	return False
 
 
@@ -257,7 +259,6 @@ if __name__ == "__main__":
 	permutations6 = shorten_permutations(list(permutations(range(0, 5))))
 	perm = {2: permutations2, 4: permutations3, 9: permutations4, 16: permutations5, 25: permutations6}
 	
-	algebra = "tarski"
 	algebra = "quasi"
 	algebra = "hilbert"
 	algebra = "semizero"
@@ -265,10 +266,11 @@ if __name__ == "__main__":
 	algebra = "quasi_ordered"
 	algebra = "chains"
 	algebra = "loops"
+	algebra = "tarski"
 	
-	order = 8
-	prev_cube_length = 0
-	cube_length = 2
+	order = 13
+	prev_cube_length = 4
+	cube_length = 9
 	
 	if algebra in ["hilbert", "semizero", "loops"]:
 		all_permutations = remove0(perm[cube_length])
