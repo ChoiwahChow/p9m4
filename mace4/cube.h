@@ -16,12 +16,11 @@ private:
 	bool            initialized;
 
 public:
-	Cube(size_t domain_size, Cell Cells);
+	Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_cells);
 	virtual ~Cube();
 
 	int value(size_t depth, size_t id);
-	void print_ordered_cells(int number_of_cells);
-	int next_id(size_t depth);
+	// void print_ordered_cells(int number_of_cells) const;
 };
 
 

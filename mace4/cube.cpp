@@ -10,36 +10,20 @@ Cube::~Cube() {
 	// TODO Auto-generated destructor stub
 }
 
-Cube::Cube(size_t domain_size, Cell Cells): initialized(false), order(domain_size), Cells(Cells) {
-	std::vector<size_t> t_b2 = {0,
-								order+1, 1, order,
-								2*order+2, 2, 2*order, order+2, 2*order+1,
-							    3*order+3, 3, 3*order, order+3, 3*order+1, 2*order+3, 3*order+2,
-								4*order+4, 4, 4*order, order+4, 4*order+1, 2*order+4, 4*order+2, 3*order+4, 4*order+3,
-								5*order+5, 5, 5*order, order+5, 5*order+1, 2*order+5, 5*order+2, 3*order+5, 5*order+3, 4*order+5, 5*order+4,
-								6*order+6, 6, 6*order, order+6, 6*order+1, 2*order+6, 6*order+2, 3*order+6, 6*order+3, 4*order+6, 6*order+4, 5*order+6, 6*order+5,
-								7*order+7};
-	std::vector<size_t> t_u1_b2 = {0, order,
-								   1, 2*order+1, order+1, 2*order,
-								   2, 3*order+2, order+2, 3*order, 2*order+2, 3*order+1,
-								   3, 4*order+3, order+3, 4*order, 2*order+3, 4*order+1, 3*order+3, 4*order+2,
-								   4, 5*order+4, order+4, 5*order, 2*order+4, 5*order+1, 3*order+4, 5*order+2, 4*order+4, 5*order+3,
-								   5, 6*order+5};
-
-	std::vector<size_t>& t = t_b2;
-	cell_values.insert(cell_values.end(), *max_element(t.begin(), t.end())+1, -1);
-
+Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_cells): initialized(false), order(domain_size), Cells(Cells) {
+	cell_values.insert(cell_values.end(), Number_of_cells, -1);
 	ifstream config("cube.config");
 	if (!config.is_open()) {
-		cell_ids = t;
+		for (size_t idx=0; idx<Number_of_cells; idx++)
+			cell_ids.push_back(Ordered_cells[idx]->get_id());
 		return;
 	}
 	int cell_value;
 	config >> cell_value;
 	int pos = 0;
 	while (!config.eof()) {
-		cell_ids.push_back(t[pos]);
-		cell_values[t[pos++]] = cell_value;
+		cell_ids.push_back(Ordered_cells[pos]->get_id());
+		cell_values[Ordered_cells[pos++]->get_id()] = cell_value;
 		std::cout << cell_value << " ";
 		config >> cell_value;
 	}

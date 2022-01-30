@@ -523,7 +523,7 @@ Search::mace4n(Plist clauses, int order)
     std::flush(std::cout);
   }
 
-  Cube splitter(order, Cells);
+  Cube splitter(order, Cells, Ordered_cells, Number_of_cells);
 
   /* Here we go! */
   int rc = SEARCH_GO_NO_MODELS;
