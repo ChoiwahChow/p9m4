@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 """
+permutation are represennted by a zero-based array:
+[0, 3, 2, 1] means 0->0, 1->3, 2->2, 3->1.
+
 To generate cubes:
 date; build/mace4 -n7 -N7 -m-1 -A1 -C16 -O3 -f inputs/semi.in > 16.out; date
 The models generated in this step must be kept
@@ -261,16 +264,16 @@ if __name__ == "__main__":
 	
 	algebra = "quasi"
 	algebra = "hilbert"
-	algebra = "semizero"
 	algebra = "semi"
 	algebra = "quasi_ordered"
 	algebra = "chains"
 	algebra = "loops"
 	algebra = "tarski"
+	algebra = "semizero"
 	
-	order = 13
-	prev_cube_length = 4
-	cube_length = 9
+	order = 7
+	prev_cube_length = 16
+	cube_length = 25
 	
 	if algebra in ["hilbert", "semizero", "loops"]:
 		all_permutations = remove0(perm[cube_length])

@@ -83,17 +83,17 @@ def run_mace(input_file, order, cubes, print_models, working_dir, max_threads):
 __all__ =["run_mace"]
 
 if __name__ == "__main__":
-    order = 13
-    cube_length = 2
+    order = 7
+    cube_length = 25
     print_models = "P0"  # P0 - don't output models, A1 - output models
     algebra = "semi"
     algebra = "quasi"
-    algebra = "semizero"
     algebra = "hilbert"
     algebra = "quasi_ordered"
     algebra = "loops"
-    algebra = "inv_semi"
     algebra = "tarski"
+    algebra = "inv_semi"
+    algebra = "semizero"
     
     run_mace(f"inputs/{algebra}.in", order, f"utils/mace4/{algebra}{order}/cubes_2_{order}_{cube_length}.out",
              print_models, f"{algebra}_working{cube_length}", 8)

@@ -127,7 +127,9 @@ CellContainer::order_cells(bool verbose, Cell Cells, int Number_of_cells, bool S
     }
     std::cout << std::flush;
   }
-
+  //for (int idx = 0; idx < Number_of_cells && idx < 20; ++idx)
+  //	  std::cout <<  Ordered_cells[idx]->get_symbol() << "|" << Ordered_cells[idx]->get_id() << "  ";
+  //std::cout << "Debug********************" << std::endl;
   return First_skolem_cell;
 }
 

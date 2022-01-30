@@ -16,14 +16,17 @@ Cube::Cube(size_t domain_size, Cell Cells): initialized(false), order(domain_siz
 								2*order+2, 2, 2*order, order+2, 2*order+1,
 							    3*order+3, 3, 3*order, order+3, 3*order+1, 2*order+3, 3*order+2,
 								4*order+4, 4, 4*order, order+4, 4*order+1, 2*order+4, 4*order+2, 3*order+4, 4*order+3,
-								5*order+5};
+								5*order+5, 5, 5*order, order+5, 5*order+1, 2*order+5, 5*order+2, 3*order+5, 5*order+3, 4*order+5, 5*order+4,
+								6*order+6, 6, 6*order, order+6, 6*order+1, 2*order+6, 6*order+2, 3*order+6, 6*order+3, 4*order+6, 6*order+4, 5*order+6, 6*order+5,
+								7*order+7};
 	std::vector<size_t> t_u1_b2 = {0, order,
 								   1, 2*order+1, order+1, 2*order,
 								   2, 3*order+2, order+2, 3*order, 2*order+2, 3*order+1,
 								   3, 4*order+3, order+3, 4*order, 2*order+3, 4*order+1, 3*order+3, 4*order+2,
-								   4, 5*order+4};
+								   4, 5*order+4, order+4, 5*order, 2*order+4, 5*order+1, 3*order+4, 5*order+2, 4*order+4, 5*order+3,
+								   5, 6*order+5};
 
-	std::vector<size_t>& t = t_u1_b2;
+	std::vector<size_t>& t = t_b2;
 	cell_values.insert(cell_values.end(), *max_element(t.begin(), t.end())+1, -1);
 
 	ifstream config("cube.config");
