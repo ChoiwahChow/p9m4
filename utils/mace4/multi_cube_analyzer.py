@@ -236,18 +236,18 @@ if __name__ == "__main__":
 	permutations2 = [[1, 0]]
 	permutations3 = permutations2 + [[0,2,1],[1,2,0],[2,1,0],[2,0,1]]
 	# permutations = [[0, 2, 1]]
-	permutations4 =  shorten_permutations(list(permutations(range(0, 3))))
-	permutations5 = shorten_permutations(list(permutations(range(0, 4))))
-	permutations6 = shorten_permutations(list(permutations(range(0, 5))))
-	perm = {2: permutations2, 4: permutations3, 6: permutations3, 12: permutations4, 20: permutations5, 30: permutations6}
+	permutations4 =  shorten_permutations(list(permutations(range(0, 4))))   # permute 0, 1, 2, 3 only
+	permutations5 = shorten_permutations(list(permutations(range(0, 5))))
+	permutations6 = shorten_permutations(list(permutations(range(0, 6))))
+	perm = {2: [], 4: permutations2, 6: permutations2, 12: permutations3, 20: permutations4, 30: permutations5}
 	
-	algebra = "inv_semi"
-	
-	order = 9
-	prev_cube_length = 12
-	cube_length = 20
-	
-	if algebra in ["hilbert", "semizero", "loops"]:
+	algebra = "iploop"
+	print(f"*********************{list(permutations(range(0, 3)))}")
+	order = 13
+	prev_cube_length = 6
+	cube_length = 12
+
+	if algebra in ["hilbert", "semizero", "loops", "iploop"]:
 		all_permutations = remove0(perm[cube_length])
 	else:
 		all_permutations = perm[cube_length]

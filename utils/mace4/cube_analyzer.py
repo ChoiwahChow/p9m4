@@ -257,10 +257,10 @@ if __name__ == "__main__":
 	permutations2 = [[1, 0]]
 	permutations3 = permutations2 + [[0,2,1],[1,2,0],[2,1,0],[2,0,1]]
 	# permutations = [[0, 2, 1]]
-	permutations4 =  shorten_permutations(list(permutations(range(0, 3))))
-	permutations5 = shorten_permutations(list(permutations(range(0, 4))))
-	permutations6 = shorten_permutations(list(permutations(range(0, 5))))
-	perm = {2: permutations2, 4: permutations3, 9: permutations4, 16: permutations5, 25: permutations6}
+	permutations4 =  shorten_permutations(list(permutations(range(0, 4))))   # permute 0, 1, 2, 3 only
+	permutations5 = shorten_permutations(list(permutations(range(0, 5))))
+	permutations6 = shorten_permutations(list(permutations(range(0, 6))))
+	perm = {2: permutations2, 4: permutations2, 9: permutations3, 16: permutations4, 25: permutations5}
 	
 	algebra = "quasi"
 	algebra = "hilbert"
