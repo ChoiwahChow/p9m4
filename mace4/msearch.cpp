@@ -388,8 +388,21 @@ Search::search(int max_constrained, int depth, Cube& splitter)
     int id = selector.select_cell(max_constrained, First_skolem_cell, Number_of_cells, Ordered_cells, propagator);
 
     if (id == -1) {
+        if (print_cubes > 0) {
+      	  std::cout << "***cell";
+      	  for (int idx = 0; idx < print_cubes; ++idx)
+      		  std::cout << " " << splitter.cell_ids[idx] << "|" << Cells[splitter.cell_ids[idx]].get_symbol();
+      	  std::cout << std::endl;
+      	  std::cout << "cube";
+      	  for (int idx = 0; idx < print_cubes; ++idx)
+      		  std::cout << " " << Cells[splitter.cell_ids[idx]].get_value();
+      	  std::cout << std::endl;
+      	  return SEARCH_GO_NO_MODELS;
+        }
+        else {
       rc = possible_model();
       return rc;
+        }
     }
     else {
       int x = Cells[id].max_index;
