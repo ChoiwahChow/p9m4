@@ -389,16 +389,7 @@ Search::search(int max_constrained, int depth, Cube& splitter)
 
     if (id == -1) {
       if (print_cubes >= 0) {
-    	/* debug print
-      	std::cout << "model: depth " << depth << " cell";
-      	for (int idx = 0; idx < print_cubes; ++idx)
-          std::cout << " " << splitter.cell_ids[idx] << "|" << Cells[splitter.cell_ids[idx]].get_symbol();
-      	std::cout << std::endl;
-      	*/
-      	std::cout << "cube";
-      	for (int idx = 0; idx < print_cubes; ++idx)
-      	  std::cout << " " << Cells[splitter.cell_ids[idx]].get_value();
-      	std::cout << std::endl;
+    	splitter.print_new_cube(print_cubes);
       	return SEARCH_GO_NO_MODELS;
       }
       rc = possible_model();
@@ -438,17 +429,8 @@ Search::search(int max_constrained, int depth, Cube& splitter)
     	  last = value;
       }
       if (depth == print_cubes) {
-    	  /* debug print
-    	  std::cout << "depth " << depth << " cell";
-    	  for (int idx = 0; idx < print_cubes; ++idx)
-    		  std::cout << " " << splitter.cell_ids[idx] << "|" << Cells[splitter.cell_ids[idx]].get_symbol();
-    	  std::cout << std::endl;
-    	  */
-    	  std::cout << "cube";
-    	  for (int idx = 0; idx < print_cubes; ++idx)
-    		  std::cout << " " << Cells[splitter.cell_ids[idx]].get_value();
-    	  std::cout << std::endl;
-    	  return SEARCH_GO_NO_MODELS;
+      	splitter.print_new_cube(print_cubes);
+    	return SEARCH_GO_NO_MODELS;
       }
 
       for (int i = from_index, go = true; i <= last && go; i++) {

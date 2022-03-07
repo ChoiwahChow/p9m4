@@ -5,19 +5,19 @@ Remove isomorphic cubes for multiple tables
 
 
 To generate cubes:
-date; build/mace4 -n7 -N7 -m-1 -A1 -C16 -O3 -f inputs/semi.in > 16.out; date
+date; build/mace4 -n7 -N7 -m-1 -A1 -C16 -O3 -f inputs/semi.in > working/16.out; date
 The models generated in this step must be kept
 
 Remove duplicate cubes
-grep "^cube" 2.out | sort | uniq | sed 's/[^ ]* //' > cubes2.out
+grep "^cube" working/2.out | sort | uniq | sed 's/[^ ]* //' > working/semi7/cubes2.out
 
-Examples of ordered cells for cube length of 25
+Examples of ordered cells for cube length of 25, the first element in the tuple is the function (represented by a number), the second is the cell coordinates.
 >>> arities = [1, 2]
 >>> gen_func_cells(cube_length, arities)
-((0, (0,)), (1, (0, 0)), (0, (1,)), (1, (1, 1)), (1, (0, 1)), (1, (1, 0)), (0, (2,)), (1, (2, 2)), (1, (0, 2)), (1, (1, 2)), (1, (2, 0)), (1, (2, 1)), (0, (3,)), (1, (3, 3)), (1, (0, 3)), (1, (1, 3)), (1, (2, 3)), (1, (3, 0)), (1, (3, 1)), (1, (3, 2)), (0, (4,)), (1, (4, 4)), (1, (0, 4)), (1, (1, 4)), (1, (2, 4)), (1, (3, 4)))
+((0, (0,)), (1, (0, 0)), (0, (1,)), (1, (1, 1)), (1, (0, 1)), (1, (1, 0)), (0, (2,)), (1, (2, 2)), (1, (0, 2)), (1, (2, 0)), (1, (1, 2)), (1, (2, 1)), (0, (3,)), (1, (3, 3)), (1, (0, 3)), (1, (3, 0)), (1, (1, 3)), (1, (3, 1)), (1, (2, 3)), (1, (3, 2)), (0, (4,)), (1, (4, 4)), (1, (0, 4)), (1, (4, 0)), (1, (1, 4)), (1, (4, 2)))
 >>> arities = [2, 2]
 >>> gen_func_cells(cube_length, arities)
-((0, (0, 0)), (1, (0, 0)), (0, (1, 1)), (1, (1, 1)), (0, (0, 1)), (0, (1, 0)), (1, (0, 1)), (1, (1, 0)), (0, (2, 2)), (1, (2, 2)), (0, (0, 2)), (0, (1, 2)), (0, (2, 0)), (0, (2, 1)), (1, (0, 2)), (1, (1, 2)), (1, (2, 0)), (1, (2, 1)), (0, (3, 3)), (1, (3, 3)), (0, (0, 3)), (0, (1, 3)), (0, (2, 3)), (0, (3, 0)), (0, (3, 1)), (0, (3, 2)))
+((0, (0, 0)), (1, (0, 0)), (0, (1, 1)), (1, (1, 1)), (0, (0, 1)), (0, (1, 0)), (1, (0, 1)), (1, (1, 0)), (0, (2, 2)), (1, (2, 2)), (0, (0, 2)), (0, (2, 0)), (0, (1, 2)), (0, (2, 1)), (1, (0, 2)), (1, (2, 0)), (1, (1, 2)), (1, (2, 1)), (0, (3, 3)), (1, (3, 3)), (0, (0, 3)), (0, (3, 0)), (0, (1, 3)), (0, (3, 1)), (0, (2, 3)), (0, (3, 2)))
 
 """
 
@@ -43,17 +43,6 @@ def find_cube_radius(cube):
 	return r
 
 
-def find_cube_mdn(cube):
-	m = 0
-	for x in cube:
-		if x[1] > m:
-			m = x[1]
-		for y in x[0][1]:
-			if y > m:
-				m = y
-	return m
-
-
 def find_permutation_mdn(p):
 	return len(p) - 1
 
@@ -74,98 +63,53 @@ def shorten_permutations(ps):
 	return [y for y in x if y]
 
 
-def ordering_cells_1_2(length):
-	""" ordering: diagonal first, then minimum row, then minimum column,
-	  then next minimum row, then next minimum column ...
-	  e.g. (0), (0, 0), (1), (1, 1), (0, 1), (1, 0), (2), (2, 2), (0, 2), (2, 0), (1, 2), (2, 1), (3) (3, 3)...
-	Args:
-		length (int): maximum depth of the search search, note count starts from 0,
-						 so a max depth of 2 is 0 and 1.
+def isomorphic_cube(cube, permutation, is_relation):
 	"""
-	seq = list()
-	d = 0
-	while len(seq) < length:
-		seq.append((d,))
-		seq.append((d, d))
-		if len(seq) >= length:
-			return tuple(seq)
-		for x in range(0, d):
-			seq.append((x, d))
-			if len(seq) >= length:
-				return tuple(seq)
-			seq.append((d, x))
-			if len(seq) >= length:
-				return tuple(seq)
-		d += 1
-	return tuple(seq)
-
-
-def equivalent_cube(cube, permutation, is_relation):
-	"""
-		cube (List[List[int, List[int]], int]): a cube
+		cube (List[List[int, List[int]], int]): a cube, sorted by table, then by first coordinate, then second coordinate
 		permutation(List[int]): a permutation
 	"""
 	eq_cube = list()
 	for x in cube:
 		cell = tuple(permute(permutation, y) for y in x[0][1])
 		if is_relation[int(x[0][0])]:
-			term = tuple([cell, x[1]])
+			term = tuple([(x[0][0], cell), x[1]])
 		else:
-			term = tuple([cell, permute(permutation, x[1])])
+			term = tuple([(x[0][0], cell), permute(permutation, x[1])])
 		eq_cube.append(term)
 	return tuple(sorted(eq_cube))		
 					
 
-def has_iso(x, is_relation, all_permutations, mdn, r, non_iso):
+def has_iso(x, is_relation, all_permutations, non_iso_sorted):
 	"""  check isomorphism against all given permutations
-		x (List[List[int, List[int]], int]): a cube
+	Args:
+		x (List[List[int, List[int]], int]): a cube, sorted by table, then by first coordinate, then second coordinate
 		all_permutations (List[list[int]]): a list of permutations
-		mdn (int):   mdn
 		r (int):     radius
-		non_iso (dict): dictionary of non-isomorphic cubes
+		non_iso_sorted (dict): dictionary of non-isomorphic cubes, sorted by table, then by first coordinate, then second coordinate
 	"""
-	if x in non_iso and non_iso[x][0] == mdn:
+	if x in non_iso_sorted:
 		return True
 	for p in all_permutations:
-		mdn_p = find_permutation_mdn(p)
-		if not is_relation and mdn_p > r:   # mdn of permutation must not be greater than radius, unless it is a relation
-			continue
-		eq_cube = equivalent_cube(x, p, is_relation)
-		if not eq_cube in non_iso:
-			continue
-		if is_relation or mdn == non_iso[eq_cube][0]:  # same mdn or is a relation
+		iso_cube = isomorphic_cube(x, p, is_relation)
+		if iso_cube in non_iso_sorted:
 			return True
-		else:
-			print(f"***************************Found it {eq_cube}\n{non_iso[eq_cube]}")
 	return False
 
 
-def remove_isomorphic_old(cubes, is_relation, all_permutations):
-	non_iso = dict()
-	non_iso_unsorted = list()
-	for x in cubes:
-		mdn = find_cube_mdn(x)
-		r = find_cube_radius(x)
-		y = tuple(sorted(x))
-		if not has_iso(y, is_relation, all_permutations, mdn, r, non_iso):
-			non_iso_unsorted.append(tuple(x))
-			non_iso[y] = [mdn, r]
-	return tuple(non_iso_unsorted)
-
-
 def remove_isomorphic(cubes, is_relation, all_permutations):
+	""" removes all cubes that have isomorphic cubes already seen
+	Args:
+		cubes: list of cubes
+		is_relation (List[bool]): the operation is a relation
+		all_permutations (List[list[int]]): a list of permutations
 	"""
-	is_relation (List[bool]): the operation is a relation
-	"""
-	non_iso = dict()
+	non_iso_sorted = dict()
 	non_iso_unsorted = list()
 	for x in cubes:
-		mdn = find_cube_mdn(x)
-		r = find_cube_radius(x)
-		y = tuple(sorted(x))
-		if not has_iso(y, is_relation, all_permutations, mdn, r, non_iso):
+		y = tuple(sorted(x))   # sorted by table, then by first coordinate, then second coordinate
+		if not has_iso(y, is_relation, all_permutations, non_iso_sorted):
 			non_iso_unsorted.append(tuple(x))
-			non_iso[y] = [mdn, r]
+			non_iso_sorted[y] = 1
 	return tuple(non_iso_unsorted)
 
 
@@ -187,15 +131,15 @@ def gen_sequence(n, cube_length, arities, is_relation, all_permutations, prev_cu
 		out_cubes_filepath (str): file for output cubes of length "cube_length"
 		all_permutations (List[List[int, int]]): list of permutations
 	"""	
-	prev_str = read_cubes_file(prev_cubes_filepath)	
+	# prev_str = read_cubes_file(prev_cubes_filepath)	
 	in_cubes_str = read_cubes_file(in_cubes_filepath)
 	
 	# filter out those whose parents are already filtered out
-	full_cubes_str = [x for x in in_cubes_str if is_in_prev(prev_str, x)]
+	full_cubes_str = in_cubes_str     #  [x for x in in_cubes_str if is_in_prev(prev_str, x)]
 	
 	ordered_cells = gen_func_cells(cube_length, arities)
 	
-	print(ordered_cells)
+	print(f"***** {cube_length} {ordered_cells}")
 	all_cubes = list()
 	for cube_str in full_cubes_str:
 		cell_values = [int(x) for x in cube_str.split(" ")]
@@ -203,6 +147,7 @@ def gen_sequence(n, cube_length, arities, is_relation, all_permutations, prev_cu
 		for index, x in enumerate(ordered_cells):
 			cube.append((x, cell_values[index]))
 		all_cubes.append(cube)
+	# print(f"{all_cubes}")
 	
 	print(f"gen_sequence, starting number of cubes: {len(in_cubes_str)}, {len(ordered_cells)}", flush=True)
 	seq = remove_isomorphic(all_cubes, is_relation, all_permutations)
@@ -212,42 +157,7 @@ def gen_sequence(n, cube_length, arities, is_relation, all_permutations, prev_cu
 				fp.write(f"{term[1]} ")
 			fp.write("\n")
 	print(f"gen_sequence, final number of cubes: {len(seq)}, {len(ordered_cells)}")
-		
-		
-def gen_sequence_1_2(n, cube_length, is_relation, all_permutations, prev_cubes_filepath, in_cubes_filepath, out_cubes_filepath):
-	"""
-		n (int): order of the algebra
-		cube_length (int): length of the search sequence
-		is_relation (bool): True if it is searching a relation
-		prev_cubes_filepath (str): file path of a file containing all cubes of shorter length to build on
-		in_cubes_filepath (str): file path of the file containing the cubes generated by Mace4
-		out_cubes_filepath (str): file for output cubes of length "cube_length"
-		all_permutations (List[List[int, int]]): list of permutations
-	"""	
-	prev_str = read_cubes_file(prev_cubes_filepath)	
-	in_cubes_str = read_cubes_file(in_cubes_filepath)
-	
-	# filter out those whose parents are already filtered out
-	full_cubes_str = [x for x in in_cubes_str if is_in_prev(prev_str, x)]
-	
-	ordered_cells = ordering_cells_1_2(cube_length)
-	print(ordered_cells)
-	all_cubes = list()
-	for cube_str in full_cubes_str:
-		cell_values = [int(x) for x in cube_str.split(" ")]
-		cube = list()
-		for index, x in enumerate(ordered_cells):
-			cube.append((x, cell_values[index]))
-		all_cubes.append(cube)
-	
-	print(f"gen_sequence_1_2, starting number of cubes: {len(in_cubes_str)}, {len(ordered_cells)}", flush=True)
-	seq = remove_isomorphic(all_cubes, is_relation, all_permutations)
-	with (open(out_cubes_filepath, "w")) as fp:
-		for cube in seq:
-			for term in cube:
-				fp.write(f"{term[1]} ")
-			fp.write("\n")
-	print(f"gen_sequence_1_2, final number of cubes: {len(seq)}, {len(ordered_cells)}")
+
 
 def read_cubes_file(file_path):
 	with (open(file_path)) as fp:
@@ -299,29 +209,32 @@ def gen_func_cells(cube_length, arities):
 	r = 0
 	cells = list()
 	while len(cells) < cube_length:
+		# diagonal cells first
 		for index, a in enumerate(arities):
 			new_cell = list()
 			for x in range(0, a):
 				new_cell.append(r)
 			cells.append((index, tuple(new_cell)))
-			if len(cells) > cube_length:
+			if len(cells) >= cube_length:
 				break
+		if len(cells) >= cube_length:
+			break
 		for index, a in enumerate(arities):
 			if a == 1:
 				continue
-			new_cell = list()
 			for x in range(0, r):         # a is assumed to be 2
 				cells.append((index, tuple([x, r])))
-			if len(cells) > cube_length:
-				break
-			for x in range(0, r):
+				if len(cells) >= cube_length:
+					break
 				cells.append((index, tuple([r, x])))
-			if len(cells) > cube_length:
-				break
+				if len(cells) >= cube_length:
+					break
 		r = r + 1
 	return tuple(cells)
 			
-	
+
+__all__ =["gen_sequence", "shorten_permutations", "remove0"]
+
 
 if __name__ == "__main__":	
 	permutations2 = [[1, 0]]
@@ -330,31 +243,40 @@ if __name__ == "__main__":
 	permutations4 =  shorten_permutations(list(permutations(range(0, 4))))   # permute 0, 1, 2, 3 only
 	permutations5 = shorten_permutations(list(permutations(range(0, 5))))
 	permutations6 = shorten_permutations(list(permutations(range(0, 6))))
-	perm = {2: [], 4: permutations2, 6: permutations2, 12: permutations3, 20: permutations4, 30: permutations5}
+	perm = {1: permutations2, 2: permutations3, 3: permutations4, 4: permutations5, 5: permutations6}
 	
-	print(f"*********************{list(permutations(range(0, 3)))}")
-	order = 6
-	prev_cube_length = 0
-	cube_length = 4
+	# calculate radii
+	r_2 = {(x+1)**2: x for x in range(0, 6)} # 1 binary op {1: 0, 4: 1, 9: 2, 16: 3
+	r_2.update({2 : 1})
+	r_2_2 = {k*2: v for k, v in r_2.items()}   # 2 binary op
+	r_2_2_2 = {k*3: v for k, v in r_2.items()}   # 3 binary op
+	r_1_2   = {k+v+1: v for k, v in r_2.items()}   # 1 unary op and 1 binary op
+	order = 8
+	prev_cube_length = 32
+	cube_length = 50
 
 	algebra = "iploop"
 	algebra = "disemi"
+	algebra = "inv_semi"
+	algebra = "semi"
+	algebra = "quandles"
 	
-	arities = {"disemi": [2, 2]}
-	is_relation = {"disemi": [False, False]}
-
+	arities = {"disemi": [2, 2], "inv_semi": [1, 2], "quandles": [2, 2], "semi": [2]}
+	radii = {"disemi": r_2_2, "inv_semi": r_1_2, "quandles": r_2_2, "semi": r_2}
+	is_relation = {"disemi": [False, False], "inv_semi": [False, False], "quandles": [False, False], "semi": [False]}
+	
 	if algebra in ["hilbert", "semizero", "loops", "iploop"]:
-		all_permutations = remove0(perm[cube_length])
+		all_permutations = remove0(perm[radii[algebra][cube_length]])
 	else:
-		all_permutations = perm[cube_length]
+		all_permutations = perm[radii[algebra][cube_length]]
 
-	cube_file = f"{algebra}{order}/cubes{cube_length}.out"
-	prev_file = f"{algebra}{order}/cubes_2_{order}_{prev_cube_length}.out"
-	out_cube_file = f"{algebra}{order}/cubes_2_{order}_{cube_length}.out"
+	cube_file = f"working/{algebra}{order}/cubes{cube_length}.out"
+	prev_file = f"working/{algebra}{order}/cubes_2_{order}_{prev_cube_length}.out"
+	out_cube_file = f"working/{algebra}{order}/cubes_2_{order}_{cube_length}.out"
 
 	print(f"order: {order}, cube_length: {cube_length}, previous file: {prev_file}")
 	print(f"permutations: {all_permutations}")
-	gen_sequence(order, cube_length, arities['disemi'], is_relation["disemi"], all_permutations, prev_file, cube_file, out_cube_file)
+	gen_sequence(order, cube_length, arities[algebra], is_relation[algebra], all_permutations, prev_file, cube_file, out_cube_file)
 	
 
 

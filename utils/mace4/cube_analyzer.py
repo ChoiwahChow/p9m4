@@ -1,14 +1,14 @@
 #!/usr/bin/python3
 """
-permutation are represennted by a zero-based array:
+permutation are represented by a zero-based array:
 [0, 3, 2, 1] means 0->0, 1->3, 2->2, 3->1.
 
 To generate cubes:
-date; build/mace4 -n7 -N7 -m-1 -A1 -C16 -O3 -f inputs/semi.in > 16.out; date
+date; build/mace4 -n7 -N7 -m-1 -P0 -C16 -O3 -f inputs/semi.in > 16.out; date
 The models generated in this step must be kept
 
 Remove duplicate cubes
-grep "^cube" 2.out | sort | uniq | sed 's/[^ ]* //' > cubes2.out
+grep "^cube" 16.out | sort | uniq | sed 's/[^ ]* //' > cubes16.out
 """
 
 import sys
@@ -264,16 +264,16 @@ if __name__ == "__main__":
 	
 	algebra = "quasi"
 	algebra = "hilbert"
-	algebra = "semi"
 	algebra = "quasi_ordered"
 	algebra = "chains"
 	algebra = "loops"
 	algebra = "tarski"
 	algebra = "semizero"
+	algebra = "semi"
 	
 	order = 7
-	prev_cube_length = 16
-	cube_length = 25
+	prev_cube_length = 9
+	cube_length = 16
 	
 	if algebra in ["hilbert", "semizero", "loops"]:
 		all_permutations = remove0(perm[cube_length])
@@ -284,9 +284,9 @@ if __name__ == "__main__":
 	else:
 		is_relation = False
 
-	cube_file = f"{algebra}{order}/cubes{cube_length}.out"
-	prev_file = f"{algebra}{order}/cubes_2_{order}_{prev_cube_length}.out"
-	out_cube_file = f"{algebra}{order}/cubes_2_{order}_{cube_length}.out"
+	cube_file = f"working/{algebra}{order}/cubes{cube_length}.out"
+	prev_file = f"working/{algebra}{order}/cubes_2_{order}_{prev_cube_length}.out"
+	out_cube_file = f"working/{algebra}{order}/cubes_2_{order}_{cube_length}.out"
 
 	print(f"order: {order}, cube_length: {cube_length}, previous file: {prev_file}")
 	print(f"permutations: {all_permutations}")

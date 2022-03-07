@@ -167,10 +167,11 @@ int
 Selection::select_by_order(int min_id, int max_id, Cell Ordered_cells[])
 {
   int i = min_id;
+  // std::cout << "Debug select_by_order ******************** " << i << "  max_id " << max_id << std::endl;
   while (i <= max_id && Ordered_cells[i]->value != nullptr)
 	i++;
   if (i <= max_id) {
-	// std::cout << "********************" << Ordered_cells[i]->id << std::endl;
+	// std::cout << "Debug select_by_order return ******************** " << i << " id " << Ordered_cells[i]->id << std::endl;
 	return Ordered_cells[i]->id;
   }
   else

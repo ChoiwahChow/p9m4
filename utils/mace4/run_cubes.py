@@ -8,7 +8,7 @@ Mace4 options:
 -A1   print the models in the format expected by isofilter
 
 
-grep "Exiting with " semi_working_[0-9]/mace.log | utils/mace4/counter.py
+grep "Exiting with " semi_working_[0-9]/mace.log | grep model | utils/mace4/counter.py
 
 """
 
@@ -80,22 +80,23 @@ def run_mace(input_file, order, cubes, print_models, working_dir, max_threads):
         time.sleep(2)
     
 
-__all__ =["run_mace"]
+__all__ = ["run_mace"]
 
 if __name__ == "__main__":
-    order = 7
-    cube_length = 25
+    order = 10
+    cube_length = 50
     print_models = "P0"  # P0 - don't output models, A1 - output models
-    algebra = "semi"
     algebra = "quasi"
     algebra = "hilbert"
     algebra = "quasi_ordered"
     algebra = "loops"
     algebra = "tarski"
-    algebra = "inv_semi"
     algebra = "semizero"
+    algebra = "semi"
+    algebra = "inv_semi"
+    algebra = "quandles"
     
-    run_mace(f"inputs/{algebra}.in", order, f"utils/mace4/{algebra}{order}/cubes_2_{order}_{cube_length}.out",
+    run_mace(f"inputs/{algebra}.in", order, f"utils/mace4/working/{algebra}{order}/cubes_{order}_{cube_length}.out",
              print_models, f"{algebra}_working{cube_length}", 8)
     
     
