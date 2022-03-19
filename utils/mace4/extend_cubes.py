@@ -17,6 +17,7 @@ grep "Exiting with " semi_working_[0-9]/mace.log | utils/mace4/counter.py
 
 
 import os
+from pathlib import Path
 import time
 import subprocess
 import threading
@@ -56,16 +57,15 @@ def run_process(id, slot_id, thread_slots, order, cube_length, input_file, cube,
     thread_slots[slot_id] = 0
 
 
-def extend_cubes(input_file, order, new_cube_length, cubes, print_models, mace4, working_dir, max_threads):
+def extend_cube_jobs(input_file, order, new_cube_length, cubes, print_models, mace4, working_dir, max_threads, thread_slots):
     """ 
     
     """
-    thread_slots = [0] * max_threads
     id = 0
 
     if cubes is None:
         thread_slots[0] = threading.Thread(target=run_process, 
-                                                 args=(id, 0, thread_slots, order, new_cube_length, f"../{input_file}", None, print_models, mace4, working_dir))
+                                                 args=(id, 0, thread_slots, order, new_cube_length, f"../{input_file}", None, print_models, f"../{mace4}", working_dir))
         thread_slots[0].start()
     else:
         with (open(cubes)) as fp:
@@ -81,18 +81,88 @@ def extend_cubes(input_file, order, new_cube_length, cubes, print_models, mace4,
             if id % 1000 == 0:
                 print(f"Debug, extend_cubes, Doing {id}", flush=True)
             thread_slots[slot_id] = threading.Thread(target=run_process, 
-                                                     args=(id, slot_id, thread_slots, order, new_cube_length, f"../{input_file}", seq, print_models, mace4, working_dir))
+                                                     args=(id, slot_id, thread_slots, order, new_cube_length, f"../{input_file}", seq, print_models, f"../{mace4}", working_dir))
             thread_slots[slot_id].start()
+    
+
+def request_work(working_dir_prefix, request_work_file, work_file, max_threads, thread_slots):
+    print("debug request_work*****************\n")
+    requested = False
+    done = False
+    first_round = True
+    last_round = 0
+    work_list = list()
+    while not done:
+        all_threads_completed = True
+        for index, thread in enumerate(thread_slots):
+            r_file_path = f"{working_dir_prefix}_{index}/{request_work_file}"
+            c_file_path = f"{working_dir_prefix}_{index}/{work_file}"
+            if os.path.exists(c_file_path):
+                with (open(c_file_path)) as fp:
+                    x = fp.read().splitlines()
+                if x[-1].startswith("End"):
+                    work_list.extend(x[:-1])
+                    Path(c_file_path).unlink(False)
+                    Path(r_file_path).unlink(True)
+            if thread == 0:
+                Path(r_file_path).unlink(True)
+            elif os.path.exists(f"{working_dir_prefix}_{index}"):
+                all_threads_completed = False
+                if last_round > 0:
+                    Path(r_file_path).unlink(True)
+                elif first_round:
+                    open(r_file_path, 'w').close()
+                    requested = True
+        if all_threads_completed:
+            return work_list
+        first_round = False
+        if not requested:
+            return work_list     # no active threads, so return
+        time.sleep(2)
+        if work_list:   # harvested something, ready to return
+            if last_round > 1:
+                done = True
+            last_round += 1
+    return work_list
+    
+
+def extend_cubes(input_file, order, new_cube_length, cubes, print_models, mace4, working_dir_prefix, max_threads, request_work_file, work_file):
+    done = False
+    thread_slots = [0] * max_threads
+    cube_file = cubes
+    os.makedirs(f"{working_dir_prefix}_stealing", exist_ok=True)
+    stealing_file = f"{working_dir_prefix}_stealing/new_work.out"
+    while not done:
+        # Path(stealing_file).unlink(True)
+        extend_cube_jobs(input_file, order, new_cube_length, cube_file, print_models, mace4, working_dir_prefix, max_threads, thread_slots)
+        work_list = request_work(working_dir_prefix, request_work_file, work_file, max_threads, thread_slots)
+        print(f"debug extend_cubes, back from requested work, got {len(work_list)} jobs")
+        if work_list:
+            with (open(stealing_file, "w")) as fp:
+                fp.write('\n'.join(work_list))
+                fp.write('\n')
+            cube_file = stealing_file
+        else:
+            done = True
 
     print("extend_cubes: All cubes are dispatched. Waiting for the last ones to finish...", flush=True)
     while(not all_done(thread_slots)):
         time.sleep(2)
     
 
+def single_extend_cubes(input_file, order, new_cube_length, cubes, print_models, mace4, working_dir, max_threads):
+    thread_slots = [0] * max_threads
+    extend_cube_jobs(input_file, order, new_cube_length, cubes, print_models, mace4, working_dir, max_threads, thread_slots)
+
+    print("extend_cubes: All cubes are dispatched. Waiting for the last ones to finish...", flush=True)
+    while(not all_done(thread_slots)):
+        time.sleep(2)
+    
+    
 __all__ =["extend_cubes"]
 
 if __name__ == "__main__":
-    default_mace4 = "../build/mace4"
+    default_mace4 = "../bin/mace4"
     order = 8
     cube_length = 32
     new_cube_length = 50
@@ -107,7 +177,7 @@ if __name__ == "__main__":
     algebra = "semi"
     algebra = "quandles"
     
-    extend_cube(f"inputs/{algebra}.in", order, new_cube_length, f"utils/mace4/working/{algebra}{order}/cubes_2_{order}_{cube_length}.out",
+    single_extend_cubes(f"inputs/{algebra}.in", order, new_cube_length, f"utils/mace4/working/{algebra}{order}/cubes_2_{order}_{cube_length}.out",
              print_models, default_mace4, f"{algebra}_working{order}", 8)
     
     

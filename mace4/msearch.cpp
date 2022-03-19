@@ -290,10 +290,12 @@ Search::possible_model(void)
   else if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models_tabular))
     p_model(false);
   else if (next_message == Total_models) {
-    std::cout << "\nModel " << Total_models << " has been found.\n";
-    next_message *= 10;
+    std::cout << "\nModel " << Total_models << " has been found." << std::endl;
+    if (Total_models >= 100000000)
+    	next_message *= 2;
+    else
+    	next_message *= 10;
   }
-  fflush(stdout);
   if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->max_models) != -1 && Total_models >= LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->max_models))
     return SEARCH_MAX_MODELS;
   else
@@ -414,6 +416,8 @@ Search::search(int max_constrained, int depth, Cube& splitter)
       else
         last = Domain_size-1;
       bool go = true;
+
+      // begin for cubes
       ParseContainer   pc;
       int from_index = 0;
       int value = splitter.value(depth, id);
@@ -428,12 +432,19 @@ Search::search(int max_constrained, int depth, Cube& splitter)
     	  from_index = value;
     	  last = value;
       }
-      if (depth == print_cubes) {
+      if (print_cubes >= 0 && splitter.real_depth(depth, id) >= print_cubes) {
       	splitter.print_new_cube(print_cubes);
     	return SEARCH_GO_NO_MODELS;
       }
+      if (from_index != last)
+    	  splitter.mark_root(id);
+      // end for cubes
 
       for (int i = from_index, go = true; i <= last && go; i++) {
+    	if (splitter.move_on(id, i, last)) {
+    		std::cout << "debug, Search::search stolen from " << i+1 << " to " << last << std::endl;
+    		last = i;   // this is the last one to process, the rest are "stolen"
+    	}
         Estack stk;
         Mstats.assignments++;
 

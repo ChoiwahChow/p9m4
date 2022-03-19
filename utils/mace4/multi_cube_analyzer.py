@@ -131,6 +131,7 @@ def gen_sequence(n, cube_length, arities, is_relation, all_permutations, prev_cu
 		out_cubes_filepath (str): file for output cubes of length "cube_length"
 		all_permutations (List[List[int, int]]): list of permutations
 	"""	
+	print(f"Number of permutations {len(all_permutations)}")
 	# prev_str = read_cubes_file(prev_cubes_filepath)	
 	in_cubes_str = read_cubes_file(in_cubes_filepath)
 	
@@ -139,7 +140,7 @@ def gen_sequence(n, cube_length, arities, is_relation, all_permutations, prev_cu
 	
 	ordered_cells = gen_func_cells(cube_length, arities)
 	
-	print(f"***** {cube_length} {ordered_cells}")
+	# print(f"***** {cube_length} {ordered_cells}")
 	all_cubes = list()
 	for cube_str in full_cubes_str:
 		cell_values = [int(x) for x in cube_str.split(" ")]
@@ -243,7 +244,8 @@ if __name__ == "__main__":
 	permutations4 =  shorten_permutations(list(permutations(range(0, 4))))   # permute 0, 1, 2, 3 only
 	permutations5 = shorten_permutations(list(permutations(range(0, 5))))
 	permutations6 = shorten_permutations(list(permutations(range(0, 6))))
-	perm = {1: permutations2, 2: permutations3, 3: permutations4, 4: permutations5, 5: permutations6}
+	permutations7 = shorten_permutations(list(permutations(range(0, 7))))
+	perm = {1: permutations2, 2: permutations3, 3: permutations4, 4: permutations5, 5: permutations6, 6: permutations7}
 	
 	# calculate radii
 	r_2 = {(x+1)**2: x for x in range(0, 6)} # 1 binary op {1: 0, 4: 1, 9: 2, 16: 3
@@ -275,7 +277,8 @@ if __name__ == "__main__":
 	out_cube_file = f"working/{algebra}{order}/cubes_2_{order}_{cube_length}.out"
 
 	print(f"order: {order}, cube_length: {cube_length}, previous file: {prev_file}")
-	print(f"permutations: {all_permutations}")
+	# print(f"permutations: {all_permutations}")
+	print(f"Number of permutations {len(all_permutations)}")
 	gen_sequence(order, cube_length, arities[algebra], is_relation[algebra], all_permutations, prev_file, cube_file, out_cube_file)
 	
 

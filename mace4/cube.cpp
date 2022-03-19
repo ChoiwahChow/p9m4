@@ -1,17 +1,23 @@
 
+#include <ctime>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <algorithm>
+#include <unistd.h>
 #include "syms.h"
 #include "cube.h"
 
+
+const std::string  Cube::steal_signal_file_path = "request_work.txt";
+const std::string  Cube::steal_cube_file_path = "release_work.out";
 
 Cube::~Cube() {
 	// TODO Auto-generated destructor stub
 }
 
 Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_cells): initialized(false),
-		order(domain_size), Cells(Cells), current_pos(0), branch_depth(Number_of_cells+1), max_pos(0) {
+		order(domain_size), Cells(Cells), current_pos(0), branch_depth(Number_of_cells+1), max_pos(0), branch_root_id(-1) {
 	cell_values.insert(cell_values.end(), Number_of_cells, -1);
 	ifstream config("cube.config");
 	for (size_t idx=0; idx<Number_of_cells; idx++)
@@ -37,6 +43,14 @@ Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_c
     std::cout << "Debug order_cells ********************" << std::endl;
 }
 
+size_t
+Cube::real_depth(size_t depth, size_t id) {
+	for (size_t idx=depth; idx<cell_ids.size(); ++idx)
+		if (cell_ids[idx]==id)
+			return idx;
+	return depth;
+}
+
 int
 Cube::value(size_t depth, size_t id) {
 	if (initialized && current_pos < max_pos) {
@@ -51,8 +65,9 @@ Cube::value(size_t depth, size_t id) {
 			// std::cout << "Debug, Cube::value, matched, cell id = "  << cell_ids[current_pos] << "  current pos " << current_pos << std::endl;
 			current_pos++;
 		}
-		if (current_pos >= max_pos)
+		if (current_pos >= max_pos) {
 			return -1;
+		}
 		if (id == cell_ids[current_pos]) {
 			current_pos++;
 		}
@@ -60,6 +75,67 @@ Cube::value(size_t depth, size_t id) {
 		return cell_values[id];
 	}
 	return -1;
+}
+
+inline bool
+Cube::work_stealing_requested() {
+	struct stat buffer;
+	bool signal_exists = stat (steal_signal_file_path.c_str(), &buffer) == 0;
+	bool pending_cubes = stat (steal_cube_file_path.c_str(), &buffer) == 0;
+	time_t now = time(0);
+	char* date_time = ctime(&now);
+	std::cout << "debug Current working directory: " << get_current_dir_name() << " " << date_time << std::endl;
+	std::cout << "debug work_stealing_requested:" << steal_signal_file_path.c_str() << signal_exists << " and" << steal_cube_file_path.c_str() << pending_cubes << std::endl;
+	return signal_exists && !pending_cubes;
+}
+
+bool
+Cube::move_on(size_t id, int val, int last) {
+	if (branch_root_id != -1 && id == branch_root_id) {
+		if (val == last) {  // move root to the next level
+			branch_root_id = -1;
+			return false;
+		}
+		if (work_stealing_requested()) {
+			std::cout << "debug move_on, work_stealing_requested, branch_root_id reset" << std::endl;
+			print_unprocessed_cubes(val+1, last);
+			branch_root_id = -1;
+			return true;
+		}
+	}
+	return false;
+}
+
+void
+Cube::print_unprocessed_cubes(size_t from, size_t to)
+{
+	std::stringstream buffer;
+	for (size_t idx=from; idx<=to; idx++) {
+		size_t pos = 0;
+		while (cell_ids[pos] != branch_root_id) {
+			buffer << Cells[cell_ids[pos]].get_value() << " ";
+			pos++;
+		}
+		buffer << idx << std::endl;
+	}
+	buffer << "End" << std::endl;
+	std::cout << "debug print_unprocessed_cubes: " << from << " " << to << "\n" << buffer.str() << std::endl;
+	ofstream cube_file;
+	cube_file.open (steal_cube_file_path);
+	cube_file << buffer.str();
+	cube_file.close();
+
+	if (remove(steal_signal_file_path.c_str()) != 0) {
+		std::cout << "failed to delete signal file" << std::endl;
+	}
+}
+
+void
+Cube::mark_root(size_t id) {
+	if (initialized && branch_root_id == -1) {
+		branch_root_id = id;
+		std::cout << "debug mark_root: " << id << std::endl;
+	}
 }
 
 void

@@ -19,8 +19,11 @@ import subprocess
 import threading
 import ast
 
+from extend_cubes import request_work
 
-mace4 = "../build/mace4"
+
+request_work_file = "request_work.txt"
+work_file = "release_work.out"
 
 
 def thread_available(thread_count, thread_slots):
@@ -37,8 +40,8 @@ def all_done(thread_slots):
     return True
 
 
-def run_process(id, slot_id, thread_slots, order, input_file, cube, print_models, working_dir):
-    working_dir = f"{working_dir}_{slot_id}"
+def run_process(id, slot_id, thread_slots, order, input_file, cube, print_models, mace4, working_dir_prefix):
+    working_dir = f"{working_dir_prefix}_{slot_id}"
     os.makedirs(working_dir, exist_ok=True)
     with (open(f"{working_dir}/cube.config", "w")) as fp:
         for x in cube:
@@ -53,12 +56,19 @@ def run_process(id, slot_id, thread_slots, order, input_file, cube, print_models
     thread_slots[slot_id] = 0
 
 
-def run_mace(input_file, order, cubes, print_models, working_dir, max_threads):
+def run_mace_jobs(mace4_exec, input_file, order, cubes, print_models, working_dir_prefix, id_counter, max_threads, thread_slots):
     """ 
-    
+    Args:
+        mace4_exec (str): mace4 executable
+        input_file (str): algebra input file
+        order (int):      order of algebra
+        cubes (str):      file path containing cubes
+        print_models (str):  A1 to print, P0 not to
+        working_dir_prefix (str):   prefix of working_dir
+        id_counter (int):   jobs finished or being finished so far
+        max_threads (int):  maximum number of mace4 processes
+        thread_slots(List[int]): array of slots for threads
     """
-    thread_slots = [0] * max_threads
-    id = 0
 
     with (open(cubes)) as fp:
         all_cubes = fp.read().splitlines()
@@ -69,12 +79,42 @@ def run_mace(input_file, order, cubes, print_models, working_dir, max_threads):
         while slot_id < 0:
             time.sleep(0.5)
             slot_id = thread_available(max_threads, thread_slots)
-        id += 1
-        if id % 1000 == 0:
-            print(f"Doing {id}", flush=True)
-        thread_slots[slot_id] = threading.Thread(target=run_process, args=(id, slot_id, thread_slots, order, f"../{input_file}", seq, print_models, working_dir))
+        id_counter += 1
+        if id_counter % 1000 == 0:
+            print(f"Doing {id_counter}", flush=True)
+        thread_slots[slot_id] = threading.Thread(target=run_process,
+                                                 args=(id, slot_id, thread_slots, order, f"../{input_file}", seq, print_models, f"../{mace4_exec}", working_dir_prefix))
         thread_slots[slot_id].start()
+    return id_counter
 
+
+def run_mace(mace4_exec, input_file, order, cubes, print_models, working_dir_prefix, max_threads):
+    done = False
+    thread_slots = [0] * max_threads
+    cube_file = cubes
+    os.makedirs(f"{working_dir_prefix}_stealing", exist_ok=True)
+    stealing_file = f"{working_dir_prefix}_stealing/new_work.out"
+    id_counter = 0
+    while not done:
+        # Path(stealing_file).unlink(True)
+        id_counter = run_mace_jobs(mace4_exec, input_file, order, cube_file, print_models, working_dir_prefix, id_counter, max_threads, thread_slots)
+        work_list = request_work(working_dir_prefix, request_work_file, work_file, max_threads, thread_slots)
+        print(f"debug run_mace, request work returns {len(work_list)} jobs")
+        if work_list:
+            with (open(stealing_file, "w")) as fp:
+                fp.write('\n'.join(work_list))
+                fp.write('\n')
+            cube_file = stealing_file
+        else:
+            done = True
+
+    print("run_mace: All cubes are dispatched. Waiting for the last ones to finish...", flush=True)
+    while(not all_done(thread_slots)):
+        time.sleep(2)
+        
+
+def single_run_mace(mace4_exec, input_file, order, cubes, print_models, working_dir, max_threads):
+    run_mace_jobs(mace4_exec, input_file, order, cubes, print_models, working_dir, max_threads)
     print("All cubes are dispatched. Waiting for the last ones to finish...", flush=True)
     while(not all_done(thread_slots)):
         time.sleep(2)
@@ -83,6 +123,7 @@ def run_mace(input_file, order, cubes, print_models, working_dir, max_threads):
 __all__ = ["run_mace"]
 
 if __name__ == "__main__":
+    mace4_exec = "../bin/mace4"
     order = 10
     cube_length = 50
     print_models = "P0"  # P0 - don't output models, A1 - output models
@@ -96,7 +137,7 @@ if __name__ == "__main__":
     algebra = "inv_semi"
     algebra = "quandles"
     
-    run_mace(f"inputs/{algebra}.in", order, f"utils/mace4/working/{algebra}{order}/cubes_{order}_{cube_length}.out",
+    single_run_mace(mace4_exec, f"inputs/{algebra}.in", order, f"utils/mace4/working/{algebra}{order}/cubes_{order}_{cube_length}.out",
              print_models, f"{algebra}_working{cube_length}", 8)
     
     

@@ -65,7 +65,7 @@ private:
   static int Next_report;     		//TODO: [choiwah] take care of this too
 
   /* stats for entire run */
-  unsigned Total_models;      //TODO: [choiwah] take care of this - may not be meaningful for mult-threading
+  unsigned long long Total_models;      //TODO: [choiwah] take care of this - may not be meaningful for mult-threading
 
 private:
   std::string max_models_str;
