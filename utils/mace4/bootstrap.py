@@ -70,7 +70,9 @@ r_1_2_2_2   = {3*k+v+1: v for k, v in r_2.items()}   # 1 unary op and 1 binary o
 r_2_2_2_2 = {k*4: v for k, v in r_2.items()}   # 4 binary op
 r_1_2_2_2_2 = {k*4+v+1: v for k, v in r_2.items()}   # 1 unary op, 4 binary op
     
-run_data = {'invol_lattices': {'seq': cube_sequence_1_2_2, 'relations': [False, False, False], 
+run_data = {'dist_lattice_ord_semi': {'seq': cube_sequence_2_2_2, 'relations': [False, False, False], 
+                         'input': '36_dist_lattice_ord_semi', 'arities': [2, 2, 2], 'radius': r_2_2_2, 'remove': -1},
+            'invol_lattices': {'seq': cube_sequence_1_2_2, 'relations': [False, False, False], 
                          'input': '50_invol_lattices', 'arities': [1, 2, 2], 'radius': r_1_2_2, 'remove': -1},
             'inv_semi': {'seq': cube_sequence_1_2, 'relations': [False, False], 
                          'input': '121_inv_semi', 'arities': [1, 2], 'radius': r_1_2, 'remove': -1},
@@ -103,12 +105,12 @@ def get_data_dir(algebra, order):
 
 
 def get_working_dir(algebra, order, cube_length):
-    """ working dir
+    """ compose working dir
     """
     return f"{algebra}_working_{order}_{cube_length}"
     
 
-def collect_cubes(algebra, cube_dir, prev_cube_length, cube_length, data_dir):
+def collect_cubes(algebra, cube_dir, prev_cube_length, cube_length, threshold, data_dir):
     al = run_data[algebra]
     cmd = f"cat {cube_dir}_*/{cube_length}.out | grep '^cube' | sort | uniq | sed 's/[^ ]* //' > {data_dir}/cubes{cube_length}.out"
     subprocess.run(cmd, capture_output=False, text=True, check=False, shell=True)
@@ -116,14 +118,23 @@ def collect_cubes(algebra, cube_dir, prev_cube_length, cube_length, data_dir):
     prev_file = f"{data_dir}/cubes_{order}_{prev_cube_length}.out"
     out_cube_file = f"{data_dir}/cubes_{order}_{cube_length}.out"
     
-    all_permutations = perm[al['radius'][cube_length]]
+    radius = al['radius'][cube_length]
+    all_permutations = perm[radius]
     if al['remove'] == 0:
         all_permutations = analyzer.remove0(all_permutations)
         
-    analyzer.gen_sequence(order, cube_length, al['arities'], al['relations'], all_permutations, prev_file, cube_file, out_cube_file)
+    analyzer.gen_sequence(order, cube_length, radius, al['arities'], al['relations'], all_permutations, threshold, prev_file, cube_file, out_cube_file)
     
 
-def gen_all_cubes(algebra, order, target_cube_length, mace4_exe):
+def gen_all_cubes(algebra, order, target_cube_length, threshold, mace4_exe):
+    """
+    Args:
+        algebra (str): name of the algebra
+        order (int): order of the algebra
+        target_cube_length (int): target cube length
+        threshold (int):  use invariant when the number of models is at least this manany
+        mace4_exe (str): path name of the mace4 executable
+    """
     data_dir = get_data_dir(algebra, order)
     os.makedirs(data_dir, exist_ok=True)
 
@@ -138,7 +149,7 @@ def gen_all_cubes(algebra, order, target_cube_length, mace4_exe):
             cube_file = f"{top_data_dir}/{algebra}{order}/cubes_{order}_{cube_length}.out"
         extend_cubes.extend_cubes(input_file, order, new_cube_length, cube_file, "P0", mace4_exe,
                                   new_cube_dir, num_threads, request_work_file, work_file)
-        collect_cubes(algebra, new_cube_dir, cube_length, new_cube_length, data_dir)
+        collect_cubes(algebra, new_cube_dir, cube_length, new_cube_length, threshold, data_dir)
         if new_cube_length == target_cube_length:
             break
         cube_length = new_cube_length
@@ -166,6 +177,7 @@ __all__ = ["run_all_cubes", "gen_all_cubes", "collect_stat"]
 
 if __name__ == "__main__":
     mace4_exe = "../bin/mace4"
+    threshold = 1000000
 
     algebra = "quasi"
     algebra = "hilbert"
@@ -179,19 +191,20 @@ if __name__ == "__main__":
     algebra = "inv_semi"         # #121 cube length 20 order 9
     algebra = "order_algebras"   # #74  cube length  25, order 8
     algebra = "ord_semilattice"  # #78  cube length 72, order 9
-    algebra = "invol_lattices"   # #50 cube length 55, order 13
-    algebra = "moufang"          # #64 no good - cube length 48, order 6
-    algebra = "loops"            # #36 cube length 36, order 8
+    algebra = "invol_lattices"   # #50  cube length 78, order 13
+    algebra = "moufang"          # #64  no good - cube length 48, order 6
+    algebra = "loops"            # #36  cube length 36, order 8
     algebra = "tarski"           # #102 cube length 36, order 12
     algebra = "quasi_ordered"
     algebra = "posets"           # #86 cube length 36, order 9
+    algebra = "dist_lattice_ord_semi"           # #86 cube length 36, order 9
 
 
-    target_cube_length = 25
-    order = 8
+    target_cube_length = 27
+    order = 7
 
     t0 = time.time()
-    gen_all_cubes(algebra, order, target_cube_length, mace4_exe)
+    gen_all_cubes(algebra, order, target_cube_length, threshold, mace4_exe)
     t1 = time.time()
     gen_cube_time = t1 - t0
     t2 = time.time()
