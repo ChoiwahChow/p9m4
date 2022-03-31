@@ -30,6 +30,8 @@ from itertools import permutations
 import invariants
 import iso_cubes
 
+min_parallel_blocks = 5
+
 
 def thread_available(thread_count, thread_slots):
     for x in range(thread_count):
@@ -150,6 +152,15 @@ def remove_isomorphic(cubes, is_relation, all_permutations):
 	return tuple(non_iso_unsorted)
 
 
+def run_process(id, slot_id, thread_slots, cubes, is_relation, all_permutations, seq):
+	params = {'cubes': cubes, 'is_relation': is_relation, 'all_permutations': all_permutations}
+	params_json = json.dumps(params)
+	
+	cp = subprocess.run("./iso_cubes.py", input=params_json.encode('utf-8'), stdout=subprocess.PIPE, shell=True)      # ; mv models.out {id}.out",
+	seq.extend(json.loads(cp.stdout.decode('utf-8')))
+	thread_slots[slot_id] = 0
+
+
 def is_in_prev(all_cubes, x):
 	for prefix in all_cubes:
 		if x.startswith(prefix):
@@ -191,15 +202,23 @@ def gen_sequence(n, cube_length, radius, arities, is_relation, all_permutations,
 		all_cubes.append(cube)
 	# print(f"{all_cubes}")
 	
+	print(f"gen_sequence, starting number of cubes: {len(in_cubes_str)}, {len(ordered_cells)}", flush=True)
 	if len(all_cubes) > inv_threshold:
 		blocks = invariants.calc_invariant_vec(all_cubes, radius, arities, is_relation)
 		done = False
 		thread_slots = [0] * max_threads
 		seq = list()
-		for key, vecs in blocks.items():	
-			print(f"gen_sequence, starting number of cubes: {len(in_cubes_str)}, {len(ordered_cells)}", flush=True)
-			a_seq = iso_cubes.remove_isomorphic_cubes(vecs, is_relation, all_permutations)
-			seq.extend(a_seq)
+		for key, same_inv_cubes in blocks.items():
+			if len(vecs) < min_parallel_blocks:
+				a_seq = iso_cubes.remove_isomorphic_cubes(same_inv_cubes, is_relation, all_permutations)
+				seq.extend(a_seq)
+			else:
+				slot_id = thread_available(max_threads, thread_slots)
+				while slot_id < 0:
+					slot_id = thread_available(max_threads, thread_slots)
+				thread_slots[slot_id] = threading.Thread(target=run_process,
+                                                 args=(id, slot_id, thread_slots, same_inv_cubes, is_relation, all_permutations, seq))
+        		thread_slots[slot_id].start()
 	else:
 		seq = iso_cubes.remove_isomorphic_cubes(all_cubes, is_relation, all_permutations)
 

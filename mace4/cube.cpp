@@ -92,6 +92,7 @@ Cube::work_stealing_requested() {
 bool
 Cube::move_on(size_t id, int val, int last) {
 	if (branch_root_id != -1 && id == branch_root_id) {
+		std::cout << "debug move_on, back to top root " << id << std::endl;
 		if (val == last) {  // move root to the next level
 			branch_root_id = -1;
 			return false;

@@ -1,5 +1,7 @@
 
 
+import sys
+import json
 	
 
 def permute(s, a):
@@ -59,9 +61,19 @@ def remove_isomorphic_cubes(cubes, is_relation, all_permutations):
 	return tuple(non_iso_unsorted)
 
 
+def remove_isomorphic_cubes_wrapper():
+	params_json = json.load(sys.stdin)
+	cubes = params_json['cubes']
+	is_relation = params_json['is_relation']
+	all_permutations = params_json['all_permutations']
+	outputs = remove_isomorphic_cubes(cubes, is_relation, all_permutations)
+	print(f"{outputs}")
+
+
 __all__ = ["remove_isomorphic_cubes"]
 
 
 if __name__ == "__main__":
-	non_iso = remove_isomorphic_cubes()
+	# non_iso = remove_isomorphic_cubes(cubes, is_relation, all_permutations)
+	non_iso = remove_isomorphic_cubes_wrapper()
 	print(non_iso)
