@@ -24,7 +24,7 @@ private:
 	std::vector<int>  last_printed;
 
 private:
-	void print_unprocessed_cubes(size_t from, size_t to);
+	void print_unprocessed_cubes(int root_id, size_t from, size_t to);
 	inline bool work_stealing_requested ();
 
 public:
@@ -34,7 +34,7 @@ public:
 	int value(size_t depth, size_t id);
 	void print_new_cube(int cube_length);
 	void mark_root(size_t id);
-	bool move_on(size_t id, int val, int last);
+	bool move_on(size_t id, int val, int last, int level_1, int level_2);
 	size_t real_depth(size_t depth, size_t id);
 	// void print_ordered_cells(int number_of_cells) const;
 };

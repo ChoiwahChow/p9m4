@@ -209,7 +209,7 @@ def gen_sequence(n, cube_length, radius, arities, is_relation, all_permutations,
 		thread_slots = [0] * max_threads
 		seq = list()
 		for key, same_inv_cubes in blocks.items():
-			if len(vecs) < min_parallel_blocks:
+			if len(same_inv_cubes) < min_parallel_blocks:
 				a_seq = iso_cubes.remove_isomorphic_cubes(same_inv_cubes, is_relation, all_permutations)
 				seq.extend(a_seq)
 			else:
@@ -217,8 +217,8 @@ def gen_sequence(n, cube_length, radius, arities, is_relation, all_permutations,
 				while slot_id < 0:
 					slot_id = thread_available(max_threads, thread_slots)
 				thread_slots[slot_id] = threading.Thread(target=run_process,
-                                                 args=(id, slot_id, thread_slots, same_inv_cubes, is_relation, all_permutations, seq))
-        		thread_slots[slot_id].start()
+														args=(id, slot_id, thread_slots, same_inv_cubes, is_relation, all_permutations, seq))
+				thread_slots[slot_id].start()
 	else:
 		seq = iso_cubes.remove_isomorphic_cubes(all_cubes, is_relation, all_permutations)
 

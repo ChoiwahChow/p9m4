@@ -38,8 +38,8 @@ Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_c
 
 	std::cout << "\ndebug Cube*********************** max_depth = " << max_pos-1 << std::endl;
     // /* debug
-    for (int idx = 0; idx < Number_of_cells && idx < 20; ++idx)
-	  std::cout <<  Ordered_cells[idx]->get_symbol() << "|" << Ordered_cells[idx]->get_id() << "  ";
+    for (int idx = 0; idx < Number_of_cells && idx < 65; ++idx)
+	  std::cout <<  idx << "|" << Ordered_cells[idx]->get_symbol() << "|" << Ordered_cells[idx]->get_id() << "  ";
     std::cout << "Debug order_cells ********************" << std::endl;
 }
 
@@ -54,7 +54,7 @@ Cube::real_depth(size_t depth, size_t id) {
 int
 Cube::value(size_t depth, size_t id) {
 	if (initialized && current_pos < max_pos) {
-		std::cout << "Debug, Cube::value, incoming id " << id << std::endl;
+		std::cout << "Debug, Cube::value, incoming id " << id << " current_pos " << current_pos << std::endl;
 		while (id != cell_ids[current_pos] && current_pos < max_pos) {
 			if ((Cells[cell_ids[current_pos]].get_value() != cell_values[cell_ids[current_pos]]) && (cell_values[cell_ids[current_pos]] != -1)) {
 				std::cout << "Debug, Cube::value, Mis-matched cell id =" << cell_ids[current_pos] << ", cell value = " << cell_values[cell_ids[current_pos]]
@@ -71,7 +71,7 @@ Cube::value(size_t depth, size_t id) {
 		if (id == cell_ids[current_pos]) {
 			current_pos++;
 		}
-		// std::cout << "Debug value pos" << current_pos << std::endl;
+		std::cout << "Debug value pos" << current_pos << " max position " << max_pos << std::endl;
 		return cell_values[id];
 	}
 	return -1;
@@ -90,30 +90,41 @@ Cube::work_stealing_requested() {
 }
 
 bool
-Cube::move_on(size_t id, int val, int last) {
-	if (branch_root_id != -1 && id == branch_root_id) {
-		std::cout << "debug move_on, back to top root " << id << std::endl;
-		if (val == last) {  // move root to the next level
-			branch_root_id = -1;
-			return false;
+Cube::move_on(size_t id, int val, int last, int level_1, int level_2) {
+	if (branch_root_id != -1) {
+		if (id == branch_root_id) {
+			//std::cout << "debug move_on, back to top root " << id << std::endl;
+			if (val == last) {  // move root to the next level
+				branch_root_id = -1;
+				return false;
+			}
+			if (work_stealing_requested()) {
+				//std::cout << "debug move_on, work_stealing_requested, branch_root_id reset" << std::endl;
+				print_unprocessed_cubes(id, val+1, last);
+				branch_root_id = -1;
+				return true;
+			}
 		}
-		if (work_stealing_requested()) {
-			std::cout << "debug move_on, work_stealing_requested, branch_root_id reset" << std::endl;
-			print_unprocessed_cubes(val+1, last);
-			branch_root_id = -1;
-			return true;
+		else if (level_1 == branch_root_id || level_2 == branch_root_id ) {
+			if (val == last)
+				return false;
+			if (work_stealing_requested()) {
+				//std::cout << "debug move_on, work_stealing_requested, parent/grandparent,  " << id << std::endl;
+				print_unprocessed_cubes(id, val+1, last);
+				return true;
+			}
 		}
 	}
 	return false;
 }
 
 void
-Cube::print_unprocessed_cubes(size_t from, size_t to)
+Cube::print_unprocessed_cubes(int root_id, size_t from, size_t to)
 {
 	std::stringstream buffer;
 	for (size_t idx=from; idx<=to; idx++) {
 		size_t pos = 0;
-		while (cell_ids[pos] != branch_root_id) {
+		while (cell_ids[pos] != root_id) {
 			buffer << Cells[cell_ids[pos]].get_value() << " ";
 			pos++;
 		}

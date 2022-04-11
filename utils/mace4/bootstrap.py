@@ -41,14 +41,14 @@ request_work_file = "request_work.txt"
 work_file = "release_work.out"
 print_models = "P0"  # P0 - don't output models, A1 - output models
 
-cube_sequence_2 = [2, 4, 9, 16, 25, 36, 49]   # for radius 2, 2, 3, 4, 5, 6, 7, ...
-cube_sequence_1_2 = [2, 4, 6, 12, 20, 30, 42, 56]   # for raduis 1, 2, 2, 3, 4, 5, 6...
-cube_sequence_1_2_2 = [3, 6, 10, 21, 36, 55, 78, 105]
-cube_sequence_2_2 = [2, 4, 8, 18, 32, 50, 72, 98]
-cube_sequence_2_2_2 = [3, 6, 12, 27, 48, 75, 108, 147]
-cube_sequence_1_2_2_2 = [4, 8, 14, 30, 52, 80, 114, 154]
-cube_sequence_2_2_2_2 = [4, 8, 16, 36, 64, 100, 144, 196]
-cube_sequence_1_2_2_2_2 = [5, 10, 18, 39, 68, 105, 150, 203]
+cube_sequence_2 = [2, 4, 9, 16, 25, 36, 49, 64]   # for radius 2, 2, 3, 4, 5, 6, 7, ...
+cube_sequence_1_2 = [2, 4, 6, 12, 20, 30, 42, 56, 72]   # for raduis 1, 2, 2, 3, 4, 5, 6...
+cube_sequence_1_2_2 = [3, 6, 10, 21, 36, 55, 78, 105, 136]
+cube_sequence_2_2 = [2, 4, 8, 18, 32, 50, 72, 98, 128]
+cube_sequence_2_2_2 = [3, 6, 12, 27, 48, 75, 108, 147, 215]
+cube_sequence_1_2_2_2 = [4, 8, 14, 30, 52, 80, 114, 154, 200]
+cube_sequence_2_2_2_2 = [4, 8, 16, 36, 64, 100, 144, 196, 256]
+cube_sequence_1_2_2_2_2 = [5, 10, 18, 39, 68, 105, 150, 203, 264]
 
 id_permuation = []
 permutations2 = [[1, 0]]
@@ -57,10 +57,11 @@ permutations4 =  analyzer.shorten_permutations(list(permutations(range(0, 4)))) 
 permutations5 = analyzer.shorten_permutations(list(permutations(range(0, 5))))
 permutations6 = analyzer.shorten_permutations(list(permutations(range(0, 6))))
 permutations7 = analyzer.shorten_permutations(list(permutations(range(0, 7))))
-perm = {0: id_permuation, 1: permutations2, 2: permutations3, 3: permutations4, 4: permutations5, 5: permutations6, 6: permutations7}
+permutations8 = analyzer.shorten_permutations(list(permutations(range(0, 8))))
+perm = {0: id_permuation, 1: permutations2, 2: permutations3, 3: permutations4, 4: permutations5, 5: permutations6, 6: permutations7, 7: permutations8}
 
 # calculate radii
-r_2 = {(x+1)**2: x for x in range(0, 7)} # 1 binary op {1: 0, 4: 1, 9: 2, 16: 3
+r_2 = {(x+1)**2: x for x in range(0, 8)} # 1 binary op {1: 0, 4: 1, 9: 2, 16: 3
 r_2.update({2 : 1})
 r_2_2 = {k*2: v for k, v in r_2.items()}   # 2 binary op
 r_2_2_2 = {k*3: v for k, v in r_2.items()}   # 3 binary op
