@@ -5,14 +5,13 @@ from collections import defaultdict
 
 def calc_binary_invariant_vec(radius, mt):    
     inv_vec = list()
-    for el in range(0, radius+1):
-        inv_vec.append(list())
 
     for el in range(0, radius+1):
+        inv_vec.append(list())
         # Invariant B3: size of right ideal
         inv_vec[el].append(len(set([mt[el][x] for x in range(0, radius+1)])))
         
-        # Invariant B4: size of right ideal
+        # Invariant B4: size of left ideal
         inv_vec[el].append(len(set([mt[x][el] for x in range(0, radius+1)])))
     
         # Invariant B5: idempotent
@@ -21,7 +20,7 @@ def calc_binary_invariant_vec(radius, mt):
         else:
             inv_vec[el].append(0)
 
-        # Invariant B7: idempotent
+        # Invariant B7: square root
         inv_vec[el].append(len(set([y for y in range(0, radius+1) if mt[y][y] == el])))
     
     return inv_vec
@@ -29,10 +28,9 @@ def calc_binary_invariant_vec(radius, mt):
         
 def calc_binary_relation_invariant_vec(radius, mt):
     inv_vec = list()
-    for el in range(0, radius+1):
-        inv_vec.append(list())
 
     for el in range(0, radius+1):
+        inv_vec.append(list())
         inv_vec[el].append(len(set([y for y in range(0, radius+1) if mt[el][y]==1])))   # Invariant R1
         inv_vec[el].append(len(set([y for y in range(0, radius+1) if mt[y][el]==1])))   # Invariant R2
         inv_vec[el].append(mt[el][el])     # Invariant R3        
@@ -60,7 +58,7 @@ def calc_unary_invariant_vec(radius, mt):
         else:
             inv_vec[el].append(0)
         # Invariant U3
-        inv_vec[el].append(len(set([y for y in range(0, radius+1) if mt[y] == x])))
+        inv_vec[el].append(len(set([y for y in range(0, radius+1) if mt[y] == el])))
         
     return inv_vec
 
@@ -68,17 +66,17 @@ def calc_unary_invariant_vec(radius, mt):
 def calc_combo_invariant_vec(mts, radius, arities, is_relation):
     # combo_vec is a list (vector) of lists (invariant vectors, one for each domain element)
     combo_vec = list()
-    for x in range(0, radius+1):
+    for el in range(0, radius+1):  # each domain element has an invariant vector (list)
         combo_vec.append(list())
     for pos, mt in enumerate(mts):
         if arities[pos] == 1:
-            vec = calc_unary_invariant_vec(radius, mt)
+            inv_vec = calc_unary_invariant_vec(radius, mt)
         elif is_relation[pos]:
-            vec = calc_binary_relation_invariant_vec(radius, mt)
+            inv_vec = calc_binary_relation_invariant_vec(radius, mt)
         else:
-            vec = calc_binary_invariant_vec(radius, mt)
+            inv_vec = calc_binary_invariant_vec(radius, mt)
         for el in range(0, radius+1):
-            combo_vec[el].extend(vec[el])
+            combo_vec[el].extend(inv_vec[el])
     for el in range(0, radius+1):
         combo_vec[el] = ",".join([str(x) for x in combo_vec[el]])
     return ";".join(sorted(combo_vec))
@@ -100,7 +98,7 @@ def construct_mt(cube, radius, arities):
                 for z in range(0, radius+1):
                     mt[y].append(-1)                
         mts.append(mt)
-    print(f"*************mts {len(mts)}")
+    # print(f"*************mts {len(mts)}")
     for x in cube:
         func = x[0][0]
         cell = x[0][1]
@@ -108,7 +106,7 @@ def construct_mt(cube, radius, arities):
         if len(cell) == 1:
             mts[func][cell[0]] = val
         else:
-            print(f"***********looking for {cell}")
+            # print(f"***********looking for {cell}")
             mts[func][cell[0]][cell[1]] = val
         
     return mts

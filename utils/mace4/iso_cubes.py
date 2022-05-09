@@ -1,4 +1,4 @@
-
+#!/usr/bin/python3
 
 import sys
 import json
@@ -63,11 +63,12 @@ def remove_isomorphic_cubes(cubes, is_relation, all_permutations):
 
 def remove_isomorphic_cubes_wrapper():
 	params_json = json.load(sys.stdin)
-	cubes = params_json['cubes']
+	cubes = [[tuple([tuple([y[0][0], tuple(y[0][1])]), y[1]]) for y in x] for x in params_json['cubes']]
 	is_relation = params_json['is_relation']
 	all_permutations = params_json['all_permutations']
 	outputs = remove_isomorphic_cubes(cubes, is_relation, all_permutations)
-	print(f"{outputs}")
+	# print(f"{outputs}")
+	return outputs
 
 
 __all__ = ["remove_isomorphic_cubes"]
@@ -76,4 +77,4 @@ __all__ = ["remove_isomorphic_cubes"]
 if __name__ == "__main__":
 	# non_iso = remove_isomorphic_cubes(cubes, is_relation, all_permutations)
 	non_iso = remove_isomorphic_cubes_wrapper()
-	print(non_iso)
+	print(json.dumps(non_iso))

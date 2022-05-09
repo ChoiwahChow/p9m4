@@ -65,7 +65,7 @@ private:
   static int Next_report;     		//TODO: [choiwah] take care of this too
 
   /* stats for entire run */
-  unsigned long long Total_models;      //TODO: [choiwah] take care of this - may not be meaningful for mult-threading
+  unsigned long long Total_models;      //TODO: [choiwah] take care of this - may not be meaningful for multi-threading
 
 private:
   std::string max_models_str;
@@ -91,6 +91,7 @@ private:
   int         First_skolem_cell;
   int         Domain_size;       /* domain size to search */
   int         print_cubes;		 // print the cubes of length "print_cubes". -1 means do not print
+  int         cubes_options;     // 0 nothing, bit 1-use work stealing, bit 2-  bit 3 -
   Term*       Domain;            /* array of terms representing (shared) domain elements  */
   bool        Skolems_last;
   Plist       Models;

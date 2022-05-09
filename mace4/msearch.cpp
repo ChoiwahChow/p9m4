@@ -50,7 +50,7 @@ Search::Search(Mace4VGlobais* g) : Mace4vglobais(g), Domain_size(0), Domain(null
   max_sec_no_str("max_sec_no"), mace_sigint_str("mace_sigint"), mace_sigsegv_str("mace_sigsegv"), unknown_str("???"), Skolems_last(false),
   Number_of_cells(0), Cells(nullptr), Ordered_cells(nullptr), First_skolem_cell(0), Max_domain_element_in_input(0),
   Symbols(nullptr), Sn_to_mace_sn(nullptr), Sn_map_size(0), Models(nullptr), Grounder(nullptr),
-  Total_models(0), Start_domain_seconds(0), Start_seconds(0), Start_megs(0), propagator(nullptr), print_cubes(-2)
+  Total_models(0), Start_domain_seconds(0), Start_seconds(0), Start_megs(0), propagator(nullptr), print_cubes(-2), cubes_options(0)
 {
 
 }
@@ -107,6 +107,7 @@ Search::initialize_for_search(Plist clauses) {
     Sn_to_mace_sn[s->sn] = s;
   }
   print_cubes = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_cubes);
+  cubes_options = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->cubes_options);
 }
 
 
@@ -531,7 +532,7 @@ Search::mace4n(Plist clauses, int order)
     std::flush(std::cout);
   }
 
-  Cube splitter(order, Cells, Ordered_cells, Number_of_cells);
+  Cube splitter(order, Cells, Ordered_cells, Number_of_cells, cubes_options);
 
   /* Here we go! */
   int rc = SEARCH_GO_NO_MODELS;

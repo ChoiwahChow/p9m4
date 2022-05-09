@@ -52,9 +52,8 @@ CmdLine::process_command_line_args(int argc, char **argv, Mace_options opt)
      One colon:  argument required.
      Two colons: argument optional.  (GNU extension!  Don't use it!)
   */
-
   while ((c = getopt(argc, argv,
-         "n:N:m:t:s:b:O:M:p:P:A:C:v:L:G:H:I:J:K:T:R:i:q:Q:S:cf:g")) != EOF) {
+         "n:N:m:t:s:b:O:M:p:P:A:C:d:v:L:G:H:I:J:K:T:R:i:q:Q:S:cf:g")) != EOF) {
     switch (c) {
     case 'n':
       command_line_parm(opt->domain_size, optarg);
@@ -92,6 +91,10 @@ CmdLine::process_command_line_args(int argc, char **argv, Mace_options opt)
       break;
     case 'p':
       command_line_flag(opt->print_models_tabular, optarg);
+      break;
+    case 'd':
+      command_line_parm(opt->cubes_options, optarg);
+      std::cout << "debug cubes options as read in ************************* " << opt->cubes_options << std::endl;
       break;
 #if 0 /* Prolog-style variables cannot be set from the command line. */
     case 'V':

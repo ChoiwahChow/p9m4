@@ -16,8 +16,9 @@ Cube::~Cube() {
 	// TODO Auto-generated destructor stub
 }
 
-Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_cells): initialized(false),
-		order(domain_size), Cells(Cells), current_pos(0), branch_depth(Number_of_cells+1), max_pos(0), branch_root_id(-1) {
+Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_cells, int cubes_options): initialized(false),
+		order(domain_size), Cells(Cells), current_pos(0), branch_depth(Number_of_cells+1), max_pos(0), branch_root_id(-1),
+		cubes_options(cubes_options), do_work_stealing(cubes_options & 1) {
 	cell_values.insert(cell_values.end(), Number_of_cells, -1);
 	ifstream config("cube.config");
 	for (size_t idx=0; idx<Number_of_cells; idx++)
@@ -91,7 +92,11 @@ Cube::work_stealing_requested() {
 
 bool
 Cube::move_on(size_t id, int val, int last, int level_1, int level_2) {
-	if (branch_root_id != -1) {
+	/*
+	 * level_1 is the parent cell's id, level_2 is the grand-parent cell's id.  If the root of the search sub tree
+	 * is a parent or a grand-parent of the current cell, then check if working stealing is asked for.
+	 */
+	if (branch_root_id != -1 && do_work_stealing) {
 		if (id == branch_root_id) {
 			//std::cout << "debug move_on, back to top root " << id << std::endl;
 			if (val == last) {  // move root to the next level
