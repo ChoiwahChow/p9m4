@@ -20,17 +20,13 @@ The list of cells to be considered for the next assignment are determined by one
 
 1. SELECT_LINEAR: All open cells in `Ordered_Cells` are available for selection.
 2. SELECT_CONCENTRIC: All open cells having the same max index as the first open cell in `Ordered_Cells` are available for selection.
-3. SELECT_CONCENTRIC_BAND (default): All open cells having the some specified max index in `Ordered_Cells` are available for selection
+3. SELECT_CONCENTRIC_BAND (default): All open cells having the some specified max index, or less, in `Ordered_Cells` are available for selection.
 4. SELECT_BY_ORDER: The first open cell in `Ordered_Cells` can be used.  This is added for doing cube-and-conquer.
+
+In `SELECT_CONCENTRIC_BAND`, the `max index` is the maximal designated number (`mdn`). That is, any cell that does not increase the `mdn` are allowed.
 
 Among these available cells, the cell with the best `selection measure` (see section on the Cell Selection Measure below) will be selected for 
 assigning values.
-
-Note that there are asymmetries for the `SELECT_CONCENTRIC` strategy.  For example, there are 2 binary functions in the search, and the 
-cells in the second binary function are preferred by the `selection measure` below. All the cells in the second binary function of a `max index` will be selected
-first, followed by the cells of the same `max index` of the first binary function.  However, if the cells in the first binary function
-of a `max index` is preferred over those of the second binary function, then all cells of the first binary function will
-be selected before the first cell in the second binary function will be selected.
 
 
 #### Cell Selection Measure
