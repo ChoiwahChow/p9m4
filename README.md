@@ -19,25 +19,25 @@ Note that skolemization constants can be at the beginning of the list or at the 
 The list of cells to be considered for the next assignment are determined by one of the following strategies:
 
 1. SELECT_LINEAR: All open cells in `Ordered_Cells` are available for selection.
-2. SELECT_CONCENTRIC: All open cells having the same max index as the first open cell in `Ordered_Cells` are available for selection.
-3. SELECT_CONCENTRIC_BAND (default): All open cells having the some specified max index, or less, in `Ordered_Cells` are available for selection.
-4. SELECT_BY_ORDER: The first open cell in `Ordered_Cells` can be used.  This is added for doing cube-and-conquer.
+2. SELECT_CONCENTRIC: All open cells having the same `max index` as the first open cell in `Ordered_Cells` are available for selection.
+3. SELECT_CONCENTRIC_BAND (default): All open cells having `max index` the same as, or less than, the specified `max constrained` number are available for selection.
+4. SELECT_BY_ORDER: Only the first open cell in `Ordered_Cells` can be used.  This is added for doing cube-and-conquer.
 
-In `SELECT_CONCENTRIC_BAND`, the `max index` is the maximal designated number (`mdn`). That is, any cell that does not increase the `mdn` are allowed.
+In the `SELECT_CONCENTRIC_BAND` strategy, `max constrained` is the maximal designated number (`mdn`). That is, any cell that does not increase the `mdn` is allowed in this strategy.
 
-Among these available cells, the cell with the best `selection measure` (see section on the Cell Selection Measure below) will be selected for 
+From this list of available cells, the cell with the best `selection measure` (see the section on the Cell Selection Measure below) will be selected for 
 assigning values.
 
 
 #### Cell Selection Measure
 
-The next cell to select for assignment of value is the one with the highest score according to some selection measure calculated
-by the function `Selection::selection_measure`.  There are options on how the measures are dynamically calculated:
+The next cell to select for assigning values is the one with the highest score according to some selection measure calculated
+by the function `Selection::selection_measure`.  These are the options on how the measures are dynamically calculated:
 
 1. MOST_OCCURRENCES: The cell with most number of occurrences in the active clauses.
 2. MOST_PROPAGATIONS: The cell with the most total number of propagations for all the assignable values. 
 3. MOST_CONTRADICTIONS: The cell with the maximum number of contradictions for all assignable values. 
-4. MOST_CROSSED (default): The cell with most assignable values crossed off.
+4. MOST_CROSSED (default): The cell with most assignable values crossed off.  That is, the slimmest subtree wins.
 
 For (2) and (3), it actually does the assignments and counts the number of propagations/contradictions, so they have higher overheads.
 
