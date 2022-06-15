@@ -42,3 +42,7 @@ by the function `Selection::selection_measure`.  These are the options on how th
 For (2) and (3), it actually does the assignments and counts the number of propagations/contradictions, so they have higher overheads.
 
 
+The Mace4 manual states that there are no heuristics to decide which selection order to use, and suggest to try different ones when the current strategy is slow.
+
+
+
