@@ -22,6 +22,7 @@ public:
   static constexpr int MOST_PROPAGATIONS   = 2;
   static constexpr int MOST_CONTRADICTIONS = 3;
   static constexpr int MOST_CROSSED        = 4;
+  static constexpr int MOST_CROSSED_OCCUR  = 5;    // added 2022-06-15, by most crossed then by most occurences
 
 private:
   /*
@@ -47,7 +48,8 @@ private:
   int  num_propagations(int id, propagate* prop);
   int  num_crossed(int id);
   int  num_occurrences(int id);
-  void selection_measure(int id, int *max, int *max_id, propagate* prop);
+  // deprecated 2022-06-15 void selection_measure(int id, int *max, int *max_id, propagate* prop);
+  void selection_measure(int id, int *max, int *max_id, propagate* prop, int* secondary_max);
 
 public:
   int select_linear(int min_id, int max_id, propagate* prop);

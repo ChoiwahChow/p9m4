@@ -22,9 +22,11 @@ GlobalMemory::GlobalMemory() {
     Al_pointer=0;
     for(int i=0; i<MAX_MEM_LISTS; i++) {
             M[i]=NULL;
+    }
+
+    for(unsigned int i=0; i<MAX_ALLOCED_LISTS; i++) {
             ALLOCED[i]=NULL;
     }        
-    
     
     
    
@@ -74,11 +76,12 @@ void *Memory::palloc(std::size_t n) {
                     if(LADR_GLOBAL_MEMORY.Block_pos==NULL) 
                         fatal::fatal_error("Palloc, operating system is out of memory!");
                     
-                    
-                    LADR_GLOBAL_MEMORY.ALLOCED[LADR_GLOBAL_MEMORY.Al_pointer]=LADR_GLOBAL_MEMORY.Block;
-                    LADR_GLOBAL_MEMORY.Al_pointer++;
 
-                 
+                    if (LADR_GLOBAL_MEMORY.Al_pointer < MAX_ALLOCED_LISTS) {  // CC added the guard
+                    	LADR_GLOBAL_MEMORY.ALLOCED[LADR_GLOBAL_MEMORY.Al_pointer]=LADR_GLOBAL_MEMORY.Block;
+                    	LADR_GLOBAL_MEMORY.Al_pointer++;
+                    }
+
                    
             }
     }

@@ -14,6 +14,8 @@ using namespace std;
 
 
 #define MAX_MEM_LISTS       500 
+// CC added more space for MAX_MEM_LISTS_ALLOCED b/c space over-run
+#define MAX_ALLOCED_LISTS   5000
 #define DEFAULT_MAX_MEGS    8000
 #define MALLOC_MEGS         20
 
@@ -28,7 +30,7 @@ class GlobalMemory {
             private:        
 
                                 unsigned Al_pointer;
-                                void *ALLOCED[MAX_MEM_LISTS];
+                                void *ALLOCED[MAX_ALLOCED_LISTS];
   
                 
                                 void **M[MAX_MEM_LISTS]; //memory_pool

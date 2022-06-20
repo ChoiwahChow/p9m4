@@ -92,6 +92,7 @@ Selection::num_occurrences(int id)
   return n;
 }
 
+/* original, depreicated 2022-06-15
 void
 Selection::selection_measure(int id, int *max, int *max_id, propagate* prop)
 {
@@ -108,6 +109,40 @@ Selection::selection_measure(int id, int *max, int *max_id, propagate* prop)
     *max_id = id;
   }
 }
+*/
+
+void
+Selection::selection_measure(int id, int *max, int *max_id, propagate* prop, int* secondary_max)
+{
+	/*
+	 * Allows secondary measure, added for higher discriminatory power
+	 */
+  int n = 0;
+  int m = -1;
+  switch (LADR_GLOBAL_OPTIONS.parm(Opt->selection_measure)) {
+  case MOST_OCCURRENCES:    n = num_occurrences(id);                break;
+  case MOST_PROPAGATIONS:   n = num_propagations(id, prop);         break;
+  case MOST_CONTRADICTIONS: n = num_contradictions(id, *max, prop); break;
+  case MOST_CROSSED:
+  case MOST_CROSSED_OCCUR:  n = num_crossed(id);                    break;
+  default: fatal::fatal_error("selection_measure: bad selection measure");
+  }
+  if (n >= *max) {
+	if (LADR_GLOBAL_OPTIONS.parm(Opt->selection_measure) == MOST_CROSSED_OCCUR) {
+		m = num_occurrences(id);
+		if (n > *max || m > *secondary_max) {
+			*max = n;
+			*secondary_max = m;
+			*max_id = id;
+		}
+	}
+	else if (n > *max) {
+		*max = n;
+		*max_id = id;
+	}
+  }
+}
+
 
 int
 Selection::select_linear(int min_id, int max_id, propagate* prop)
@@ -121,10 +156,11 @@ Selection::select_linear(int min_id, int max_id, propagate* prop)
   }
   else {
     int id_of_max = -1;
+    int secondary_max = -1;  // not used
     int max = -1;
     for (int i = min_id; i <= max_id; i++) {
       if (Cells[i].value == nullptr) {
-        selection_measure(i, &max, &id_of_max, prop);
+        selection_measure(i, &max, &id_of_max, prop, &secondary_max);
       }
     }
     return id_of_max;
@@ -151,11 +187,12 @@ Selection::select_concentric(int min_id, int max_id, Cell Ordered_cells[], propa
     /* Find the best cell with the same max_index as the first open cell. */
     int n = Ordered_cells[i]->max_index;
     int max_val = -1;
+    int secondary_max_val = -1;
     int id_of_max = -1;
 
     while (i <= max_id && Ordered_cells[i]->max_index <= n) {
       if (Ordered_cells[i]->value == nullptr)
-        selection_measure(Ordered_cells[i]->id, &max_val, &id_of_max, prop);
+        selection_measure(Ordered_cells[i]->id, &max_val, &id_of_max, prop, &secondary_max_val);
       i++;
     }
     return id_of_max;
@@ -182,12 +219,13 @@ int
 Selection::select_concentric_band(int min_id, int max_id, int max_constrained, Cell Ordered_cells[], propagate* prop)
 {
   int max = -1;
+  int secondary_max = -1;
   int id_of_max = -1;
   int i = min_id;
 
   while (i <= max_id &&  Ordered_cells[i]->max_index <= max_constrained) {
     if (Ordered_cells[i]->value == nullptr)
-      selection_measure(Ordered_cells[i]->id, &max, &id_of_max, prop);
+      selection_measure(Ordered_cells[i]->id, &max, &id_of_max, prop, &secondary_max);
     i++;
   }
   if (id_of_max >= 0) {
