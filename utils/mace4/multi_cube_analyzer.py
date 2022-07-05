@@ -290,6 +290,10 @@ def remove0(ps):
 	return [x for x in ps if x[0] == 0]
 
 
+def remove1(ps):
+    return [x for x in ps if x[0] == 0 and x[1] == 1]
+
+
 def gen_func_cells(cube_length, arities):
 	r = 0
 	cells = list()

@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
 """
+This is the entry point for running with parallel cubes and isomorphic cube removal
+
 Complete cube-and-conquer with bootstrapping
 
 Iterative:
@@ -39,13 +41,14 @@ num_threads  = 8
 
 request_work_file = "request_work.txt"
 work_file = "release_work.out"
-print_models = "P0"  # P0 - don't output models, A1 - output models
+print_models = "P1"  # P0 - don't output models, A1 - output models, P1 print models
 
 cube_sequence_2 = [2, 4, 9, 16, 25, 36, 49, 64]   # for radius 2, 2, 3, 4, 5, 6, 7, ...
 cube_sequence_1_2 = [2, 4, 6, 12, 20, 30, 42, 56, 72]   # for raduis 1, 2, 2, 3, 4, 5, 6...
 cube_sequence_1_2_2 = [3, 6, 10, 21, 36, 55, 78, 105, 136]
 cube_sequence_2_2 = [2, 4, 8, 18, 32, 50, 72, 98, 128]
 cube_sequence_2_2_2 = [3, 6, 12, 27, 48, 75, 108, 147, 215]
+cube_sequence_1_1_2_2 = [4, 8, 12, 24, 40, 60, 84, 112, 144]   # for raduis 1, 2, 2, 3, 4, 5, 6...
 cube_sequence_1_2_2_2 = [4, 8, 14, 30, 52, 80, 114, 154, 200]
 cube_sequence_2_2_2_2 = [4, 8, 16, 36, 64, 100, 144, 196, 256]
 cube_sequence_1_2_2_2_2 = [5, 10, 18, 39, 68, 105, 150, 203, 264]
@@ -66,7 +69,8 @@ r_2.update({2 : 1})
 r_2_2 = {k*2: v for k, v in r_2.items()}   # 2 binary op
 r_2_2_2 = {k*3: v for k, v in r_2.items()}   # 3 binary op
 r_1_2   = {k+v+1: v for k, v in r_2.items()}   # 1 unary op and 1 binary op
-r_1_2_2 = {2*k+v+1: v for k, v in r_2.items()}   # 1 unary op and 1 binary op
+r_1_2_2 = {2*k+v+1: v for k, v in r_2.items()}   # 1 unary op and 2 binary op
+r_1_1_2_2 = {2*(k+v+1): v for k, v in r_2.items()}   # 2 unary op and 2 binary op
 r_1_2_2_2   = {3*k+v+1: v for k, v in r_2.items()}   # 1 unary op and 1 binary op
 r_2_2_2_2 = {k*4: v for k, v in r_2.items()}   # 4 binary op
 r_1_2_2_2_2 = {k*4+v+1: v for k, v in r_2.items()}   # 1 unary op, 4 binary op
@@ -77,6 +81,8 @@ run_data = {'dist_lattice_ord_semi': {'seq': cube_sequence_2_2_2, 'relations': [
                          'input': '50_invol_lattices', 'arities': [1, 2, 2], 'radius': r_1_2_2, 'remove': -1},
             'inv_semi': {'seq': cube_sequence_1_2, 'relations': [False, False], 
                          'input': '121_inv_semi', 'arities': [1, 2], 'radius': r_1_2, 'remove': -1},
+            'quasi_holes': {'seq': cube_sequence_2_2, 'relations': [False, True], 
+                         'input': 'iqg4.n.2', 'arities': [2, 2], 'radius': r_2_2, 'remove': 1},
             'quandles': {'seq': cube_sequence_2_2, 'relations': [False, False], 
                          'input': '87_quandles', 'arities': [2, 2], 'radius': r_2_2, 'remove': -1},
             'semi':   {'seq': cube_sequence_2, 'relations': [False], 
@@ -85,6 +91,8 @@ run_data = {'dist_lattice_ord_semi': {'seq': cube_sequence_2_2_2, 'relations': [
                          'input': '32_loop', 'arities': [2], 'radius': r_2, 'remove': 0},
             'm_zeriods':   {'seq': cube_sequence_1_2_2_2_2, 'relations': [False, False, False, False, True], 
                          'input': '58_m_zeroids', 'arities': [1, 2, 2, 2, 2], 'radius': r_1_2_2_2_2, 'remove': 0},
+            'meadows':   {'seq': cube_sequence_1_1_2_2, 'relations': [False, False, False, False], 
+                         'input': 'meadows', 'arities': [1, 1, 2, 2], 'radius': r_1_1_2_2, 'remove': 1},
             'moufang': {'seq': cube_sequence_2_2_2, 'relations': [False, False, False], 
                          'input': '64_moufang_quasi', 'arities': [2, 2, 2], 'radius': r_2_2_2, 'remove': 0},
             'ord_semilattice': {'seq': cube_sequence_2_2, 'relations': [False, True], 
@@ -123,6 +131,8 @@ def collect_cubes(algebra, cube_dir, prev_cube_length, cube_length, threshold, d
     all_permutations = perm[radius]
     if al['remove'] == 0:
         all_permutations = analyzer.remove0(all_permutations)
+    elif al['remove'] == 1:
+        all_permutations = analyzer.remove1(all_permutations)
     
     t1 = time.time()
     analyzer.gen_sequence(order, cube_length, radius, al['arities'], al['relations'], all_permutations, 
@@ -205,9 +215,11 @@ if __name__ == "__main__":
     algebra = "posets"           # #86 cube length 36, order 9
     algebra = "ord_semilattice"  # #78  cube length 72, order 9
     algebra = "loops"            # #32  cube length 16, order 8
+    algebra = "meadows"          # length 12, order 24
+    algebra = "quasi_holes"      # length 32 order 19 
 
-    target_cube_length = 16
-    order = 8
+    target_cube_length = 32
+    order = 19
 
     t0 = time.time()
     gen_all_cubes(algebra, order, target_cube_length, threshold, mace4_exe, cubes_options)
