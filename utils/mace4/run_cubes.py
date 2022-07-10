@@ -47,7 +47,8 @@ def run_process(id, slot_id, thread_slots, order, input_file, cube, print_models
         for x in cube:
             fp.write(f"{x}\n")
 
-    subprocess.run(f"cd {working_dir}; {mace4} -n{order} -N{order} -m-1 -{print_models} -d{cubes_options} -O3 -f {input_file} >> mace.log 2>&1", 
+    # temporary removed -m-1 to generate one model only and stop
+    subprocess.run(f"cd {working_dir}; {mace4} -n{order} -N{order} -{print_models} -O2 -M5 -b6000 -d{cubes_options} -O3 -f {input_file} >> mace.log 2>&1", 
                     capture_output=False, text=True, check=False, shell=True)      # ; mv models.out {id}.out",
     #if cp.returncode != 0:
     #    with( open("mace.log", "a")) as fp:
@@ -100,7 +101,7 @@ def run_mace(mace4_exec, input_file, order, cubes, print_models, cubes_options, 
         # Path(stealing_file).unlink(True)
         id_counter = run_mace_jobs(mace4_exec, input_file, order, cube_file, print_models, cubes_options, working_dir_prefix, id_counter, max_threads, thread_slots)
         work_list = request_work(working_dir_prefix, request_work_file, work_file, max_threads, thread_slots)
-        print(f"debug run_mace, request work returns {len(work_list)} jobs")
+        print(f"debug run_mace, request work returns {len(work_list)} jobs", flush=True)
         if work_list:
             with (open(stealing_file, "w")) as fp:
                 fp.write('\n'.join(work_list))
