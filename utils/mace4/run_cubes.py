@@ -47,8 +47,8 @@ def run_process(id, slot_id, thread_slots, order, input_file, cube, print_models
         for x in cube:
             fp.write(f"{x}\n")
 
-    # temporary removed -m-1 to generate one model only and stop
-    subprocess.run(f"cd {working_dir}; {mace4} -n{order} -N{order} -{print_models} -O2 -M5 -b6000 -d{cubes_options} -O3 -f {input_file} >> mace.log 2>&1", 
+    subprocess.run(f"cd {working_dir}; {mace4} -n{order} -N{order} -{print_models} -m-1 -b10000 -d{cubes_options} -O3 -f {input_file} >> mace.log 2>&1", 
+    # subprocess.run(f"cd {working_dir}; {mace4} -n{order} -N{order} -{print_models} -m-1 -O1 -M4 -b10000 -d{cubes_options} -f {input_file} >> mace.log 2>&1", 
                     capture_output=False, text=True, check=False, shell=True)      # ; mv models.out {id}.out",
     #if cp.returncode != 0:
     #    with( open("mace.log", "a")) as fp:
@@ -79,7 +79,7 @@ def run_mace_jobs(mace4_exec, input_file, order, cubes, print_models, cubes_opti
 
         slot_id = thread_available(max_threads, thread_slots)
         while slot_id < 0:
-            time.sleep(0.5)
+            time.sleep(0.1)
             slot_id = thread_available(max_threads, thread_slots)
         id_counter += 1
         if id_counter % 1000 == 0:

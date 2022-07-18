@@ -8,7 +8,7 @@ Mace4 options:
 -A1   print the models in the format expected by isofilter
 
 
-cat quandles_working10_*/4.out | grep "^cube" | sort | uniq | sed 's/[^ ]* //' > utils/mace4/working/quandles10/cubes4.out
+cat quandles_working10_*/4.out | grep "^cube" | sort --parallel=8 -u | sed 's/[^ ]* //' > utils/mace4/working/quandles10/cubes4.out
 
 
 grep "Exiting with " semi_working_[0-9]/mace.log | utils/mace4/counter.py
@@ -47,8 +47,9 @@ def run_process(id, slot_id, thread_slots, order, cube_length, input_file, cube,
             for x in cube:
                 fp.write(f"{x}\n")
 
-    # print(f"************************************ {cube}")
+    # print(f"******run_process in extend_cube****************************** {mace4}")
     subprocess.run(f"cd {working_dir}; {mace4} -n{order} -N{order} -m-1 -{print_models} -d{cubes_options} -C{cube_length} -O3 -f {input_file} >> {cube_length}.out 2>>mace.out", 
+    # subprocess.run(f"cd {working_dir}; {mace4} -n{order} -N{order} -m-1 -{print_models} -d{cubes_options} -C{cube_length} -O1 -M4 -f {input_file} >> {cube_length}.out 2>>mace.out", 
                     capture_output=False, text=True, check=False, shell=True)      # ; mv models.out {id}.out",
     #if cp.returncode != 0:
     #    with( open("mace.log", "a")) as fp:
@@ -62,7 +63,6 @@ def extend_cube_jobs(input_file, order, new_cube_length, cubes, print_models, ma
     
     """
     id = 0
-
     if cubes is None:
         thread_slots[0] = threading.Thread(target=run_process, 
                                                  args=(id, 0, thread_slots, order, new_cube_length, f"../{input_file}", None, print_models, f"../{mace4}", cubes_options, working_dir))
