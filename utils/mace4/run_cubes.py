@@ -13,6 +13,7 @@ grep "Exiting with " semi_working_[0-9]/mace.log | grep model | utils/mace4/coun
 """
 
 
+from datetime import datetime
 import os
 import time
 import subprocess
@@ -100,7 +101,9 @@ def run_mace(mace4_exec, input_file, order, cubes, print_models, cubes_options, 
     while not done:
         # Path(stealing_file).unlink(True)
         id_counter = run_mace_jobs(mace4_exec, input_file, order, cube_file, print_models, cubes_options, working_dir_prefix, id_counter, max_threads, thread_slots)
-        work_list = request_work(working_dir_prefix, request_work_file, work_file, max_threads, thread_slots)
+        work_list = list()
+        if cubes_options % 2 == 1:
+            work_list = request_work(working_dir_prefix, request_work_file, work_file, max_threads, thread_slots)
         print(f"debug run_mace, request work returns {len(work_list)} jobs", flush=True)
         if work_list:
             with (open(stealing_file, "w")) as fp:
@@ -110,7 +113,7 @@ def run_mace(mace4_exec, input_file, order, cubes, print_models, cubes_options, 
         else:
             done = True
 
-    print("run_mace: All cubes are dispatched. Waiting for the last ones to finish...", flush=True)
+    print(f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")}run_mace: All cubes are dispatched. Waiting for the last ones to finish...', flush=True)
     while(not all_done(thread_slots)):
         time.sleep(2)
         

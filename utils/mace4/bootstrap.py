@@ -76,20 +76,44 @@ r_1_2_2_2   = {3*k+v+1: v for k, v in r_2.items()}   # 1 unary op and 1 binary o
 r_2_2_2_2 = {k*4: v for k, v in r_2.items()}   # 4 binary op
 r_1_2_2_2_2 = {k*4+v+1: v for k, v in r_2.items()}   # 1 unary op, 4 binary op
     
-run_data = {'dist_lattice_ord_semi': {'seq': cube_sequence_2_2_2, 'relations': [False, False, False], 
+run_data = {'assoc_dimonoid': {'seq': cube_sequence_2_2, 'relations': [False, False], 
+                         'input': '160_associative_dimonoid', 'arities': [2, 2], 'radius': r_2_2, 'remove': -1},
+            'dimonoid': {'seq': cube_sequence_2_2, 'relations': [False, False], 
+                         'input': '152_dimonoid', 'arities': [2, 2], 'radius': r_2_2, 'remove': -1},
+            'dist_lattice_ord_semi': {'seq': cube_sequence_2_2_2, 'relations': [False, False, False], 
                          'input': '36_dist_lattice_ord_semi', 'arities': [2, 2, 2], 'radius': r_2_2_2, 'remove': -1},
+            'hilbert':   {'seq': cube_sequence_2, 'relations': [False], 
+                         'input': 'hilbert', 'arities': [2], 'radius': r_2, 'remove': -1},
             'invol_lattices': {'seq': cube_sequence_1_2_2, 'relations': [False, False, False], 
                          'input': '50_invol_lattices', 'arities': [1, 2, 2], 'radius': r_1_2_2, 'remove': -1},
             'inv_semi': {'seq': cube_sequence_1_2, 'relations': [False, False], 
                          'input': '121_inv_semi', 'arities': [1, 2], 'radius': r_1_2, 'remove': -1},
+            'ord_algebra':   {'seq': cube_sequence_2, 'relations': [False], 
+                         'input': '74_order', 'arities': [2], 'radius': r_2, 'remove': -1},
+            'ord_semilattice':   {'seq': cube_sequence_2_2, 'relations': [False, True], 
+                         'input': '78_ord_semilattice', 'arities': [2, 2], 'radius': r_2_2, 'remove': -1},
+            'ortho':   {'seq': cube_sequence_2, 'relations': [False], 
+                         'input': '107_ortho', 'arities': [2], 'radius': r_2, 'remove': -1},
+            'ortho_modular':   {'seq': cube_sequence_2, 'relations': [False], 
+                         'input': '108_ortho_modular', 'arities': [2], 'radius': r_2, 'remove': 0},
             #'quasi_holes': {'seq': cube_sequence_2_2, 'relations': [False, True], 
             #             'input': 'iqg4.n.2', 'arities': [2, 2], 'radius': r_2_2, 'remove': 1},
             'quasi_holes': {'seq': cube_sequence_2, 'relations': [False], 
                          'input': 'iqg4.n.2', 'arities': [2], 'radius': r_2, 'remove': -1},
+            'quasi_impl':   {'seq': cube_sequence_2, 'relations': [False], 
+                         'input': '109_quasi_implication_algebra', 'arities': [2], 'radius': r_2, 'remove': -1},
+            'quasi_ordered': {'seq': cube_sequence_2, 'relations': [True], 
+                         'input': 'quasi_ordered', 'arities': [2], 'radius': r_2, 'remove': -1},
             'quandles': {'seq': cube_sequence_2_2, 'relations': [False, False], 
                          'input': '87_quandles', 'arities': [2, 2], 'radius': r_2_2, 'remove': -1},
             'semi':   {'seq': cube_sequence_2, 'relations': [False], 
                          'input': 'semi', 'arities': [2], 'radius': r_2, 'remove': -1},
+            'semi_varN12':   {'seq': cube_sequence_2, 'relations': [False], 
+                         'input': 'semi_varN12', 'arities': [2], 'radius': r_2, 'remove': -1},
+            'semizero':   {'seq': cube_sequence_2, 'relations': [False], 
+                         'input': 'semizero', 'arities': [2], 'radius': r_2, 'remove': 0},
+            'skew_lattices': {'seq': cube_sequence_2_2, 'relations': [False, False], 
+                         'input': '100_skew_lattices', 'arities': [2, 2], 'radius': r_2_2, 'remove': -1},
             'loops':   {'seq': cube_sequence_2, 'relations': [False], 
                          'input': '32_loop', 'arities': [2], 'radius': r_2, 'remove': 0},
             'm_zeriods':   {'seq': cube_sequence_1_2_2_2_2, 'relations': [False, False, False, False, True], 
@@ -185,7 +209,7 @@ def gen_all_cubes(algebra, order, target_cube_length, threshold, mace4_exe, cube
     
     
 def run_all_cubes(algebra, order, target_cube_length, mace4_exe, cubes_options):
-    # print(f'datetime.now().strftime("%d/%m/%Y %H:%M:%S"), run all cubes...', flush=True)
+    # print(f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")}, run all cubes...', flush=True)
     input_file = f"inputs/{run_data[algebra]['input']}.in"
     cube_file = f"{top_data_dir}/{algebra}{order}/cubes_{order}_{target_cube_length}.out"
     working_dir_prefix = get_working_dir(algebra, order, target_cube_length)
@@ -200,7 +224,7 @@ def collect_stat(algebra, order, target_cube_length, cube_options, threshold, mo
     data_dir = get_data_dir(algebra, order)
     out_cube_file = f"{data_dir}/cubes_{order}_{target_cube_length}.out"
     count = len(open(out_cube_file).readlines( ))
-    print(f'"{algebra}", order={order}, invariant threshold={threshold}, options={cube_options}, cubes count={count}, {gen_cube_time}, #model={models_count}, {runtime}\n',
+    print(f'"{algebra}", order={order}, invariant threshold={threshold}, options={cube_options}, cubes count={count}, {gen_cube_time}, #model={models_count}, model gen time={runtime}\n',
           flush=True)
 
 
@@ -212,28 +236,37 @@ if __name__ == "__main__":
     threshold = 10000000000  # large number to disable invariants
 
     algebra = "quasi"
-    algebra = "hilbert"
-    algebra = "quandles"    # order 10
     algebra = "trigroup"
     algebra = "res_po_monoid"
-    algebra = "semizero"
     algebra = "moufang"          # #64  no good - cube length 48, order 6
-    algebra = "quasi_ordered"
     algebra = "dist_lattice_ord_semi"           # #86 cube length 36, order 9
     algebra = "order_algebras"   # #74  cube length  25, order 8
     algebra = "m_zeriods"        # #58 order 10 length 150
     algebra = "invol_lattices"   # #50  cube length 78, order 13
     algebra = "posets"           # #86 cube length 36, order 9
     algebra = "ord_semilattice"  # #78  cube length 72, order 9
-    algebra = "loops"            # #32  cube length 16, order 8
-    algebra = "meadows"          # length 12, order 24
     algebra = "quasi_holes"      # length 32 order 19 
-    algebra = "inv_semi"         # #121 cube length 20 order 9
     algebra = "tarski"           # #102 cube length 36, order 12
+    algebra = "inv_semi"         # #121 cube length 20 order 9
+    algebra = "loops"            # #32  cube length 16, order 8
+    algebra = "hilbert"
+    algebra = "semizero"
     algebra = "semi"
+    algebra = "semi_varN12"      # order 8
+    algebra = "meadows"          # length 12, order 24
+    algebra = "quandles"         # order 10
+    algebra = "assoc_dimonoid"   # order = 6
+    algebra = "dimonoid"         # order = 6
+    algebra = "skew_lattices"
+    algebra = "quasi_impl"       # always half 
+    algebra = "ortho_modular"    # no reduction
+    algebra = "ortho"            # always half
+    algebra = "quasi_ordered"
+    algebra = "ord_semilattice"  # no reduction
+    algebra = "ord_algebra"      # no reduction
 
-    target_cube_length = 9
-    order = 7
+    target_cube_length = 16
+    order = 8
 
     propagated_models_count = 0
     t0 = time.time()
@@ -247,4 +280,5 @@ if __name__ == "__main__":
     t3 = time.time()
     runtime = t3 - t2
     collect_stat(algebra, order, target_cube_length, cubes_options, threshold, models_count+propagated_models_count, gen_cube_time, runtime)
+    print(f'Done {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}')
     
