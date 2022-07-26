@@ -104,10 +104,13 @@ def request_work(working_dir_prefix, request_work_file, work_file, max_threads, 
                     x = fp.read().splitlines()
                 if x[-1].startswith("End"):
                     work_list.extend(x[:-1])
-                    Path(c_file_path).unlink(False)
-                    Path(r_file_path).unlink(True)
+                    if os.path.exists(c_file_path):
+                        Path(c_file_path).unlink(False)
+                    if os.path.exists(r_file_path):
+                        Path(r_file_path).unlink(True)
             if thread == 0:
-                Path(r_file_path).unlink(True)
+                if os.path.exists(r_file_path):
+                    Path(r_file_path).unlink(True)
             elif os.path.exists(f"{working_dir_prefix}_{index}"):
                 all_threads_completed = False
                 if last_round > 0:
@@ -165,6 +168,7 @@ __all__ =["extend_cubes"]
 
 if __name__ == "__main__":
     default_mace4 = "../bin/mace4"
+    max_threads = 8
     cubes_options = 0  # bit-0 for work stealing
     order = 8
     cube_length = 32
@@ -181,7 +185,7 @@ if __name__ == "__main__":
     algebra = "quandles"
     
     single_extend_cubes(f"inputs/{algebra}.in", order, new_cube_length, f"utils/mace4/working/{algebra}{order}/cubes_2_{order}_{cube_length}.out",
-             print_models, default_mace4, f"{algebra}_working{order}", 8, cubes_options)
+             print_models, default_mace4, f"{algebra}_working{order}", max_threads, cubes_options)
     
     
     
