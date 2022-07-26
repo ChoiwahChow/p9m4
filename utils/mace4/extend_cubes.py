@@ -140,7 +140,9 @@ def extend_cubes(input_file, order, new_cube_length, cubes, print_models, mace4,
     while not done:
         # Path(stealing_file).unlink(True)
         extend_cube_jobs(input_file, order, new_cube_length, cube_file, print_models, mace4, cubes_options, working_dir_prefix, max_threads, thread_slots)
-        work_list = request_work(working_dir_prefix, request_work_file, work_file, max_threads, thread_slots)
+        work_list = list()
+        if cubes_options % 2 == 1:
+            work_list = request_work(working_dir_prefix, request_work_file, work_file, max_threads, thread_slots)
         print(f"debug extend_cubes, back from requested work, got {len(work_list)} jobs")
         if work_list:
             with (open(stealing_file, "w")) as fp:
