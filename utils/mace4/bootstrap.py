@@ -110,6 +110,12 @@ run_data = {'assoc_dimonoid': {'seq': cube_sequence_2_2, 'relations': [False, Fa
                          'input': 'semi', 'arities': [2], 'radius': r_2, 'remove': -1},
             'semi_varN12':   {'seq': cube_sequence_2, 'relations': [False], 
                          'input': 'semi_varN12', 'arities': [2], 'radius': r_2, 'remove': -1},
+            'semi_varN12_idemp':   {'seq': cube_sequence_2, 'relations': [False], 
+                         'input': 'semi_varN12_idemp', 'arities': [2], 'radius': r_2, 'remove': -1},
+            'semi_varG2I2':   {'seq': cube_sequence_2, 'relations': [False], 
+                         'input': 'semi_varG2I2', 'arities': [2], 'radius': r_2, 'remove': -1},
+            'semi_varN':   {'seq': cube_sequence_2, 'relations': [False], 
+                         'input': 'semi_varN', 'arities': [2], 'radius': r_2, 'remove': -1},
             'semizero':   {'seq': cube_sequence_2, 'relations': [False], 
                          'input': 'semizero', 'arities': [2], 'radius': r_2, 'remove': 0},
             'skew_lattices': {'seq': cube_sequence_2_2, 'relations': [False, False], 
@@ -261,12 +267,14 @@ if __name__ == "__main__":
     algebra = "quasi_impl"       # always half 
     algebra = "ortho_modular"    # no reduction
     algebra = "ortho"            # always half
-    algebra = "quasi_ordered"
     algebra = "ord_semilattice"  # no reduction
-    algebra = "ord_algebra"      # no reduction
+    algebra = "ord_algebra"      # order 7/8
+    algebra = "quasi_ordered"
+    algebra = "semi_varG2I2"
+    algebra = "semi_varN12_idemp"
 
-    target_cube_length = 16
-    order = 8
+    target_cube_length = 25
+    order = 9
 
     propagated_models_count = 0
     t0 = time.time()

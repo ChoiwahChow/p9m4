@@ -48,7 +48,9 @@ def run_process(id, slot_id, thread_slots, order, cube_length, input_file, cube,
                 fp.write(f"{x}\n")
 
     # print(f"******run_process in extend_cube****************************** {mace4}")
-    subprocess.run(f"cd {working_dir}; {mace4} -n{order} -N{order} -m-1 -{print_models} -d{cubes_options} -C{cube_length} -O3 -f {input_file} >> {cube_length}.out 2>>mace.out", 
+    cmd = f"cd {working_dir}; {mace4} -n{order} -N{order} -m-1 -{print_models} -d{cubes_options} -C{cube_length} -O3 -f {input_file} >> {cube_length}.out 2>>mace.out"
+    # print(f"***************^^^^^^^^^^^^^^^{cmd}")
+    subprocess.run(cmd, 
     # subprocess.run(f"cd {working_dir}; {mace4} -n{order} -N{order} -m-1 -{print_models} -d{cubes_options} -C{cube_length} -O1 -M4 -f {input_file} >> {cube_length}.out 2>>mace.out", 
                     capture_output=False, text=True, check=False, shell=True)      # ; mv models.out {id}.out",
     #if cp.returncode != 0:
