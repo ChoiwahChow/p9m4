@@ -226,13 +226,13 @@ def gen_sequence(n, cube_length, radius, arities, is_relation, all_permutations,
             else:
                 slot_id = thread_available(max_threads, thread_slots)
                 while slot_id < 0:
-                    time.sleep(0.5)
+                    time.sleep(0.05)
                     slot_id = thread_available(max_threads, thread_slots)
                 thread_slots[slot_id] = threading.Thread(target=run_process,
                 										 args=(id, slot_id, thread_slots, same_inv_cubes, is_relation, all_permutations, seq, iso_cubes_exec))
                 thread_slots[slot_id].start()
         while not all_done(thread_slots):
-            time.sleep(1)
+            time.sleep(0.1)
     else:
         seq = iso_cubes.remove_isomorphic_cubes(all_cubes, is_relation, all_permutations)
     

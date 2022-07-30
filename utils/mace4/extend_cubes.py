@@ -105,16 +105,20 @@ def request_work(working_dir_prefix, request_work_file, work_file, max_threads, 
                 if x[-1].startswith("End"):
                     work_list.extend(x[:-1])
                     if os.path.exists(c_file_path):
-                        Path(c_file_path).unlink(False)
+                        os.remove(c_file_path)
+                        # Path(c_file_path).unlink(False)
                     if os.path.exists(r_file_path):
-                        Path(r_file_path).unlink(True)
+                        os.remove(r_file_path)
+                        # Path(r_file_path).unlink(True)
             if thread == 0:
                 if os.path.exists(r_file_path):
-                    Path(r_file_path).unlink(True)
+                    os.remove(r_file_path)
+                    # Path(r_file_path).unlink(True)
             elif os.path.exists(f"{working_dir_prefix}_{index}"):
                 all_threads_completed = False
                 if last_round > 0:
-                    Path(r_file_path).unlink(True)
+                    os.remove(r_file_path)
+                    # Path(r_file_path).unlink(True)
                 elif first_round:
                     open(r_file_path, 'w').close()
                     requested = True
