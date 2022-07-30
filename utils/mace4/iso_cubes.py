@@ -2,7 +2,6 @@
 
 import sys
 import json
-from builtins import False
 	
 
 def permute(s, a):
