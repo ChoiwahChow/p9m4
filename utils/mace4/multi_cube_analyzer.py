@@ -31,7 +31,7 @@ from itertools import permutations
 import invariants
 import iso_cubes
 
-min_parallel_blocks = 3000
+min_parallel_blocks = 3
 
 
 def thread_available(thread_count, thread_slots):
