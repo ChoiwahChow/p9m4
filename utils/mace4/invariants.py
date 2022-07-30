@@ -5,9 +5,14 @@ from collections import defaultdict
 
 def calc_binary_invariant_vec(radius, mt):    
     inv_vec = list()
+    yy_square = [mt[y][y] for y in range(0, radius+1)]
 
     for el in range(0, radius+1):
-        inv_vec.append(list())
+        inv_vec.append(list())        
+        
+        # Invariant B2 The number of y in D such that x = (xy)x (number of inverses).
+        inv_vec[el].append(len([y for y in range(0, radius+1) if mt[el][y] <= radius and el == mt[mt[el][y]][el]]))
+        
         # Invariant B3: size of right ideal
         inv_vec[el].append(len(set([mt[el][x] for x in range(0, radius+1)])))
         
@@ -20,8 +25,11 @@ def calc_binary_invariant_vec(radius, mt):
         else:
             inv_vec[el].append(0)
 
+        # Invariant B6 The number of y in D such that x(yy) = (yy)x (number of commuting squares).
+        inv_vec[el].append(len([y for y in range(0, radius+1) if yy_square[y] <= radius and mt[el][yy_square[y]] == mt[yy_square[y]][el]]))
+        
         # Invariant B7: square root
-        inv_vec[el].append(len(set([y for y in range(0, radius+1) if mt[y][y] == el])))
+        inv_vec[el].append(len([y for y in range(0, radius+1) if yy_square[y] == el]))
     
     return inv_vec
         
