@@ -116,8 +116,9 @@ def request_work(working_dir_prefix, request_work_file, work_file, max_threads, 
                     # Path(r_file_path).unlink(True)
             elif os.path.exists(f"{working_dir_prefix}_{index}"):
                 all_threads_completed = False
-                if last_round > 0:
-                    os.remove(r_file_path)
+                if last_round > 0:                    
+                    if os.path.exists(r_file_path):
+                        os.remove(r_file_path)
                     # Path(r_file_path).unlink(True)
                 elif first_round:
                     open(r_file_path, 'w').close()
