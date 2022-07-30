@@ -30,6 +30,9 @@ def calc_binary_invariant_vec(radius, mt):
         
         # Invariant B7: square root
         inv_vec[el].append(len([y for y in range(0, radius+1) if yy_square[y] == el]))
+        
+        # Invariant B8: The number of y ∈ D such that x(xy) = (xx)y (number of square associatizers).
+        inv_vec[el].append(len([y for y in range(0, radius+1) if yy_square[el] <= radius and mt[el][y] <= radius and mt[el][mt[el][y]] == mt[yy_square[el]][y]]))
     
     return inv_vec
         
