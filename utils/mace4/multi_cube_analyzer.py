@@ -31,7 +31,7 @@ from itertools import permutations
 import invariants
 import iso_cubes
 
-min_parallel_blocks = 10
+min_parallel_blocks = 3000
 
 
 def thread_available(thread_count, thread_slots):
@@ -211,8 +211,8 @@ def gen_sequence(n, cube_length, radius, arities, is_relation, all_permutations,
     
     print(f"gen_sequence, starting number of cubes: {len(in_cubes_str)}, {len(ordered_cells)}", flush=True)
     if len(all_cubes) > inv_threshold:
-        # print(f"debug gen_sequence parallel invariants^^^^^^^^^^{len(all_cubes)}^^^^^^^^^^^^^^^^^^called")
         blocks = invariants.calc_invariant_vec(all_cubes, radius, arities, is_relation)
+        print(f"debug gen_sequence parallel invariants^^^^^^^^^^{len(all_cubes)}, blocks {len(blocks)}^^^^^^^^^^^^^^^^^^called")
         done = False
         thread_slots = [0] * max_threads
         seq = list()
@@ -322,7 +322,7 @@ def gen_func_cells(cube_length, arities):
 	return tuple(cells)
 			
 
-__all__ =["gen_sequence", "shorten_permutations", "remove0"]
+__all__ =["gen_sequence", "shorten_permutations", "remove0", "remove1", "remove_notN"]
 
 
 if __name__ == "__main__":

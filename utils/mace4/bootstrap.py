@@ -76,18 +76,34 @@ r_1_2_2_2   = {3*k+v+1: v for k, v in r_2.items()}   # 1 unary op and 1 binary o
 r_2_2_2_2 = {k*4: v for k, v in r_2.items()}   # 4 binary op
 r_1_2_2_2_2 = {k*4+v+1: v for k, v in r_2.items()}   # 1 unary op, 4 binary op
     
-run_data = {'assoc_dimonoid': {'seq': cube_sequence_2_2, 'relations': [False, False], 
+run_data = {'anti_monoid': {'seq': cube_sequence_1_2, 'relations': [False, False], 
+                         'input': '123_antidomain_monoid', 'arities': [1, 2], 'radius': r_1_2, 'remove': 1},
+            'assoc_dimonoid': {'seq': cube_sequence_2_2, 'relations': [False, False], 
                          'input': '160_associative_dimonoid', 'arities': [2, 2], 'radius': r_2_2, 'remove': -1},
+            'bck':   {'seq': cube_sequence_2, 'relations': [False], 
+                         'input': '3_bck', 'arities': [2], 'radius': r_2, 'remove': 0},
+            'closable_semi': {'seq': cube_sequence_1_2, 'relations': [False, False], 
+                         'input': '125_closable_sp_semi', 'arities': [1, 2], 'radius': r_1_2, 'remove': 0},
+            'comm_ord_monoid': {'seq': cube_sequence_2_2, 'relations': [False, True], 
+                         'input': '23_comm_ord_monoid', 'arities': [2, 2], 'radius': r_2_2, 'remove': 0},
+            'compl_mod_lattice': {'seq': cube_sequence_1_2_2, 'relations': [False, False, False], 
+                         'input': '31_comp_modular_lattice', 'arities': [1, 2, 2], 'radius': r_1_2_2, 'remove': -1},
             'dimonoid': {'seq': cube_sequence_2_2, 'relations': [False, False], 
                          'input': '152_dimonoid', 'arities': [2, 2], 'radius': r_2_2, 'remove': -1},
             'dist_lattice_ord_semi': {'seq': cube_sequence_2_2_2, 'relations': [False, False, False], 
                          'input': '36_dist_lattice_ord_semi', 'arities': [2, 2, 2], 'radius': r_2_2_2, 'remove': -1},
             'hilbert':   {'seq': cube_sequence_2, 'relations': [False], 
                          'input': 'hilbert', 'arities': [2], 'radius': r_2, 'remove': -1},
+            'hoop': {'seq': cube_sequence_2_2, 'relations': [False, False], 
+                         'input': '45_hoop', 'arities': [2, 2], 'radius': r_2_2, 'remove': 0},
             'invol_lattices': {'seq': cube_sequence_1_2_2, 'relations': [False, False, False], 
                          'input': '50_invol_lattices', 'arities': [1, 2, 2], 'radius': r_1_2_2, 'remove': -1},
             'inv_semi': {'seq': cube_sequence_1_2, 'relations': [False, False], 
                          'input': '121_inv_semi', 'arities': [1, 2], 'radius': r_1_2, 'remove': -1},
+            'monoid':   {'seq': cube_sequence_2, 'relations': [False], 
+                         'input': 'monoids', 'arities': [2], 'radius': r_2, 'remove': 0},
+            'mzeroid': {'seq': cube_sequence_1_2_2_2, 'relations': [False, False, False, True], 
+                         'input': '58_m_zeroid', 'arities': [1, 2, 2, 2], 'radius': r_1_2_2_2, 'remove': 0},
             'ord_algebra':   {'seq': cube_sequence_2, 'relations': [False], 
                          'input': '74_order', 'arities': [2], 'radius': r_2, 'remove': -1},
             'ord_semilattice':   {'seq': cube_sequence_2_2, 'relations': [False, True], 
@@ -197,7 +213,7 @@ def gen_all_cubes(algebra, order, target_cube_length, threshold, mace4_exe, cube
             cube_file = None
         else:
             cube_file = f"{top_data_dir}/{algebra}{order}/cubes_{order}_{cube_length}.out"
-        extend_cubes.extend_cubes(input_file, order, new_cube_length, cube_file, "P1", mace4_exe,
+        extend_cubes.extend_cubes(input_file, order, new_cube_length, cube_file, print_models, mace4_exe,
                                   new_cube_dir, num_threads, cubes_options, request_work_file, work_file)
         
         working_dir_prefix = get_working_dir(algebra, order, new_cube_length)    
@@ -238,8 +254,8 @@ __all__ = ["run_all_cubes", "gen_all_cubes", "collect_stat"]
 
 if __name__ == "__main__":
     mace4_exe = "../bin/mace4"
-    cubes_options = 0        # bit-0  set to 1 if use work-stealing
-    threshold = 10000000000  # large number to disable invariants
+    cubes_options = 1        # bit-0  set to 1 if use work-stealing
+    threshold = 1000  # large number to disable invariants
 
     algebra = "quasi"
     algebra = "trigroup"
@@ -248,16 +264,13 @@ if __name__ == "__main__":
     algebra = "dist_lattice_ord_semi"           # #86 cube length 36, order 9
     algebra = "order_algebras"   # #74  cube length  25, order 8
     algebra = "m_zeriods"        # #58 order 10 length 150
-    algebra = "invol_lattices"   # #50  cube length 78, order 13
     algebra = "posets"           # #86 cube length 36, order 9
     algebra = "ord_semilattice"  # #78  cube length 72, order 9
     algebra = "quasi_holes"      # length 32 order 19 
     algebra = "tarski"           # #102 cube length 36, order 12
-    algebra = "inv_semi"         # #121 cube length 20 order 9
     algebra = "loops"            # #32  cube length 16, order 8
     algebra = "hilbert"
     algebra = "semizero"
-    algebra = "semi"
     algebra = "semi_varN12"      # order 8
     algebra = "meadows"          # length 12, order 24
     algebra = "quandles"         # order 10
@@ -267,13 +280,23 @@ if __name__ == "__main__":
     algebra = "quasi_impl"       # always half 
     algebra = "ortho_modular"    # no reduction
     algebra = "ortho"            # always half
-    algebra = "ord_semilattice"  # no reduction
     algebra = "ord_algebra"      # order 7/8
     algebra = "quasi_ordered"
     algebra = "semi_varG2I2"
+    algebra = "ord_semilattice"  # no reduction
+    algebra = "invol_lattices"   # #50  cube length 78, order 13, no reduction
+    algebra = "comm_ord_monoid"
+    algebra = "compl_mod_lattice"  #order 12  no reduction
+    algebra = "hoop"
+    algebra = "inv_semi"         # #121 cube length 20 order 9
+    algebra = "closable_semi"    # length 30 30% off
+    algebra = "mzeroid"          # no reduction
+    algebra = "bck"          # no reduction
+    algebra = "semi"
+    algebra = "anti_monoid"
     algebra = "semi_varN12_idemp"
 
-    target_cube_length = 25
+    target_cube_length = 49
     order = 9
 
     propagated_models_count = 0
