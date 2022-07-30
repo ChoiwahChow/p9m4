@@ -2,6 +2,7 @@
 
 import sys
 import json
+from builtins import False
 	
 
 def permute(s, a):
@@ -35,6 +36,9 @@ def has_iso(x, is_relation, all_permutations, non_iso_sorted):
 		r (int):     radius
 		non_iso_sorted (dict): dictionary of non-isomorphic cubes, sorted by table, then by first coordinate, then second coordinate
 	"""
+	if not non_iso_sorted:   # if the list of non-isomorphic cubes is empty, then x is not isomorphic to any of them in the list
+		return False
+
 	if x in non_iso_sorted:
 		return True
 	for p in all_permutations:
