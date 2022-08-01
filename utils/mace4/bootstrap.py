@@ -96,14 +96,20 @@ run_data = {'anti_monoid': {'seq': cube_sequence_1_2, 'relations': [False, False
                          'input': 'hilbert', 'arities': [2], 'radius': r_2, 'remove': -1},
             'hoop': {'seq': cube_sequence_2_2, 'relations': [False, False], 
                          'input': '45_hoop', 'arities': [2, 2], 'radius': r_2_2, 'remove': 0},
+            'idemp_semiring': {'seq': cube_sequence_2_2, 'relations': [False, False], 
+                         'input': '110_idemp_semiring', 'arities': [2, 2], 'radius': r_2_2, 'remove': 1},
             'invol_lattices': {'seq': cube_sequence_1_2_2, 'relations': [False, False, False], 
                          'input': '50_invol_lattices', 'arities': [1, 2, 2], 'radius': r_1_2_2, 'remove': -1},
             'inv_semi': {'seq': cube_sequence_1_2, 'relations': [False, False], 
                          'input': '121_inv_semi', 'arities': [1, 2], 'radius': r_1_2, 'remove': -1},
+            'left_closure_semi': {'seq': cube_sequence_1_2, 'relations': [False, False], 
+                         'input': '119_left_closure_semi', 'arities': [1, 2], 'radius': r_1_2, 'remove': -1},
             'monoid':   {'seq': cube_sequence_2, 'relations': [False], 
                          'input': 'monoids', 'arities': [2], 'radius': r_2, 'remove': 0},
             'mzeroid': {'seq': cube_sequence_1_2_2_2, 'relations': [False, False, False, True], 
                          'input': '58_m_zeroid', 'arities': [1, 2, 2, 2], 'radius': r_1_2_2_2, 'remove': 0},
+            'mv_algebra': {'seq': cube_sequence_1_2, 'relations': [False, False], 
+                         'input': '106_mv', 'arities': [1, 2], 'radius': r_1_2, 'remove': 1},
             'ord_algebra':   {'seq': cube_sequence_2, 'relations': [False], 
                          'input': '74_order', 'arities': [2], 'radius': r_2, 'remove': -1},
             'ord_semilattice':   {'seq': cube_sequence_2_2, 'relations': [False, True], 
@@ -272,11 +278,9 @@ if __name__ == "__main__":
     algebra = "hilbert"
     algebra = "semizero"
     algebra = "semi_varN12"      # order 8
-    algebra = "meadows"          # length 12, order 24
     algebra = "quandles"         # order 10
     algebra = "assoc_dimonoid"   # order = 6
     algebra = "dimonoid"         # order = 6
-    algebra = "skew_lattices"
     algebra = "quasi_impl"       # always half 
     algebra = "ortho_modular"    # no reduction
     algebra = "ortho"            # always half
@@ -287,17 +291,22 @@ if __name__ == "__main__":
     algebra = "invol_lattices"   # #50  cube length 78, order 13, no reduction
     algebra = "comm_ord_monoid"
     algebra = "compl_mod_lattice"  #order 12  no reduction
-    algebra = "hoop"
     algebra = "inv_semi"         # #121 cube length 20 order 9
     algebra = "closable_semi"    # length 30 30% off
     algebra = "mzeroid"          # no reduction
     algebra = "bck"          # no reduction
-    algebra = "semi"
     algebra = "anti_monoid"
     algebra = "semi_varN12_idemp"
+    algebra = "skew_lattices"   # no isomorphic cubes
+    algebra = "mv_algebra"      # no reduction
+    algebra = "hoop"            # no reduction
+    algebra = "meadows"         # length 12, order 24
+    algebra = "semi"
+    algebra = "idemp_semiring"  # no reduction
+    algebra = "left_closure_semi"
 
-    target_cube_length = 49
-    order = 9
+    target_cube_length = 30
+    order = 7
 
     propagated_models_count = 0
     t0 = time.time()
