@@ -1,0 +1,17 @@
+
+% #104 Wajsberg hoops
+
+formulas(assumptions).
+
+% hoop
+x * y = y * x.
+(x * y) * z = x * (y * z).
+0 * x = x.
+x @ (y @ z) = (x * y) @ z.
+x @ x = 0.
+(x @ y) * x = (y @ x) * y.
+%
+(x @ y) @ y = (y @ x) @ x.
+
+end_of_list.
+

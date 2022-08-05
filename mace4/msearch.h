@@ -147,7 +147,7 @@ private:
   int  mace_megs(void);
   int  check_time_memory(void);
   bool mace4_skolem_check(int id);
-  int  search(int max_constrained, int depth, Cube& splitter, int parent, int grandparent);
+  int  search(int max_constrained, int depth, Cube& splitter, int parent, int grandparent, int greatgrandparent);
   int  mace4n(Plist clauses, int order);
   bool iterate_ok(int n, const std::string& class_name);
   int  next_domain_size(int n);

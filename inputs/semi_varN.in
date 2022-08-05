@@ -1,0 +1,14 @@
+
+% page 5 https://arxiv.org/pdf/1911.05817.pdf
+% N
+
+formulas(sos).
+
+x * (y * z) = (x * y) * z.
+
+x * x = x.
+
+(x * y) * (z * x) = (x * z) * (y * x).
+
+end_of_list.
+

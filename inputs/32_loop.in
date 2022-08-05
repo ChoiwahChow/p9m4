@@ -1,0 +1,14 @@
+
+
+
+formulas(sos).
+
+x * y = x * z -> y = z.
+y * x = z * x -> y = z.
+
+x * 0 = x.
+0 * x = x.
+
+
+end_of_list.
+

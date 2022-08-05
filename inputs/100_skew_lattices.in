@@ -1,0 +1,19 @@
+
+% https://marciedb.pythonanywhere.com/definition/100
+
+formulas(sos).
+
+% band
+(x v y) v z = x v (y v z).
+x v x = x.
+
+% band
+(x ^ y) ^ z = x ^ (y ^ z).
+x ^ x = x.
+
+% absorption
+x ^ (x v y) = x & x = x v (x ^ y).
+(x v y) ^ y = y & y = (x ^ y) v y.
+
+end_of_list.
+

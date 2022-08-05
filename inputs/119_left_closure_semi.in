@@ -1,0 +1,14 @@
+
+% #119 Left closure semigroup
+
+
+formulas(assumptions).
+
+(x * y) * z = x * (y * z).
+d(x) * x = x.
+d(d(x)) = d(x).
+d(x) * d(x * y) = d(x * y).
+d(x) * d(y) = d(y) * d(x).
+
+end_of_list.
+

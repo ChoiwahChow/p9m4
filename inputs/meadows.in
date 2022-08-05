@@ -1,0 +1,37 @@
+
+% definition of meadows
+% introduction info: https://meadowsite.wordpress.com/#:~:text=A%20meadow%20is%20a%20commutative,equation%200%20%2D1%20%3D%200.
+% definition of meadows from
+% https://www.sciencedirect.com/science/article/pii/S2352220814000546?via%3Dihub
+% A meadow is a commutative ring with a total inverse operator satisfying 0^{−1} = 0.
+
+function_order([', -, *, +]).
+
+% functions ' - * +
+formulas(meadow).
+
+% https://www.sciencedirect.com/science/article/pii/S2352220814000546?via%3Dihub
+% commutative ring  Definition 2.1
+%Addition
+( x + y ) + z = x + ( y + z ).     %associativity
+x + y = y + x.                     %commutativity
+x + 0 = x.                         %neutral element
+x + -x = 0.                        %inverse element
+
+%Multiplication
+( x * y ) * z = x * ( y * z ).      %associativity
+x * y = y * x.                      %commutativity
+x * 1 = x.                          %neutral element
+
+%Distributive Law
+x * ( y + z ) = ( x * y ) + ( x * z ).
+
+% definition 2.7, generalized inverse.
+x * (x * x') = x.
+x' * (x' * x) = x'.
+
+% symmetry breaking
+0' = 0.
+1' = 1.
+end_of_list.
+

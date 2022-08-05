@@ -1,0 +1,10 @@
+
+
+formulas(sos).
+
+(x * y) * x = x.
+(x * y) * y = (y * x) * x.
+x * ((y * x) * z) = x * z.
+
+end_of_list.
+

@@ -1,0 +1,15 @@
+
+% Figure 13, page 40 https://arxiv.org/pdf/1911.05817.pdf
+
+formulas(sos).
+
+x * ( y * z) = (x * y) * z.
+
+(x * x) * x = x * x.
+x * y = y * x.
+
+x * x = y * y.
+
+
+end_of_list.
+

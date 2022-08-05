@@ -1,0 +1,14 @@
+
+% #93 Right hoops
+
+
+formulas(assumptions).
+
+x * y = y * x.
+x * 0 = x.
+x / (y * z) = (x / z) / y.
+x / x = 0.
+(x / y) * y = (y / x) * x.
+
+end_of_list.
+

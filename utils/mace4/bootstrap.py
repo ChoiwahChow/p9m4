@@ -86,6 +86,8 @@ run_data = {'anti_monoid': {'seq': cube_sequence_1_2, 'relations': [False, False
                          'input': '5_bck_lattices', 'arities': [2, 2, 2, 2], 'radius': r_2_2_2_2, 'remove': 0},
             'bounded_lattice': {'seq': cube_sequence_2_2, 'relations': [False, False], 
                          'input': '12_bounded_lattice', 'arities': [2, 2], 'radius': r_2_2, 'remove': 1},
+            'brouwerian': {'seq': cube_sequence_2_2, 'relations': [False, False], 
+                         'input': '15_brouwerian_sl', 'arities': [2, 2], 'radius': r_2_2, 'remove': 0},
             'clifford': {'seq': cube_sequence_1_2, 'relations': [False, False], 
                          'input': '17_clifford', 'arities': [1, 2], 'radius': r_1_2, 'remove': -1},
             'closable_semi': {'seq': cube_sequence_1_2, 'relations': [False, False], 
@@ -98,6 +100,8 @@ run_data = {'anti_monoid': {'seq': cube_sequence_1_2, 'relations': [False, False
                          'input': '31_comp_modular_lattice', 'arities': [1, 2, 2], 'radius': r_1_2_2, 'remove': -1},
             'dimonoid': {'seq': cube_sequence_2_2, 'relations': [False, False], 
                          'input': '152_dimonoid', 'arities': [2, 2], 'radius': r_2_2, 'remove': -1},
+            'directoid':   {'seq': cube_sequence_2, 'relations': [False], 
+                         'input': '35_directoid', 'arities': [2], 'radius': r_2, 'remove': -1},
             'disemi': {'seq': cube_sequence_2_2, 'relations': [False, False], 
                          'input': '148_disemi', 'arities': [2, 2], 'radius': r_2_2, 'remove': -1},
             'double_ward':   {'seq': cube_sequence_2, 'relations': [False], 
@@ -110,6 +114,8 @@ run_data = {'anti_monoid': {'seq': cube_sequence_1_2, 'relations': [False, False
                          'input': '45_hoop', 'arities': [2, 2], 'radius': r_2_2, 'remove': 0},
             'idemp_semiring': {'seq': cube_sequence_2_2, 'relations': [False, False], 
                          'input': '110_idemp_semiring', 'arities': [2, 2], 'radius': r_2_2, 'remove': 1},
+            'invol_quandle':   {'seq': cube_sequence_2, 'relations': [False], 
+                         'input': '127_involutory_quandle', 'arities': [2], 'radius': r_2, 'remove': -1},
             'invol_lattices': {'seq': cube_sequence_1_2_2, 'relations': [False, False, False], 
                          'input': '50_invol_lattices', 'arities': [1, 2, 2], 'radius': r_1_2_2, 'remove': -1},
             'inv_semi': {'seq': cube_sequence_1_2, 'relations': [False, False], 
@@ -124,6 +130,10 @@ run_data = {'anti_monoid': {'seq': cube_sequence_1_2, 'relations': [False, False
                          'input': '58_m_zeroid', 'arities': [1, 2, 2, 2], 'radius': r_1_2_2_2, 'remove': 0},
             'mv_algebra': {'seq': cube_sequence_1_2, 'relations': [False, False], 
                          'input': '106_mv', 'arities': [1, 2], 'radius': r_1_2, 'remove': 1},
+            'neardist': {'seq': cube_sequence_2_2, 'relations': [False, False], 
+                         'input': '70_neardistr_lattice', 'arities': [2, 2], 'radius': r_2_2, 'remove': -1},
+            'normal_bands':   {'seq': cube_sequence_2, 'relations': [False], 
+                         'input': '71_normal_band', 'arities': [2], 'radius': r_2, 'remove': -1},
             'ockham': {'seq': cube_sequence_1_2_2, 'relations': [False, False, False], 
                          'input': '73_ockham', 'arities': [1, 2, 2], 'radius': r_1_2_2, 'remove': -1},
             'ord_algebra':   {'seq': cube_sequence_2, 'relations': [False], 
@@ -146,6 +156,8 @@ run_data = {'anti_monoid': {'seq': cube_sequence_1_2, 'relations': [False, False
                          'input': 'quasi_ordered', 'arities': [2], 'radius': r_2, 'remove': -1},
             'quandles': {'seq': cube_sequence_2_2, 'relations': [False, False], 
                          'input': '87_quandles', 'arities': [2, 2], 'radius': r_2_2, 'remove': -1},
+            'right_hoop': {'seq': cube_sequence_2_2, 'relations': [False, False], 
+                         'input': '93_right_hoop', 'arities': [2, 2], 'radius': r_2_2, 'remove': 0},
             'semi':   {'seq': cube_sequence_2, 'relations': [False], 
                          'input': 'semi', 'arities': [2], 'radius': r_2, 'remove': -1},
             'semi_varN12':   {'seq': cube_sequence_2, 'relations': [False], 
@@ -311,7 +323,6 @@ if __name__ == "__main__":
     algebra = "comm_ord_monoid"
     algebra = "compl_mod_lattice"  #order 12  no reduction
     algebra = "inv_semi"         # #121 cube length 20 order 9
-    algebra = "closable_semi"    # length 30 30% off
     algebra = "mzeroid"          # no reduction
     algebra = "bck"          # no reduction
     algebra = "anti_monoid"
@@ -319,8 +330,6 @@ if __name__ == "__main__":
     algebra = "skew_lattices"   # no reduction
     algebra = "mv_algebra"      # no reduction
     algebra = "hoop"            # no reduction
-    algebra = "meadows"         # length 12, order 24
-    algebra = "semi"
     algebra = "idemp_semiring"  # no reduction
     algebra = "left_closure_semi"
     algebra = "clifford"        # very little reduction
@@ -332,10 +341,19 @@ if __name__ == "__main__":
     algebra = "dimonoid"         # order = 6
     algebra = "bounded_lattice"         # order = 10 no reduction
     algebra = "left_disemi"         # order = 6 some reduction
-    algebra = "disemi"         # order = 6
+    algebra = "disemi"           # order = 6  
+    algebra = "closable_semi"    # length 30 30% off
+    algebra = "brouwerian"       # no reduction
+    algebra = "neardist"       # no reduction
+    algebra = "right_hoop"       # no reduction
+    algebra = "meadows"         # no reduction
+    algebra = "semi"
+    algebra = "directoid"       # order 9, no reduction
+    algebra = "invol_quandle"       # order 9, no reduction
+    algebra = "normal_bands"
 
-    target_cube_length = 32
-    order = 6
+    target_cube_length = 25
+    order = 8
 
     propagated_models_count = 0
     t0 = time.time()

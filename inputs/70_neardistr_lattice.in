@@ -1,0 +1,21 @@
+
+% #70 Neardistributive lattices
+% https://marciedb.pythonanywhere.com/definition/70
+
+
+formulas(assumptions).
+
+% lattice
+(x v y) v z = x v (y v z).
+x v y = y v x.
+(x ^ y) ^ z = x ^ (y ^ z).
+x ^ y = y ^ x.
+(x v y) ^ x = x.
+(x ^ y) v x = x.
+
+%
+x ^ (y v z) = x ^ (y v (x ^ (z v (x ^ y)))).
+x v (y ^ z) = x v (y ^ (x v (z ^ (x v y)))).
+
+end_of_list.
+

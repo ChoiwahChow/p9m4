@@ -380,7 +380,7 @@ Search::mace4_skolem_check(int id)
  */
 
 int
-Search::search(int max_constrained, int depth, Cube& splitter, int parent, int grandparent)
+Search::search(int max_constrained, int depth, Cube& splitter, int parent, int grandparent, int greatgrandparent)
 {
   int rc = check_time_memory();
   if (rc != SEARCH_GO_NO_MODELS)
@@ -445,7 +445,7 @@ Search::search(int max_constrained, int depth, Cube& splitter, int parent, int g
       // end for cubes
 
       for (int i = from_index, go = true; i <= last && go; i++) {
-    	if (splitter.move_on(id, i, last, parent, grandparent)) {
+    	if (splitter.move_on(id, i, last, parent, grandparent, greatgrandparent)) {
     		std::cout << "debug, Search::search stolen from " << i+1 << " to " << last << std::endl;
     		last = i;   // this is the last one to process, the rest are "stolen"
     	}
@@ -462,7 +462,7 @@ Search::search(int max_constrained, int depth, Cube& splitter, int parent, int g
 
         if (stk != nullptr) {
           /* no contradiction found during propagation, so we recurse */
-          rc = search(std::max(max_constrained, i), depth+1, splitter, id, parent);
+          rc = search(std::max(max_constrained, i), depth+1, splitter, id, parent, grandparent);
 
           /* undo assign_and_propagate changes */
           EScon.restore_from_stack(stk);
@@ -540,7 +540,7 @@ Search::mace4n(Plist clauses, int order)
   /* Here we go! */
   int rc = SEARCH_GO_NO_MODELS;
   if (initial_state->ok)
-    rc = search(Max_domain_element_in_input, 0, splitter, -1, -1);
+    rc = search(Max_domain_element_in_input, 0, splitter, -1, -1, -1);
   else
     rc = SEARCH_GO_NO_MODELS;  /* contradiction in initial state */
 

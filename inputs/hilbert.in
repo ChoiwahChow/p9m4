@@ -1,0 +1,11 @@
+
+
+formulas(sos).
+
+x @ (y @ x) = 0.
+(x @ (y @ z)) @ ((x @ y) @ (x @ z)) = 0.
+((x @ y = 0) & (y @ x = 0)) -> (x = y).
+
+
+end_of_list.
+

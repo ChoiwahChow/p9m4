@@ -36,7 +36,7 @@ public:
 	int value(size_t depth, size_t id);
 	void print_new_cube(int cube_length);
 	void mark_root(size_t id);
-	bool move_on(size_t id, int val, int last, int level_1, int level_2);
+	bool move_on(size_t id, int val, int last, int level_1, int level_2, int level_3);
 	size_t real_depth(size_t depth, size_t id);
 	// void print_ordered_cells(int number_of_cells) const;
 };

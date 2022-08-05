@@ -1,0 +1,17 @@
+
+% #123 Antidomain monoid
+
+formulas(assumptions).
+
+(x * y) * z = x * (y * z).
+1 * x = x.
+x * 1 = x.
+x' * x = 0.
+x * 0 = 0.
+x' * y' = y' * x'.
+x'' * x = x.
+x' = (x * y)' * (x * y')'.
+(x * y)' * x = ((x * y)' * x) * y'.
+
+end_of_list.
+

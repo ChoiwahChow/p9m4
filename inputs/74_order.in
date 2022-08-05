@@ -1,0 +1,15 @@
+
+% #74 Order algebras
+
+assign(max_models, -1).
+
+formulas(assumptions).
+
+x * x = x.
+(x * y) * x = y * x.
+(x * y) * y = x * y.
+x * ((x * y) * z) = x * (y * z).
+((x * y) * z) * y = (x * z) * y.
+
+end_of_list.
+

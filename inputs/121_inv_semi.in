@@ -1,0 +1,14 @@
+
+% https://axiomaticlibraryfinder.pythonanywhere.com/definition/121
+% Definition #121 Inverse semigroup
+
+
+formulas(sos).
+
+(x * y) * z = x * (y * z).
+x'' = x.
+(x * x') * x = x.
+((x * x') * y) * y' = ((y * y') * x) * x'.
+
+end_of_list.
+

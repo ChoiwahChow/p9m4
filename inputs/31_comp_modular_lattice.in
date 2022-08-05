@@ -1,0 +1,22 @@
+
+assign(max_models, -1).
+
+formulas(assumptions).
+
+% lattice
+(x v y) v z = x v (y v z).
+(x ^ y) ^ z = x ^ (y ^ z).
+x v y = y v x.
+x ^ y = y ^ x.
+(x v y) ^ x = x.
+(x ^ y) v x = x.
+% bounded
+0 v x = x.
+1 v x = 1.
+% complemented
+all x exists y (x v y = 1 & x ^ y = 0).
+% modular identity
+((x ^ z) v y) ^ z = (x ^ z) v (y ^ z).
+
+end_of_list.
+

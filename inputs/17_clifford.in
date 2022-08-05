@@ -1,0 +1,19 @@
+
+% https://marciedb.pythonanywhere.com/definition/17
+% Definition #17 Clifford algebras N-arity (2,1)
+
+formulas(assumptions).
+
+% inverse semigroup
+(x * y) * z = x * (y * z).
+x'' = x.
+(x * x') * x = x.
+(x * x') * (y * y') = (y * y') * (x * x').
+
+% completely regular semigroups
+(x * x') * x = x.
+(x' * x) * x' = x'.
+x * x' = x' * x.
+
+end_of_list.
+

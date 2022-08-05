@@ -1,0 +1,17 @@
+
+
+formulas(assumptions).
+
+(x @ y) @ ((y @ z) @ (x @ z)) = 0.
+0 @ x = x.
+x @ 0 = 0.
+(x ^ y) @ y = 0.
+x ^ ((x @ y) @ y) = x.
+x ^ x = x.
+x ^ y = y ^ x.
+(x ^ y) ^ z = x ^ (y ^ z).
+
+x < y <-> x @ y = 0.
+
+end_of_list.
+

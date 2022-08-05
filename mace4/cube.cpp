@@ -91,7 +91,7 @@ Cube::work_stealing_requested() {
 }
 
 bool
-Cube::move_on(size_t id, int val, int last, int level_1, int level_2) {
+Cube::move_on(size_t id, int val, int last, int level_1, int level_2, int level_3) {
 	/*
 	 * level_1 is the parent cell's id, level_2 is the grand-parent cell's id.  If the root of the search sub tree
 	 * is a parent or a grand-parent of the current cell, then check if working stealing is asked for.
@@ -110,7 +110,7 @@ Cube::move_on(size_t id, int val, int last, int level_1, int level_2) {
 				return true;
 			}
 		}
-		else if (level_1 == branch_root_id || level_2 == branch_root_id ) {
+		else if (level_1 == branch_root_id || level_2 == branch_root_id || level_3 == branch_root_id) {
 			if (val == last)
 				return false;
 			if (work_stealing_requested()) {
