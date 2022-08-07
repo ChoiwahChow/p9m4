@@ -169,7 +169,7 @@ run_data = {'anti_monoid': {'seq': cube_sequence_1_2, 'relations': [False, False
             'semi_varN':   {'seq': cube_sequence_2, 'relations': [False], 
                          'input': 'semi_varN', 'arities': [2], 'radius': r_2, 'remove': -1},
             'semizero':   {'seq': cube_sequence_2, 'relations': [False], 
-                         'input': 'semizero', 'arities': [2], 'radius': r_2, 'remove': 0},
+                         'input': '94_semi_w_0', 'arities': [2], 'radius': r_2, 'remove': 0},
             'skew_lattices': {'seq': cube_sequence_2_2, 'relations': [False, False], 
                          'input': '100_skew_lattices', 'arities': [2, 2], 'radius': r_2_2, 'remove': -1},
             'sp_semi': {'seq': cube_sequence_1_2, 'relations': [False, False], 
@@ -310,7 +310,6 @@ if __name__ == "__main__":
     algebra = "hilbert"
     algebra = "semizero"
     algebra = "semi_varN12"      # order 8
-    algebra = "quandles"         # order 10
     algebra = "assoc_dimonoid"   # order = 6
     algebra = "quasi_impl"       # always half 
     algebra = "ortho_modular"    # no reduction
@@ -350,10 +349,11 @@ if __name__ == "__main__":
     algebra = "semi"
     algebra = "directoid"       # order 9, no reduction
     algebra = "invol_quandle"       # order 9, no reduction
-    algebra = "normal_bands"
+    algebra = "normal_bands"    # order 9
+    algebra = "quandles"         # order 10, no redution
 
-    target_cube_length = 25
-    order = 8
+    target_cube_length = 16
+    order = 10
 
     propagated_models_count = 0
     t0 = time.time()
