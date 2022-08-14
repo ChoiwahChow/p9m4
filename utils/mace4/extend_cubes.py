@@ -44,8 +44,9 @@ def run_process(id, slot_id, thread_slots, order, cube_length, input_file, cube,
     
     if cube is not None:
         with (open(f"{working_dir}/cube.config", "w")) as fp:
-            for x in cube:
-                fp.write(f"{x}\n")
+            fp.write(f"{cube}\n")
+            #for x in cube:
+            #    fp.write(f"{x}\n")
 
     # print(f"******run_process in extend_cube****************************** {mace4}")
     cmd = f"cd {working_dir}; {mace4} -n{order} -N{order} -m-1 -{print_models} -d{cubes_options} -C{cube_length} -O3 -f {input_file} >> {cube_length}.out 2>>mace.out"
@@ -73,7 +74,7 @@ def extend_cube_jobs(input_file, order, new_cube_length, cubes, print_models, ma
         with (open(cubes)) as fp:
             all_cubes = fp.read().splitlines()
         for cube in all_cubes:
-            seq = [int(x) for x in cube.rstrip().split(" ")]
+            seq = cube.rstrip()   # [int(x) for x in cube.rstrip().split(" ")]
     
             slot_id = thread_available(max_threads, thread_slots)
             while slot_id < 0:

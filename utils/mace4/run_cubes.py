@@ -45,8 +45,9 @@ def run_process(id, slot_id, thread_slots, order, input_file, cube, print_models
     working_dir = f"{working_dir_prefix}_{slot_id}"
     os.makedirs(working_dir, exist_ok=True)
     with (open(f"{working_dir}/cube.config", "w")) as fp:
-        for x in cube:
-            fp.write(f"{x}\n")
+        fp.write(f"{cube}\n")
+        #for x in cube:
+        #    fp.write(f"{x}\n")
 
     subprocess.run(f"cd {working_dir}; {mace4} -n{order} -N{order} -{print_models} -m-1 -b10000 -d{cubes_options} -O3 -f {input_file} >> mace.log 2>&1", 
     # subprocess.run(f"cd {working_dir}; {mace4} -n{order} -N{order} -{print_models} -m-1 -O1 -M4 -b10000 -d{cubes_options} -f {input_file} >> mace.log 2>&1", 
@@ -76,7 +77,7 @@ def run_mace_jobs(mace4_exec, input_file, order, cubes, print_models, cubes_opti
     with (open(cubes)) as fp:
         all_cubes = fp.read().splitlines()
     for cube in all_cubes:
-        seq = [int(x) for x in cube.rstrip().split(" ")]
+        seq = cube.rstrip()    # [int(x) for x in cube.rstrip().split(" ")]
 
         slot_id = thread_available(max_threads, thread_slots)
         while slot_id < 0:

@@ -17,23 +17,28 @@ public:
 private:
 	std::vector<int>  cell_values;
 	size_t            order;
-	size_t            branch_depth;
+	// size_t            branch_depth;
 	Cell              Cells;
 	bool              initialized;
 	size_t            current_pos;  // current position of the search in Ordered_cells
 	size_t            max_pos;      // max value of current position
 	std::vector<int>  last_printed;
 	bool              do_work_stealing;
+	std::vector<std::string> all_cubes;
 
 private:
 	void print_unprocessed_cubes(int root_id, size_t from, size_t to);
 	inline bool work_stealing_requested ();
+	bool read_config(const char* config_file_path);
+	bool read_config_multi(const char* config_file_path);
+	bool initialize_cube();
 
 public:
 	Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_cells, int cube_options);
 	virtual ~Cube();
 
-	int value(size_t depth, size_t id);
+	bool reinitialize_cube();
+	int  value(size_t depth, size_t id);
 	void print_new_cube(int cube_length);
 	void mark_root(size_t id);
 	bool move_on(size_t id, int val, int last, int level_1, int level_2, int level_3);

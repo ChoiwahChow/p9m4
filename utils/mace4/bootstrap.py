@@ -346,14 +346,14 @@ if __name__ == "__main__":
     algebra = "neardist"       # no reduction
     algebra = "right_hoop"       # no reduction
     algebra = "meadows"         # no reduction
-    algebra = "semi"
     algebra = "directoid"       # order 9, no reduction
     algebra = "invol_quandle"       # order 9, no reduction
     algebra = "normal_bands"    # order 9
     algebra = "quandles"         # order 10, no redution
+    algebra = "semi"
 
     target_cube_length = 16
-    order = 10
+    order = 7
 
     propagated_models_count = 0
     t0 = time.time()

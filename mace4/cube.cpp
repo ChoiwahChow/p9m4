@@ -16,15 +16,11 @@ Cube::~Cube() {
 	// TODO Auto-generated destructor stub
 }
 
-Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_cells, int cubes_options): initialized(false),
-		order(domain_size), Cells(Cells), current_pos(0), branch_depth(Number_of_cells+1), max_pos(0), branch_root_id(-1),
-		cubes_options(cubes_options), do_work_stealing(cubes_options & 1) {
-	cell_values.insert(cell_values.end(), Number_of_cells, -1);
-	ifstream config("cube.config");
-	for (size_t idx=0; idx<Number_of_cells; idx++)
-		cell_ids.push_back(Ordered_cells[idx]->get_id());
+bool
+Cube::read_config(const char* config_file_path) {
+	ifstream config(config_file_path);
 	if (!config.is_open()) {
-		return;
+		return false;
 	}
 	int cell_value;
 	config >> cell_value;
@@ -35,7 +31,71 @@ Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_c
 		config >> cell_value;
 	}
 	config.close();
+	return true;
+}
+
+
+bool
+Cube::initialize_cube()
+{
+	initialized = false;
+	if (all_cubes.empty())
+		return initialized;
+
+	std::istringstream config(all_cubes.front());
+	int cell_value;
+	config >> cell_value;
+	std::cout << "Debug Cube::Cube ";
+	while (config) {
+		std::cout << cell_ids[max_pos] << "|" << cell_value << " ";
+		cell_values[cell_ids[max_pos++]] = cell_value;
+		config >> cell_value;
+	}
+	all_cubes.erase(all_cubes.begin());
 	initialized = true;
+	return initialized;
+}
+
+bool
+Cube::reinitialize_cube()
+{
+	max_pos = 0;
+	current_pos = 0;
+	branch_root_id = -1;
+	last_printed.clear();
+	return initialize_cube();
+}
+
+bool
+Cube::read_config_multi(const char* config_file_path) {
+	ifstream config(config_file_path);
+	if (!config.is_open()) {
+		return false;
+	}
+	std::cout << "Debug Cube::Cube ";
+	std::string line;
+	while (std::getline(config, line))
+	{
+		std::string a_cube = line;
+		std::cout << "Debug cube line****" << line << "*****" << std::endl;
+		all_cubes.push_back(a_cube);
+	}
+	return true;
+}
+
+
+Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_cells, int cubes_options): initialized(false),
+		order(domain_size), Cells(Cells), current_pos(0), max_pos(0), branch_root_id(-1), //, branch_depth(Number_of_cells+1)
+		cubes_options(cubes_options), do_work_stealing(cubes_options & 1) {
+	cell_values.insert(cell_values.end(), Number_of_cells, -1);
+	for (size_t idx=0; idx<Number_of_cells; idx++)
+		cell_ids.push_back(Ordered_cells[idx]->get_id());
+	//if (!read_config("cube.config"))
+	if (!read_config_multi("cube.config"))
+		return;
+	initialized = initialize_cube();    // true;
+	if (!initialized)
+		return;
 
 	std::cout << "\ndebug Cube*********************** max_depth = " << max_pos-1 << std::endl;
     // /* debug

@@ -539,10 +539,17 @@ Search::mace4n(Plist clauses, int order)
 
   /* Here we go! */
   int rc = SEARCH_GO_NO_MODELS;
-  if (initial_state->ok)
+  if (initial_state->ok) {
     rc = search(Max_domain_element_in_input, 0, splitter, -1, -1, -1);
-  else
-    rc = SEARCH_GO_NO_MODELS;  /* contradiction in initial state */
+    bool done = !splitter.reinitialize_cube();
+    while (!done) {
+        rc = search(Max_domain_element_in_input, 0, splitter, -1, -1, -1);
+    	done = !splitter.reinitialize_cube();
+    }
+  }
+  // CC: changed, no effect.  rc is initialized to SEARCH_GO_NO_MODELS
+  // else
+  //  rc = SEARCH_GO_NO_MODELS;  /* contradiction in initial state */
 
   /* Free all of the memory associated with the current domain size. */
 
