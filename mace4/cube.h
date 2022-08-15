@@ -27,7 +27,7 @@ private:
 	std::vector<std::string> all_cubes;
 
 private:
-	void print_unprocessed_cubes(int root_id, size_t from, size_t to);
+	bool print_unprocessed_cubes(int root_id, size_t from, size_t to);
 	inline bool work_stealing_requested ();
 	bool read_config(const char* config_file_path);
 	bool read_config_multi(const char* config_file_path);

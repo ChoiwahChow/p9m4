@@ -547,7 +547,7 @@ Search::mace4n(Plist clauses, int order)
     	done = !splitter.reinitialize_cube();
     }
   }
-  // CC: changed, no effect.  rc is initialized to SEARCH_GO_NO_MODELS
+  // CC: changed b/c it has no effect.  rc is initialized to SEARCH_GO_NO_MODELS
   // else
   //  rc = SEARCH_GO_NO_MODELS;  /* contradiction in initial state */
 

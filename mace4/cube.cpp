@@ -143,9 +143,9 @@ Cube::work_stealing_requested() {
 	struct stat buffer;
 	bool signal_exists = stat (steal_signal_file_path.c_str(), &buffer) == 0;
 	bool pending_cubes = stat (steal_cube_file_path.c_str(), &buffer) == 0;
-	time_t now = time(0);
-	char* date_time = ctime(&now);
-	std::cout << "debug Current working directory: " << get_current_dir_name() << " " << date_time << std::endl;
+	// time_t now = time(0);
+	// char* date_time = ctime(&now);
+	// std::cout << "debug Current working directory: " << get_current_dir_name() << " " << date_time << std::endl;
 	std::cout << "debug work_stealing_requested:" << steal_signal_file_path.c_str() << signal_exists << " and" << steal_cube_file_path.c_str() << pending_cubes << std::endl;
 	return signal_exists && !pending_cubes;
 }
@@ -165,9 +165,10 @@ Cube::move_on(size_t id, int val, int last, int level_1, int level_2, int level_
 			}
 			if (work_stealing_requested()) {
 				//std::cout << "debug move_on, work_stealing_requested, branch_root_id reset" << std::endl;
-				print_unprocessed_cubes(id, val+1, last);
-				branch_root_id = -1;
-				return true;
+				if (print_unprocessed_cubes(id, val+1, last)) {
+					branch_root_id = -1;
+					return true;
+				}
 			}
 		}
 		else if (level_1 == branch_root_id || level_2 == branch_root_id || level_3 == branch_root_id) {
@@ -175,25 +176,42 @@ Cube::move_on(size_t id, int val, int last, int level_1, int level_2, int level_
 				return false;
 			if (work_stealing_requested()) {
 				//std::cout << "debug move_on, work_stealing_requested, parent/grandparent,  " << id << std::endl;
-				print_unprocessed_cubes(id, val+1, last);
-				return true;
+				if (print_unprocessed_cubes(id, val+1, last))
+					return true;
 			}
 		}
 	}
 	return false;
 }
 
-void
+bool
 Cube::print_unprocessed_cubes(int root_id, size_t from, size_t to)
 {
+	bool ret_value = true;
 	std::stringstream buffer;
-	for (size_t idx=from; idx<=to; idx++) {
-		size_t pos = 0;
-		while (cell_ids[pos] != root_id) {
-			buffer << Cells[cell_ids[pos]].get_value() << " ";
-			pos++;
+	if (all_cubes.empty()) {
+		for (size_t idx=from; idx<=to; idx++) {
+			size_t pos = 0;
+			while (cell_ids[pos] != root_id) {
+				buffer << Cells[cell_ids[pos]].get_value() << " ";
+				pos++;
+			}
+			buffer << idx << std::endl;
 		}
-		buffer << idx << std::endl;
+	}
+	else {
+		ret_value = false;
+		size_t last = all_cubes.size() / 2;
+		if (last == 0) {
+			buffer << all_cubes[0] << std::endl;
+			all_cubes.erase(all_cubes.begin());
+		}
+		else {
+			for(std::vector<std::string>::iterator it = std::begin(all_cubes); it != std::begin(all_cubes)+last; ++it) {
+				buffer << *it << std::endl;
+			}
+			all_cubes.erase(all_cubes.begin(), all_cubes.begin()+last);
+		}
 	}
 	buffer << "End" << std::endl;
 	std::cout << "debug print_unprocessed_cubes: " << from << " " << to << "\n" << buffer.str() << std::endl;
@@ -205,6 +223,7 @@ Cube::print_unprocessed_cubes(int root_id, size_t from, size_t to)
 	if (remove(steal_signal_file_path.c_str()) != 0) {
 		std::cout << "failed to delete signal file" << std::endl;
 	}
+	return ret_value;
 }
 
 void

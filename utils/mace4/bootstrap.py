@@ -352,7 +352,7 @@ if __name__ == "__main__":
     algebra = "quandles"         # order 10, no redution
     algebra = "semi"
 
-    target_cube_length = 16
+    target_cube_length = 25
     order = 7
 
     propagated_models_count = 0

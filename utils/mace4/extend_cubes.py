@@ -38,15 +38,14 @@ def all_done(thread_slots):
     return True
 
 
-def run_process(id, slot_id, thread_slots, order, cube_length, input_file, cube, print_models, mace4, cubes_options, working_dir):
+def run_process(id, slot_id, thread_slots, order, cube_length, input_file, cubes, print_models, mace4, cubes_options, working_dir):
     working_dir = f"{working_dir}_{slot_id}"
     os.makedirs(working_dir, exist_ok=True)
     
-    if cube is not None:
+    if cubes is not None:
         with (open(f"{working_dir}/cube.config", "w")) as fp:
-            fp.write(f"{cube}\n")
-            #for x in cube:
-            #    fp.write(f"{x}\n")
+            for cube in cubes:
+                fp.write(f"{cube}\n")
 
     # print(f"******run_process in extend_cube****************************** {mace4}")
     cmd = f"cd {working_dir}; {mace4} -n{order} -N{order} -m-1 -{print_models} -d{cubes_options} -C{cube_length} -O3 -f {input_file} >> {cube_length}.out 2>>mace.out"
@@ -73,18 +72,28 @@ def extend_cube_jobs(input_file, order, new_cube_length, cubes, print_models, ma
     else:
         with (open(cubes)) as fp:
             all_cubes = fp.read().splitlines()
-        for cube in all_cubes:
-            seq = cube.rstrip()   # [int(x) for x in cube.rstrip().split(" ")]
+        while all_cubes:
+            num = len(all_cubes) / max_threads
+            if num > 1000:
+                num = 1000
+            elif num > 100:
+                num = 100
+            elif num > 10:
+                num = 10
+            else:
+                num = 1
+            seqs = all_cubes[:num]
+            all_cubes = all_cubes[num:]
     
             slot_id = thread_available(max_threads, thread_slots)
             while slot_id < 0:
                 time.sleep(0.5)
                 slot_id = thread_available(max_threads, thread_slots)
-            id += 1
+            id += num
             if id % 1000 == 0:
                 print(f"Debug, extend_cubes, Doing {id}", flush=True)
             thread_slots[slot_id] = threading.Thread(target=run_process, 
-                                                     args=(id, slot_id, thread_slots, order, new_cube_length, f"../{input_file}", seq, print_models, f"../{mace4}", cubes_options, working_dir))
+                                                     args=(id, slot_id, thread_slots, order, new_cube_length, f"../{input_file}", seqs, print_models, f"../{mace4}", cubes_options, working_dir))
             thread_slots[slot_id].start()
     
 

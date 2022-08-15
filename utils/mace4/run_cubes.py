@@ -41,11 +41,12 @@ def all_done(thread_slots):
     return True
 
 
-def run_process(id, slot_id, thread_slots, order, input_file, cube, print_models, cubes_options, mace4, working_dir_prefix):
+def run_process(id, slot_id, thread_slots, order, input_file, cubes, print_models, cubes_options, mace4, working_dir_prefix):
     working_dir = f"{working_dir_prefix}_{slot_id}"
     os.makedirs(working_dir, exist_ok=True)
     with (open(f"{working_dir}/cube.config", "w")) as fp:
-        fp.write(f"{cube}\n")
+        for cube in cubes:
+            fp.write(f"{cube}\n")
         #for x in cube:
         #    fp.write(f"{x}\n")
 
@@ -65,7 +66,7 @@ def run_mace_jobs(mace4_exec, input_file, order, cubes, print_models, cubes_opti
         mace4_exec (str): mace4 executable
         input_file (str): algebra input file
         order (int):      order of algebra
-        cubes (str):      file path containing cubes
+        cubes (str):      file path containing cubes, one cube per line
         print_models (str):  A1 to print, P0 not to
         cubes_options (int): bit-0  use work stealing
         working_dir_prefix (str):   prefix of working_dir
@@ -76,18 +77,32 @@ def run_mace_jobs(mace4_exec, input_file, order, cubes, print_models, cubes_opti
 
     with (open(cubes)) as fp:
         all_cubes = fp.read().splitlines()
-    for cube in all_cubes:
-        seq = cube.rstrip()    # [int(x) for x in cube.rstrip().split(" ")]
+    all_cubes = [x.rstrip() for x in all_cubes]
 
+    while all_cubes:
+        num = len(all_cubes) / max_threads
+        if num > 10000:
+            num = 10000
+        elif num > 1000:
+            num = 1000
+        elif num > 100:
+            num = 100
+        elif num > 10:
+            num = 10
+        else:
+            num = 1
+        seqs = all_cubes[:num]
+        all_cubes = all_cubes[num:]
+        
         slot_id = thread_available(max_threads, thread_slots)
         while slot_id < 0:
             time.sleep(0.1)
             slot_id = thread_available(max_threads, thread_slots)
-        id_counter += 1
+        id_counter += num
         if id_counter % 1000 == 0:
             print(f"Doing {id_counter}", flush=True)
         thread_slots[slot_id] = threading.Thread(target=run_process,
-                                                 args=(id, slot_id, thread_slots, order, f"../{input_file}", seq, print_models, cubes_options, f"../{mace4_exec}", working_dir_prefix))
+                                                 args=(id, slot_id, thread_slots, order, f"../{input_file}", seqs, print_models, cubes_options, f"../{mace4_exec}", working_dir_prefix))
         thread_slots[slot_id].start()
     return id_counter
 
