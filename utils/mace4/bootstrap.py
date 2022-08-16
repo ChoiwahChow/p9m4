@@ -222,8 +222,8 @@ def collect_cubes(algebra, cube_dir, prev_cube_length, cube_length, threshold, d
         all_permutations = analyzer.remove1(all_permutations)
     
     t1 = time.time()
-    analyzer.gen_sequence(order, cube_length, radius, al['arities'], al['relations'], all_permutations, 
-                          threshold, "utils/mace4/iso_cubes.py", prev_file, cube_file, out_cube_file, max_threads=num_threads)
+    analyzer.gen_sequence_multi(order, cube_length, radius, al['arities'], al['relations'], all_permutations, 
+                          threshold, "utils/mace4/iso_cubes_multi.py", prev_file, cube_file, out_cube_file, max_threads=num_threads)
     analyze_time = time.time() - t1
     return analyze_time
     
