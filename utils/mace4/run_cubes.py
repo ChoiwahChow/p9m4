@@ -81,7 +81,9 @@ def run_mace_jobs(mace4_exec, input_file, order, cubes, print_models, cubes_opti
 
     while all_cubes:
         num = len(all_cubes) / max_threads
-        if num > 10000:
+        if num > 100000:
+            num = 100000
+        elif num > 10000:
             num = 10000
         elif num > 1000:
             num = 1000

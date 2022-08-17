@@ -232,7 +232,9 @@ def gen_sequence_multi(n, cube_length, radius, arities, is_relation, all_permuta
         seq = list()
         while all_blocks:
             num = len(buckets)/max_threads
-            if num > 10000:
+            if num > 100000:
+                num = 100000
+            elif num > 10000:
                 num = 10000
             elif num > 1000:
                 num = 1000

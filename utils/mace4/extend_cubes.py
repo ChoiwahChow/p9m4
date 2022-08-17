@@ -74,7 +74,11 @@ def extend_cube_jobs(input_file, order, new_cube_length, cubes, print_models, ma
             all_cubes = fp.read().splitlines()
         while all_cubes:
             num = len(all_cubes) / max_threads
-            if num > 1000:
+            if num > 100000:
+                num = 100000
+            elif num > 10000:
+                num = 10000
+            elif num > 1000:
                 num = 1000
             elif num > 100:
                 num = 100
