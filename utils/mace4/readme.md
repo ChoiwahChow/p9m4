@@ -1,6 +1,13 @@
 
 ## Running Mace4 with the Isomorphic Cubes Algorithms
 
+### Software Requirement
+
+The Mace4 executable is compiled in C++ version 11, and scripts are written in Python 3.8.  They are tested in Linux computers:
+
+Linux 4.19.0-6-amd64 #1 SMP Debian 4.19.67-2+deb10u1 (2019-09-20) x86_64 GNU/Linux
+
+
 ### File Organization
 
 top directory
