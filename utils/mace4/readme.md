@@ -28,20 +28,27 @@ top directory
 
 ### Model Enumeration
 The algebra supported are listed in bootstrap.py, and the input files in Mace4 format are in .../p9m4/inputs.
-Edit bootstrap.py to specify the algebra, order, and the desired target cube length. E.g. to enumerate all models of semigroups of order 7, using cubes of length 25:
 
+<!-- Edit bootstrap.py to specify the algebra, order, and the desired target cube length. For example, to enumerate all models of semigroups of order 7, using cubes of length 25:
+-->
+<!--
     algebra = "semi"
     target_cube_length = 25
     order = 7
-
+-->
+<!--
 The supported cube lengths for each type of algebra are listed at the top of the file bootsrap.py.  For example, semigroups contains only 1 binary and the supported cube lengths are:
-
+-->
+<!--
     cube_sequence_2 = [2, 4, 9, 16, 25, 36, 49, 64]
-
+-->
+<!--
 All parameters for running semigroups is in the following entry in the run_data dictionary:
-
+-->
+<!--
             'semi':   {'seq': cube_sequence_2, 'relations': [False], 
                          'input': 'semi', 'arities': [2], 'radius': r_2, 'remove': -1},
+-->
 
 To run the script, issue the command in the .../p9m4 directory  
 
