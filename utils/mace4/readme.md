@@ -47,4 +47,11 @@ To run the script, issue the command in the .../p9m4 directory
 
     utils/mace4/bootsctrap.py
     
+To clean up the working directory after the run, issue the command in the .../p9m4 directory:
+
+    rm -rf *_working_*
+    rm -rf utils/mace4/working
+    
+    
+
                        
