@@ -141,6 +141,7 @@ Search::init_for_domain_size(void)
   Number_of_cells = nextbase;
   Cells           = new cell[Number_of_cells];
   Ordered_cells   = new Cell[Number_of_cells];
+  // std::cout << "debug @@@@@@@@@@@@@@@@@@@@@@@@@ Number_of_cells " << Number_of_cells << std::endl;
   delete Grounder;
   Grounder = new Ground(Domain_size, Domain, Sn_to_mace_sn, Cells, &Mstats, Mace4vglobais->Arith, &mace4_gv);
   propagator = new propagate(Symbols, Domain_size, Domain, Cells, Sn_to_mace_sn, &Mstats,
@@ -310,9 +311,9 @@ Search::mace_megs(void)
 }
 
 int
-Search::check_time_memory(void)
+Search::check_time_memory(int seconds)
 {
-  double seconds = myClock::user_seconds();
+  // double seconds = myClock::user_seconds();
   int max_seconds = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->max_seconds);
   int max_seconds_per = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->max_seconds_per);
   int max_megs = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->max_megs);
@@ -382,7 +383,8 @@ Search::mace4_skolem_check(int id)
 int
 Search::search(int max_constrained, int depth, Cube& splitter, int parent, int grandparent, int greatgrandparent)
 {
-  int rc = check_time_memory();
+  int seconds = current_time();
+  int rc = check_time_memory(seconds);
   if (rc != SEARCH_GO_NO_MODELS)
     return rc;
   else {
@@ -445,7 +447,8 @@ Search::search(int max_constrained, int depth, Cube& splitter, int parent, int g
       // end for cubes
 
       for (int i = from_index, go = true; i <= last && go; i++) {
-    	if (splitter.move_on(id, i, last, parent, grandparent, greatgrandparent)) {
+    	// if (splitter.move_on(id, i, last, parent, grandparent, greatgrandparent)) {
+        if (splitter.move_on(id, i, last, seconds)) {
     		std::cout << "debug, Search::search stolen from " << i+1 << " to " << last << std::endl;
     		last = i;   // this is the last one to process, the rest are "stolen"
     	}

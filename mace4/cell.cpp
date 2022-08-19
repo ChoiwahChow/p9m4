@@ -69,13 +69,13 @@ CellContainer::compare_cells(Cell a, Cell b)
   else if (a->max_index > b->max_index)              return OrderType::GREATER_THAN;
 
   // cube-and-conquer related change, f(1,1) is searched before f(0,1) and f(1,0)
-  /*
+
   else if (equal_index(a->eterm) &&
   		  !equal_index(b->eterm))                    return OrderType::LESS_THAN;
 
   else if (!equal_index(a->eterm) &&
   		  equal_index(b->eterm))                     return OrderType::GREATER_THAN;
-  */
+
   // end of cube-and-conquer related change
 
   else if (a->symbol->mace_sn < b->symbol->mace_sn)  return OrderType::LESS_THAN;

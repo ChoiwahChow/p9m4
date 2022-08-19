@@ -191,7 +191,7 @@ run_data = {'anti_monoid': {'seq': cube_sequence_1_2, 'relations': [False, False
             'res_po_monoid':   {'seq': cube_sequence_2_2_2_2, 'relations': [False, False, False, True], 
                          'input': '91_resi_po_monoid', 'arities': [2, 2, 2, 2], 'radius': r_2_2_2_2, 'remove': 0},
             'tarski':   {'seq': cube_sequence_2, 'relations': [False],
-                         'input': 'tarski', 'arities': [2], 'radius': r_2, 'remove': -1},
+                         'input': '102_tarski', 'arities': [2], 'radius': r_2, 'remove': -1},
             'trigroup': {'seq': cube_sequence_1_2_2_2, 'relations': [False, False, False, False], 
                          'input': '142_trigroup', 'arities': [1, 2, 2, 2], 'radius': r_1_2_2_2, 'remove': 0}}
 
@@ -292,8 +292,8 @@ __all__ = ["run_all_cubes", "gen_all_cubes", "collect_stat"]
 
 if __name__ == "__main__":
     mace4_exe = "../bin/mace4"
-    cubes_options = 1        # bit-0  set to 1 if use work-stealing
-    threshold = 1000  # large number to disable invariants
+    cubes_options = 1      # bit-0  set to 1 if use work-stealing
+    threshold = 1000       # invariants will be used if number of cubes is above threshhold. Large number to disable invariants
 
     algebra = "quasi"
     algebra = "trigroup"
@@ -349,10 +349,10 @@ if __name__ == "__main__":
     algebra = "directoid"       # order 9, no reduction
     algebra = "invol_quandle"       # order 9, no reduction
     algebra = "normal_bands"    # order 9
-    algebra = "quandles"         # order 10, no redution
+    algebra = "quandles"         # order 10, no reduction
     algebra = "semi"
 
-    target_cube_length = 25
+    target_cube_length = 2
     order = 7
 
     propagated_models_count = 0

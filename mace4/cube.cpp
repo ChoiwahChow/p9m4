@@ -51,7 +51,8 @@ Cube::initialize_cube()
 		cell_values[cell_ids[max_pos++]] = cell_value;
 		config >> cell_value;
 	}
-	all_cubes.erase(all_cubes.begin());
+	all_cubes.erase(all_cubes.begin());  // first cube is to be processed now
+	cut_off = max_pos;
 	initialized = true;
 	return initialized;
 }
@@ -85,9 +86,10 @@ Cube::read_config_multi(const char* config_file_path) {
 
 
 Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_cells, int cubes_options): initialized(false),
-		order(domain_size), Cells(Cells), current_pos(0), max_pos(0), branch_root_id(-1), //, branch_depth(Number_of_cells+1)
-		cubes_options(cubes_options), do_work_stealing(cubes_options & 1) {
+		order(domain_size), Cells(Cells), current_pos(0), max_pos(0), cut_off(5), branch_root_id(-1), //, branch_depth(Number_of_cells+1)
+		cubes_options(cubes_options), do_work_stealing(cubes_options & 1), last_check_time(0) {
 	cell_values.insert(cell_values.end(), Number_of_cells, -1);
+	real_depths.resize(Number_of_cells, 0);
 	for (size_t idx=0; idx<Number_of_cells; idx++)
 		cell_ids.push_back(Ordered_cells[idx]->get_id());
 	//if (!read_config("cube.config"))
@@ -97,18 +99,29 @@ Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_c
 	if (!initialized)
 		return;
 
-	std::cout << "\ndebug Cube*********************** max_depth = " << max_pos-1 << std::endl;
+    for (size_t idx = 0; idx < Number_of_cells; ++idx)
+    	real_depths[cell_ids[idx]] = idx;
+	std::cout << "\ndebug Cube*********************** cubes_options " << cubes_options << " max_depth = " << max_pos-1 << std::endl;
     // /* debug
-    for (int idx = 0; idx < Number_of_cells && idx < 65; ++idx)
+    for (size_t idx = 0; idx < Number_of_cells && idx < 65; ++idx) {
 	  std::cout <<  idx << "|" << Ordered_cells[idx]->get_symbol() << "|" << Ordered_cells[idx]->get_id() << "  ";
-    std::cout << "Debug order_cells ********************" << std::endl;
+    }
+	std::cout << "Debug order_cells ********************" << std::endl;
+    for (size_t idx = 0; idx < Number_of_cells && idx < 65; ++idx) {
+	  std::cout <<  idx << "|" << real_depths[idx] << "  ";
+    }
+	std::cout << "Debug real_depths end ********************" << Number_of_cells << std::endl;
 }
 
 size_t
 Cube::real_depth(size_t depth, size_t id) {
+	if (real_depths[id] > depth)
+		depth = real_depths[id];
+	/*
 	for (size_t idx=depth; idx<cell_ids.size(); ++idx)
 		if (cell_ids[idx]==id)
 			return idx;
+	*/
 	return depth;
 }
 
@@ -148,6 +161,24 @@ Cube::work_stealing_requested() {
 	// std::cout << "debug Current working directory: " << get_current_dir_name() << " " << date_time << std::endl;
 	std::cout << "debug work_stealing_requested:" << steal_signal_file_path.c_str() << signal_exists << " and" << steal_cube_file_path.c_str() << pending_cubes << std::endl;
 	return signal_exists && !pending_cubes;
+}
+
+bool
+Cube::move_on(size_t id, int val, int last, int seconds) {
+	if (real_depths[id] - cut_off > 5)
+		return false;
+	// std::cout << "debug @@@@@@@@@@@@move on " << real_depths.size() << " " << real_depths[id] << std::endl;
+	if (seconds - last_check_time > min_check_interval) {
+		last_check_time = seconds;
+		cut_off++;
+		if (work_stealing_requested()) {
+			//std::cout << "debug move_on, work_stealing_requested, branch_root_id reset" << std::endl;
+			if (print_unprocessed_cubes(id, val+1, last)) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 bool
@@ -221,7 +252,7 @@ Cube::print_unprocessed_cubes(int root_id, size_t from, size_t to)
 	cube_file.close();
 
 	if (remove(steal_signal_file_path.c_str()) != 0) {
-		std::cout << "failed to delete signal file" << std::endl;
+		std::cout << "@@@@@@@@@@Cube::print_unprocessed_cubes@@@@@@@@@@@@@@@@@@failed to delete signal file " << steal_signal_file_path.c_str() << std::endl;
 	}
 	return ret_value;
 }
