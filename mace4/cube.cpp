@@ -88,10 +88,18 @@ Cube::read_config_multi(const char* config_file_path) {
 Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_cells, int cubes_options): initialized(false),
 		order(domain_size), Cells(Cells), current_pos(0), max_pos(0), cut_off(5), branch_root_id(-1), //, branch_depth(Number_of_cells+1)
 		cubes_options(cubes_options), do_work_stealing(cubes_options & 1), last_check_time(0) {
-	cell_values.insert(cell_values.end(), Number_of_cells, -1);
-	real_depths.resize(Number_of_cells, 0);
-	for (size_t idx=0; idx<Number_of_cells; idx++)
+	size_t num_real_symbols = 0;
+	while (Ordered_cells[num_real_symbols]->get_symbol() != "=" )
+		num_real_symbols++;
+
+	cell_values.resize(num_real_symbols, -1);
+	real_depths.resize(num_real_symbols, 0);
+
+	for (size_t idx=0; idx<num_real_symbols; idx++)
 		cell_ids.push_back(Ordered_cells[idx]->get_id());
+    for (size_t idx = 0; idx < num_real_symbols; ++idx)
+    	real_depths[cell_ids[idx]] = idx;
+
 	//if (!read_config("cube.config"))
 	if (!read_config_multi("cube.config"))
 		return;
@@ -99,28 +107,32 @@ Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_c
 	if (!initialized)
 		return;
 
-    for (size_t idx = 0; idx < Number_of_cells; ++idx)
-    	real_depths[cell_ids[idx]] = idx;
 	std::cout << "\ndebug Cube*********************** cubes_options " << cubes_options << " max_depth = " << max_pos-1 << std::endl;
     // /* debug
-    for (size_t idx = 0; idx < Number_of_cells && idx < 65; ++idx) {
+    for (size_t idx = 0; idx < num_real_symbols && idx < 65; ++idx) {
 	  std::cout <<  idx << "|" << Ordered_cells[idx]->get_symbol() << "|" << Ordered_cells[idx]->get_id() << "  ";
     }
 	std::cout << "Debug order_cells ********************" << std::endl;
-    for (size_t idx = 0; idx < Number_of_cells && idx < 65; ++idx) {
+    for (size_t idx = 0; idx < num_real_symbols && idx < 65; ++idx) {
 	  std::cout <<  idx << "|" << real_depths[idx] << "  ";
     }
-	std::cout << "Debug real_depths end ********************" << Number_of_cells << std::endl;
+	std::cout << "Debug real_depths end ******************** num_real_symbols: " << num_real_symbols << " Number_of_cells:" << Number_of_cells << std::endl;
 }
 
 size_t
 Cube::real_depth(size_t depth, size_t id) {
-	if (real_depths[id] > depth)
-		depth = real_depths[id];
+	/*if (real_depths[id] > depth) */
+	depth = real_depths[id];
 	/*
+	if (real_depths[id] < depth)
+		std::cout << "Debug real_depth @@@@@@@@@@@@@@@@@@ error id: " << id << " depth " << depth << " vs real_depths[id]: " << real_depths[id] << std::endl;
+
 	for (size_t idx=depth; idx<cell_ids.size(); ++idx)
-		if (cell_ids[idx]==id)
+		if (cell_ids[idx]==id) {
+			if (idx != real_depths[id])
+				std::cout << "Debug real_depth inner @@@@@@@@@@@@@@@@@@ error id: " << id << " depth " << depth << " vs real_depths[id]: " << real_depths[id] << std::endl;
 			return idx;
+		}
 	*/
 	return depth;
 }
