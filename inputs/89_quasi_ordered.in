@@ -1,0 +1,7 @@
+
+% Definition #89 Quasi-ordered sets
+
+formulas(sos).
+x < x.
+((x < y) & (y < z)) -> (x < z).
+end_of_list.
