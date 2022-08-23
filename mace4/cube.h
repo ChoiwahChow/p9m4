@@ -11,7 +11,7 @@ class Cube {
 public:
 	static const std::string  steal_signal_file_path;
 	static const std::string  steal_cube_file_path;
-	static const int min_check_interval = 5;
+	static const int min_check_interval = 2;
 	std::vector<size_t> cell_ids;
 	int                 branch_root_id;
 	int                 cubes_options;
