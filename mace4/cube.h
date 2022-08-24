@@ -24,6 +24,7 @@ private:
 	size_t            current_pos;  // current position of the search in Ordered_cells
 	size_t            max_pos;      // max value of current position
 	size_t            cut_off;      // must be less than cut_off from the start cube position to release cubes for work stealing
+	size_t            mult_table_size;    // total size of multiplication tables
 	std::vector<int>  last_printed;
 	bool              do_work_stealing;
 	std::vector<std::string> all_cubes;

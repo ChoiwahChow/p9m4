@@ -52,7 +52,7 @@ Cube::initialize_cube()
 		config >> cell_value;
 	}
 	all_cubes.erase(all_cubes.begin());  // first cube is to be processed now
-	cut_off = max_pos;
+	cut_off = mult_table_size - 10;   //(mult_table_size + max_pos)/2 - 2;   // cut off near half way to the bottom of search tree
 	initialized = true;
 	return initialized;
 }
@@ -86,18 +86,17 @@ Cube::read_config_multi(const char* config_file_path) {
 
 
 Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_cells, int cubes_options): initialized(false),
-		order(domain_size), Cells(Cells), current_pos(0), max_pos(0), cut_off(5), branch_root_id(-1), //, branch_depth(Number_of_cells+1)
+		order(domain_size), Cells(Cells), current_pos(0), max_pos(0), cut_off(5), mult_table_size(0), branch_root_id(-1),
 		cubes_options(cubes_options), do_work_stealing(cubes_options & 1), last_check_time(0) {
-	size_t num_real_symbols = 0;
-	while (Ordered_cells[num_real_symbols]->get_symbol() != "=" )
-		num_real_symbols++;
+	while (Ordered_cells[mult_table_size]->get_symbol() != "=" )
+		mult_table_size++;
 
-	cell_values.resize(num_real_symbols, -1);
-	real_depths.resize(num_real_symbols, 0);
+	cell_values.resize(mult_table_size, -1);
+	real_depths.resize(mult_table_size, 0);
 
-	for (size_t idx=0; idx<num_real_symbols; idx++)
+	for (size_t idx=0; idx<mult_table_size; idx++)
 		cell_ids.push_back(Ordered_cells[idx]->get_id());
-    for (size_t idx = 0; idx < num_real_symbols; ++idx)
+    for (size_t idx = 0; idx < mult_table_size; ++idx)
     	real_depths[cell_ids[idx]] = idx;
 
 	//if (!read_config("cube.config"))
@@ -109,14 +108,14 @@ Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_c
 
 	std::cout << "\ndebug Cube*********************** cubes_options " << cubes_options << " max_depth = " << max_pos-1 << std::endl;
     // /* debug
-    for (size_t idx = 0; idx < num_real_symbols && idx < 65; ++idx) {
+    for (size_t idx = 0; idx < mult_table_size && idx < 65; ++idx) {
 	  std::cout <<  idx << "|" << Ordered_cells[idx]->get_symbol() << "|" << Ordered_cells[idx]->get_id() << "  ";
     }
 	std::cout << "Debug order_cells ********************" << std::endl;
-    for (size_t idx = 0; idx < num_real_symbols && idx < 65; ++idx) {
+    for (size_t idx = 0; idx < mult_table_size && idx < 65; ++idx) {
 	  std::cout <<  idx << "|" << real_depths[idx] << "  ";
     }
-	std::cout << "Debug real_depths end ******************** num_real_symbols: " << num_real_symbols << " Number_of_cells:" << Number_of_cells << std::endl;
+	std::cout << "Debug real_depths end ******************** mult_table_size: " << mult_table_size << " Number_of_cells:" << Number_of_cells << std::endl;
 }
 
 size_t
@@ -167,6 +166,8 @@ inline bool
 Cube::work_stealing_requested() {
 	struct stat buffer;
 	bool signal_exists = stat (steal_signal_file_path.c_str(), &buffer) == 0;
+	if (!signal_exists)
+		return false;
 	bool pending_cubes = stat (steal_cube_file_path.c_str(), &buffer) == 0;
 	// time_t now = time(0);
 	// char* date_time = ctime(&now);
@@ -177,12 +178,12 @@ Cube::work_stealing_requested() {
 
 bool
 Cube::move_on(size_t id, int val, int last, int seconds) {
-	if (real_depths[id] - cut_off > 5)
+	// std::cout << "debug @@@@@@@@@@@@ " << real_depths.size() << " " << real_depths[id] << " " << cut_off << std::endl;
+	if (all_cubes.empty() && real_depths[id] > cut_off)
 		return false;
-	// std::cout << "debug @@@@@@@@@@@@move on " << real_depths.size() << " " << real_depths[id] << std::endl;
 	if (seconds - last_check_time > min_check_interval) {
 		last_check_time = seconds;
-		cut_off++;
+		// cut_off++;
 		if (work_stealing_requested()) {
 			//std::cout << "debug move_on, work_stealing_requested, branch_root_id reset" << std::endl;
 			if (print_unprocessed_cubes(id, val+1, last)) {
