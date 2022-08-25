@@ -84,12 +84,13 @@ Cube::read_config_multi(const char* config_file_path) {
 
 
 Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_cells, int cubes_options): initialized(false),
-		marked(false), order(domain_size), Cells(Cells), current_pos(0), max_pos(0), cut_off(5), early_cut_off(3), mult_table_size(0),
+		marked(false), order(domain_size), Cells(Cells), current_pos(0), max_pos(0), cut_off(5), early_cut_off(3), top_cut_off(3), mult_table_size(0),
 		cubes_options(cubes_options), do_work_stealing(cubes_options & 1), last_check_time(0), current_time(0) {
 	while (Ordered_cells[mult_table_size]->get_symbol() != "=" )
 		mult_table_size++;
 	cut_off = mult_table_size * 8/10;
 	early_cut_off = mult_table_size * 6/10;
+	top_cut_off = mult_table_size/10;
 
 	cell_values.resize(mult_table_size, -1);
 	real_depths.resize(mult_table_size, 0);
@@ -254,7 +255,11 @@ size_t
 Cube::mark_root(size_t id, size_t from_index, size_t last) {
 	if (initialized && from_index < last) {
 		std::cout << "debug mark_root, id: " << id << std::endl;
-		if (!marked && real_depths[id] < cut_off) {
+		if (!marked && real_depths[id] < early_cut_off) {
+			top_cut_off = real_depths[id] + 3;
+		}
+		if ((!marked && real_depths[id] < cut_off) ||
+				(marked && real_depths[id] < top_cut_off)) {
 			marked = true;
 			for (size_t idx=from_index+1; idx<=last; idx++ ) {
 				size_t jdx = 0;

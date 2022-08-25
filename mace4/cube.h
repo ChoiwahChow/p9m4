@@ -25,6 +25,7 @@ private:
 	size_t            max_pos;      // max value of current position
 	size_t            cut_off;      // must be less than cut_off from the start cube position to release cubes for work stealing
 	size_t			  early_cut_off;
+	size_t			  top_cut_off;
 	size_t            mult_table_size;    // total size of multiplication tables
 	std::vector<int>  last_printed;
 	bool              do_work_stealing;
