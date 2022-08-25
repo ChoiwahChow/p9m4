@@ -381,9 +381,10 @@ Search::mace4_skolem_check(int id)
  */
 
 int
-Search::search(int max_constrained, int depth, Cube& splitter, int parent, int grandparent, int greatgrandparent)
+Search::search(int max_constrained, int depth, Cube& splitter)
 {
   int seconds = current_time();
+  splitter.set_time(seconds);
   int rc = check_time_memory(seconds);
   if (rc != SEARCH_GO_NO_MODELS)
     return rc;
@@ -443,12 +444,11 @@ Search::search(int max_constrained, int depth, Cube& splitter, int parent, int g
     	return SEARCH_GO_NO_MODELS;
       }
       if (from_index != last)
-    	  splitter.mark_root(id);
+    	  last = splitter.mark_root(id, from_index, last);
       // end for cubes
 
       for (int i = from_index, go = true; i <= last && go; i++) {
-    	// if (splitter.move_on(id, i, last, parent, grandparent, greatgrandparent)) {
-        if (splitter.move_on(id, i, last, seconds)) {
+        if (splitter.move_on(id, i, last)) {
     		std::cout << "debug, Search::search stolen from " << i+1 << " to " << last << std::endl;
     		last = i;   // this is the last one to process, the rest are "stolen"
     	}
@@ -465,7 +465,7 @@ Search::search(int max_constrained, int depth, Cube& splitter, int parent, int g
 
         if (stk != nullptr) {
           /* no contradiction found during propagation, so we recurse */
-          rc = search(std::max(max_constrained, i), depth+1, splitter, id, parent, grandparent);
+          rc = search(std::max(max_constrained, i), depth+1, splitter);
 
           /* undo assign_and_propagate changes */
           EScon.restore_from_stack(stk);
@@ -543,10 +543,10 @@ Search::mace4n(Plist clauses, int order)
   /* Here we go! */
   int rc = SEARCH_GO_NO_MODELS;
   if (initial_state->ok) {
-    rc = search(Max_domain_element_in_input, 0, splitter, -1, -1, -1);
+    rc = search(Max_domain_element_in_input, 0, splitter);
     bool done = !splitter.reinitialize_cube();
     while (!done) {
-        rc = search(Max_domain_element_in_input, 0, splitter, -1, -1, -1);
+        rc = search(Max_domain_element_in_input, 0, splitter);
     	done = !splitter.reinitialize_cube();
     }
   }

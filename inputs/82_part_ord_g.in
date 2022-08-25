@@ -1,20 +1,20 @@
 
-% #78 Ordered semilattice
-
+% #82 Partially ordered groups
 
 formulas(assumptions).
 
-% ordered semigroup
+% group
 (x * y) * z = x * (y * z).
+x * 1 = x.
+1 * x = x.
+x * x' = 1.
+x' * x = 1.
+% partially ordered set
 x < x.
 x < y & y < x -> x = y.
 x < y & y < z -> x < z.
+% order-preserving
 x < y -> ((x * z < y * z) & (z * x < z * y)).
-x < y | y < x.
-% commutative
-x * y = y * x.
-% idempotent
-x * x = x.
 
 end_of_list.
 

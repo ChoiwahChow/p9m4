@@ -52,7 +52,6 @@ Cube::initialize_cube()
 		config >> cell_value;
 	}
 	all_cubes.erase(all_cubes.begin());  // first cube is to be processed now
-	cut_off = mult_table_size - 10;   //(mult_table_size + max_pos)/2 - 2;   // cut off near half way to the bottom of search tree
 	initialized = true;
 	return initialized;
 }
@@ -62,7 +61,6 @@ Cube::reinitialize_cube()
 {
 	max_pos = 0;
 	current_pos = 0;
-	branch_root_id = -1;
 	last_printed.clear();
 	return initialize_cube();
 }
@@ -86,10 +84,12 @@ Cube::read_config_multi(const char* config_file_path) {
 
 
 Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_cells, int cubes_options): initialized(false),
-		order(domain_size), Cells(Cells), current_pos(0), max_pos(0), cut_off(5), mult_table_size(0), branch_root_id(-1),
-		cubes_options(cubes_options), do_work_stealing(cubes_options & 1), last_check_time(0) {
+		marked(false), order(domain_size), Cells(Cells), current_pos(0), max_pos(0), cut_off(5), early_cut_off(3), mult_table_size(0),
+		cubes_options(cubes_options), do_work_stealing(cubes_options & 1), last_check_time(0), current_time(0) {
 	while (Ordered_cells[mult_table_size]->get_symbol() != "=" )
 		mult_table_size++;
+	cut_off = mult_table_size * 8/10;
+	early_cut_off = mult_table_size * 6/10;
 
 	cell_values.resize(mult_table_size, -1);
 	real_depths.resize(mult_table_size, 0);
@@ -99,10 +99,9 @@ Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_c
     for (size_t idx = 0; idx < mult_table_size; ++idx)
     	real_depths[cell_ids[idx]] = idx;
 
-	//if (!read_config("cube.config"))
 	if (!read_config_multi("cube.config"))
 		return;
-	initialized = initialize_cube();    // true;
+	initialized = initialize_cube();
 	if (!initialized)
 		return;
 
@@ -116,6 +115,7 @@ Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_c
 	  std::cout <<  idx << "|" << real_depths[idx] << "  ";
     }
 	std::cout << "Debug real_depths end ******************** mult_table_size: " << mult_table_size << " Number_of_cells:" << Number_of_cells << std::endl;
+	std::cout << "Debug ******************** cut_0ff: " << cut_off << std::endl;
 }
 
 size_t
@@ -177,51 +177,31 @@ Cube::work_stealing_requested() {
 }
 
 bool
-Cube::move_on(size_t id, int val, int last, int seconds) {
+Cube::move_on(size_t id, int first, int last) {
 	// std::cout << "debug @@@@@@@@@@@@ " << real_depths.size() << " " << real_depths[id] << " " << cut_off << std::endl;
+	if (marked && all_cubes.empty() && real_depths[id] < early_cut_off) {
+		for (size_t idx=first+1; idx<=last; idx++ ) {
+			size_t jdx = 0;
+			std::string cube(std::to_string(Cells[cell_ids[jdx++]].get_value()));
+			while (cell_ids[jdx] != id) {
+				cube.append(" ");
+				cube.append(std::to_string(Cells[cell_ids[jdx++]].get_value()));
+			}
+			cube.append(" ");
+			cube.append(std::to_string(idx));
+			all_cubes.push_back(cube);
+		}
+		return true;
+	}
 	if (all_cubes.empty() && real_depths[id] > cut_off)
 		return false;
-	if (seconds - last_check_time > min_check_interval) {
-		last_check_time = seconds;
+	if (current_time - last_check_time > min_check_interval) {
+		last_check_time = current_time;
 		// cut_off++;
 		if (work_stealing_requested()) {
-			//std::cout << "debug move_on, work_stealing_requested, branch_root_id reset" << std::endl;
-			if (print_unprocessed_cubes(id, val+1, last)) {
+			//std::cout << "debug move_on, work_stealing_requested" << std::endl;
+			if (print_unprocessed_cubes(id, first+1, last)) {
 				return true;
-			}
-		}
-	}
-	return false;
-}
-
-bool
-Cube::move_on(size_t id, int val, int last, int level_1, int level_2, int level_3) {
-	/*
-	 * level_1 is the parent cell's id, level_2 is the grand-parent cell's id.  If the root of the search sub tree
-	 * is a parent or a grand-parent of the current cell, then check if working stealing is asked for.
-	 */
-	if (branch_root_id != -1 && do_work_stealing) {
-		if (id == branch_root_id) {
-			//std::cout << "debug move_on, back to top root " << id << std::endl;
-			if (val == last) {  // move root to the next level
-				branch_root_id = -1;
-				return false;
-			}
-			if (work_stealing_requested()) {
-				//std::cout << "debug move_on, work_stealing_requested, branch_root_id reset" << std::endl;
-				if (print_unprocessed_cubes(id, val+1, last)) {
-					branch_root_id = -1;
-					return true;
-				}
-			}
-		}
-		else if (level_1 == branch_root_id || level_2 == branch_root_id || level_3 == branch_root_id) {
-			if (val == last)
-				return false;
-			if (work_stealing_requested()) {
-				//std::cout << "debug move_on, work_stealing_requested, parent/grandparent,  " << id << std::endl;
-				if (print_unprocessed_cubes(id, val+1, last))
-					return true;
 			}
 		}
 	}
@@ -270,12 +250,28 @@ Cube::print_unprocessed_cubes(int root_id, size_t from, size_t to)
 	return ret_value;
 }
 
-void
-Cube::mark_root(size_t id) {
-	if (initialized && branch_root_id == -1) {
-		branch_root_id = id;
-		std::cout << "debug mark_root: " << id << std::endl;
+size_t
+Cube::mark_root(size_t id, size_t from_index, size_t last) {
+	if (initialized && from_index < last) {
+		std::cout << "debug mark_root, id: " << id << std::endl;
+		if (!marked && real_depths[id] < cut_off) {
+			marked = true;
+			for (size_t idx=from_index+1; idx<=last; idx++ ) {
+				size_t jdx = 0;
+				std::string cube(std::to_string(Cells[cell_ids[jdx++]].get_value()));
+				while (cell_ids[jdx] != id) {
+					cube.append(" ");
+					cube.append(std::to_string(Cells[cell_ids[jdx++]].get_value()));
+				}
+				cube.append(" ");
+				cube.append(std::to_string(idx));
+				all_cubes.push_back(cube);
+			}
+			std::cout << "debug mark_root, depth: " << real_depths[id] << " all_cubes.size: " << all_cubes.size() << std::endl;
+			last = from_index;
+		}
 	}
+	return last;
 }
 
 void

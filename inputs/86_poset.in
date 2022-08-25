@@ -1,0 +1,13 @@
+
+% #86 Posets
+
+assign(max_models, -1).
+
+formulas(assumptions).
+
+x < x.
+x < y & y < z -> x < z.
+x < y & y < x -> x = y.
+
+end_of_list.
+

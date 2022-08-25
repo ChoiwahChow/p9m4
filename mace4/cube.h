@@ -13,7 +13,6 @@ public:
 	static const std::string  steal_cube_file_path;
 	static const int min_check_interval = 2;
 	std::vector<size_t> cell_ids;
-	int                 branch_root_id;
 	int                 cubes_options;
 private:
 	std::vector<int>  cell_values;
@@ -21,14 +20,17 @@ private:
 	std::vector<size_t>  real_depths;
 	Cell              Cells;
 	bool              initialized;
+	bool			  marked;       // root id marked for the process
 	size_t            current_pos;  // current position of the search in Ordered_cells
 	size_t            max_pos;      // max value of current position
 	size_t            cut_off;      // must be less than cut_off from the start cube position to release cubes for work stealing
+	size_t			  early_cut_off;
 	size_t            mult_table_size;    // total size of multiplication tables
 	std::vector<int>  last_printed;
 	bool              do_work_stealing;
 	std::vector<std::string> all_cubes;
-	int               last_check_time;
+	size_t            last_check_time;
+	size_t			  current_time;
 
 private:
 	bool print_unprocessed_cubes(int root_id, size_t from, size_t to);
@@ -42,11 +44,11 @@ public:
 	virtual ~Cube();
 
 	bool reinitialize_cube();
+	void set_time(size_t seconds) {current_time = seconds;}
 	int  value(size_t depth, size_t id);
 	void print_new_cube(int cube_length);
-	void mark_root(size_t id);
-	bool move_on(size_t id, int val, int last, int level_1, int level_2, int level_3);
-	bool move_on(size_t id, int val, int last, int seconds);
+	size_t mark_root(size_t id, size_t from_index, size_t last);
+	bool move_on(size_t id, int val, int last);
 	size_t real_depth(size_t depth, size_t id);
 	// void print_ordered_cells(int number_of_cells) const;
 };
