@@ -90,7 +90,7 @@ Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_c
 		mult_table_size++;
 	cut_off = mult_table_size * 8/10;
 	early_cut_off = mult_table_size * 6/10;
-	top_cut_off = mult_table_size/10;
+	top_cut_off = mult_table_size * 2/10;
 
 	cell_values.resize(mult_table_size, -1);
 	real_depths.resize(mult_table_size, 0);
@@ -254,7 +254,7 @@ Cube::print_unprocessed_cubes(int root_id, size_t from, size_t to)
 size_t
 Cube::mark_root(size_t id, size_t from_index, size_t last) {
 	if (initialized && from_index < last) {
-		std::cout << "debug mark_root, id: " << id << std::endl;
+		// std::cout << "debug mark_root, id: " << id << std::endl;
 		if (!marked && real_depths[id] < early_cut_off) {
 			top_cut_off = real_depths[id] + 3;
 		}
