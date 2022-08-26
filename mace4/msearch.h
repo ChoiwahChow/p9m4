@@ -3,6 +3,7 @@
 #define MACE4_MSEARCH_H
 
 #include <string>
+#include <vector>
 #include <iostream>
 #include <fstream>
 #include "../ladr/clock.h"
@@ -119,6 +120,7 @@ private:
 private:
   // Global data for searching
   Mace4VGlobais* Mace4vglobais;
+  std::vector<std::vector<int>>  all_nodes;
 
 private:
   // printing functions

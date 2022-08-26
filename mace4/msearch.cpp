@@ -390,7 +390,7 @@ Search::search(int max_constrained, int depth, Cube& splitter)
     return rc;
   else {
 	Selection selector(Domain_size, Domain, Cells, &EScon, &Mstats, Mace4vglobais->Opt);
-    // TODO: [choiwah] check correctness of conversion to C++
+    // TODO: [cc] check correctness of conversion to C++
     int id = selector.select_cell(max_constrained, First_skolem_cell, Number_of_cells, Ordered_cells, propagator);
 
     if (id == -1) {
@@ -443,14 +443,19 @@ Search::search(int max_constrained, int depth, Cube& splitter)
       	splitter.print_new_cube(print_cubes);
     	return SEARCH_GO_NO_MODELS;
       }
-      if (from_index != last)
-    	  last = splitter.mark_root(id, from_index, last);
+      //if (from_index != last)
+      //  last = splitter.mark_root(id, from_index, last);
       // end for cubes
 
-      for (int i = from_index, go = true; i <= last && go; i++) {
-        if (splitter.move_on(id, i, last)) {
+      all_nodes.push_back(std::vector<int> {id, from_index, last});
+      size_t curr_pos = all_nodes.size() - 1;
+      // for (int i = from_index, go = true; i <= last && go; i++) {
+      for (int i = from_index, go = true; i <= all_nodes[curr_pos][2] && go; i++) {
+    	all_nodes[curr_pos][1] = i;
+        if (splitter.move_on(id, all_nodes)) {
     		std::cout << "debug, Search::search stolen from " << i+1 << " to " << last << std::endl;
-    		last = i;   // this is the last one to process, the rest are "stolen"
+    		// last = i;   // this is the last one to process, the rest are "stolen"
+    		//all_nodes[last_pos][2] = i;
     	}
         Estack stk;
         Mstats.assignments++;
@@ -458,7 +463,7 @@ Search::search(int max_constrained, int depth, Cube& splitter)
         if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->trace)) {
           std::cout << "assign: ";
           pc.fwrite_term(std::cout, Cells[id].eterm);
-          std::cout << "=" << i << " (" << last << ") depth=" << depth << "\n";
+          std::cout << "=" << i << " (" << all_nodes[curr_pos][2] << ") depth=" << depth << "\n";
         }
 
         stk = propagator->assign_and_propagate(id, Domain[i]);
@@ -475,6 +480,7 @@ Search::search(int max_constrained, int depth, Cube& splitter)
             go = (rc == SEARCH_GO_NO_MODELS);
         }
       }
+      all_nodes.pop_back();
       return rc;
     }
   }
@@ -546,6 +552,7 @@ Search::mace4n(Plist clauses, int order)
     rc = search(Max_domain_element_in_input, 0, splitter);
     bool done = !splitter.reinitialize_cube();
     while (!done) {
+    	all_nodes.clear();
         rc = search(Max_domain_element_in_input, 0, splitter);
     	done = !splitter.reinitialize_cube();
     }

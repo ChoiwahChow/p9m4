@@ -84,13 +84,11 @@ Cube::read_config_multi(const char* config_file_path) {
 
 
 Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_cells, int cubes_options): initialized(false),
-		marked(false), order(domain_size), Cells(Cells), current_pos(0), max_pos(0), cut_off(5), early_cut_off(3), top_cut_off(3), mult_table_size(0),
+		marked(false), order(domain_size), Cells(Cells), current_pos(0), max_pos(0), cut_off(5), mult_table_size(0),
 		cubes_options(cubes_options), do_work_stealing(cubes_options & 1), last_check_time(0), current_time(0) {
 	while (Ordered_cells[mult_table_size]->get_symbol() != "=" )
 		mult_table_size++;
-	cut_off = mult_table_size * 8/10;
-	early_cut_off = mult_table_size * 6/10;
-	top_cut_off = mult_table_size * 2/10;
+	cut_off = mult_table_size * 9/10;
 
 	cell_values.resize(mult_table_size, -1);
 	real_depths.resize(mult_table_size, 0);
@@ -178,8 +176,9 @@ Cube::work_stealing_requested() {
 }
 
 bool
-Cube::move_on(size_t id, int first, int last) {
+Cube::move_on(size_t id, std::vector<std::vector<int>>& all_nodes) {
 	// std::cout << "debug @@@@@@@@@@@@ " << real_depths.size() << " " << real_depths[id] << " " << cut_off << std::endl;
+	/*
 	if (marked && all_cubes.empty() && real_depths[id] < early_cut_off) {
 		for (size_t idx=first+1; idx<=last; idx++ ) {
 			size_t jdx = 0;
@@ -194,6 +193,7 @@ Cube::move_on(size_t id, int first, int last) {
 		}
 		return true;
 	}
+	*/
 	if (all_cubes.empty() && real_depths[id] > cut_off)
 		return false;
 	if (current_time - last_check_time > min_check_interval) {
@@ -201,7 +201,18 @@ Cube::move_on(size_t id, int first, int last) {
 		// cut_off++;
 		if (work_stealing_requested()) {
 			//std::cout << "debug move_on, work_stealing_requested" << std::endl;
-			if (print_unprocessed_cubes(id, first+1, last)) {
+			if (!all_cubes.empty())
+				return print_unprocessed_cubes(-1, 0, 0);
+			size_t first_pos = 0;
+			while (all_nodes[first_pos][1] == all_nodes[first_pos][2]) {
+				first_pos ++;
+				if (first_pos >= all_nodes.size())
+					return false;
+			}
+			if (real_depths[all_nodes[first_pos][0]] > cut_off)
+				return false;
+			if (print_unprocessed_cubes(all_nodes[first_pos][0], all_nodes[first_pos][1]+1, all_nodes[first_pos][2])) {
+				all_nodes[first_pos][2] = all_nodes[first_pos][1];
 				return true;
 			}
 		}
@@ -250,14 +261,14 @@ Cube::print_unprocessed_cubes(int root_id, size_t from, size_t to)
 	}
 	return ret_value;
 }
-
+/*
 size_t
 Cube::mark_root(size_t id, size_t from_index, size_t last) {
 	if (initialized && from_index < last) {
 		// std::cout << "debug mark_root, id: " << id << std::endl;
-		if (!marked && real_depths[id] < early_cut_off) {
-			top_cut_off = real_depths[id] + 3;
-		}
+		//if (!marked && real_depths[id] < early_cut_off) {
+		//	top_cut_off = real_depths[id] + 3;
+		//}
 		if ((!marked && real_depths[id] < cut_off) ||
 				(marked && real_depths[id] < top_cut_off)) {
 			marked = true;
@@ -278,6 +289,7 @@ Cube::mark_root(size_t id, size_t from_index, size_t last) {
 	}
 	return last;
 }
+*/
 
 void
 Cube::print_new_cube(int cube_length) {
