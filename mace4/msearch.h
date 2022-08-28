@@ -117,12 +117,10 @@ private:
   double Start_seconds;
   double Start_domain_seconds;
 
-private:
   // Global data for searching
   Mace4VGlobais* Mace4vglobais;
   std::vector<std::vector<int>>  all_nodes;
 
-private:
   // printing functions
   static std::string interp_file_name;
   ofstream* models_interp_file_stream = nullptr;
@@ -139,7 +137,6 @@ private:
   void p_stats(void);
   void p_mem(void);
 
-private:
   void initialize_for_search(Plist clauses);
   void init_for_domain_size(void);
   void built_in_assignments(void);

@@ -52,7 +52,6 @@ Search::Search(Mace4VGlobais* g) : Mace4vglobais(g), Domain_size(0), Domain(null
   Symbols(nullptr), Sn_to_mace_sn(nullptr), Sn_map_size(0), Models(nullptr), Grounder(nullptr),
   Total_models(0), Start_domain_seconds(0), Start_seconds(0), Start_megs(0), propagator(nullptr), print_cubes(-2), cubes_options(0)
 {
-
 }
 
 void
@@ -443,19 +442,14 @@ Search::search(int max_constrained, int depth, Cube& splitter)
       	splitter.print_new_cube(print_cubes);
     	return SEARCH_GO_NO_MODELS;
       }
-      //if (from_index != last)
-      //  last = splitter.mark_root(id, from_index, last);
       // end for cubes
 
       all_nodes.push_back(std::vector<int> {id, from_index, last});
       size_t curr_pos = all_nodes.size() - 1;
-      // for (int i = from_index, go = true; i <= last && go; i++) {
       for (int i = from_index, go = true; i <= all_nodes[curr_pos][2] && go; i++) {
     	all_nodes[curr_pos][1] = i;
         if (splitter.move_on(id, all_nodes)) {
     		std::cout << "debug, Search::search stolen from " << i+1 << " to " << last << std::endl;
-    		// last = i;   // this is the last one to process, the rest are "stolen"
-    		//all_nodes[last_pos][2] = i;
     	}
         Estack stk;
         Mstats.assignments++;
