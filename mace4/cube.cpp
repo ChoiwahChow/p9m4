@@ -86,17 +86,17 @@ Cube::read_config_multi(const char* config_file_path) {
 Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_cells, int cubes_options): initialized(false),
 		marked(false), order(domain_size), Cells(Cells), current_pos(0), max_pos(0), cut_off(5), mult_table_size(0),
 		cubes_options(cubes_options), do_work_stealing(cubes_options & 1), last_check_time(0), current_time(0) {
-	while (Ordered_cells[mult_table_size]->get_symbol() != "=" )
+	while (Ordered_cells[mult_table_size]->get_symbol() != "=" ) {
 		mult_table_size++;
+	}
 	cut_off = mult_table_size * 9/10;
-
-	cell_values.resize(mult_table_size, -1);
 
 	for (size_t idx=0; idx<mult_table_size; idx++) {
 		cell_ids.push_back(Ordered_cells[idx]->get_id());
 	}
 	int max_id = *std::max_element(std::begin(cell_ids), std::end(cell_ids));
-	real_depths.resize(max_id+1, 0);
+	cell_values.resize(max_id, -1);
+	real_depths.resize(max_id, 0);
     for (size_t idx = 0; idx < mult_table_size; ++idx)
     	real_depths[cell_ids[idx]] = idx;
 
