@@ -95,8 +95,8 @@ Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_c
 		cell_ids.push_back(Ordered_cells[idx]->get_id());
 	}
 	int max_id = *std::max_element(std::begin(cell_ids), std::end(cell_ids));
-	cell_values.resize(max_id, -1);
-	real_depths.resize(max_id, 0);
+	cell_values.resize(max_id+1, -1);
+	real_depths.resize(max_id+1, 0);
     for (size_t idx = 0; idx < mult_table_size; ++idx)
     	real_depths[cell_ids[idx]] = idx;
 
@@ -121,21 +121,22 @@ Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_c
 
 size_t
 Cube::real_depth(size_t depth, size_t id) {
-	/*if (real_depths[id] > depth) */
-	depth = real_depths[id];
-	/*
-	if (real_depths[id] < depth)
-		std::cout << "Debug real_depth @@@@@@@@@@@@@@@@@@ error id: " << id << " depth " << depth << " vs real_depths[id]: " << real_depths[id] << std::endl;
-
-	for (size_t idx=depth; idx<cell_ids.size(); ++idx)
-		if (cell_ids[idx]==id) {
-			if (idx != real_depths[id])
-				std::cout << "Debug real_depth inner @@@@@@@@@@@@@@@@@@ error id: " << id << " depth " << depth << " vs real_depths[id]: " << real_depths[id] << std::endl;
-			return idx;
-		}
-	*/
-	return depth;
+	return real_depths[id];
 }
+
+int
+Cube::num_cells_filled(Cell Cells)
+{
+	size_t count = 0;
+	for (size_t idx=0; idx<cell_ids.size(); idx++){
+		if (Cells[cell_ids[idx]].has_value())
+			count++;
+	}
+	// std::cout << "Debug Num cells filled " << count << std::endl;
+	return count;
+}
+
+
 
 int
 Cube::value(size_t depth, size_t id) {
@@ -265,38 +266,9 @@ Cube::print_unprocessed_cubes(int root_id, size_t from, size_t to)
 	}
 	return ret_value;
 }
-/*
-size_t
-Cube::mark_root(size_t id, size_t from_index, size_t last) {
-	if (initialized && from_index < last) {
-		// std::cout << "debug mark_root, id: " << id << std::endl;
-		//if (!marked && real_depths[id] < early_cut_off) {
-		//	top_cut_off = real_depths[id] + 3;
-		//}
-		if ((!marked && real_depths[id] < cut_off) ||
-				(marked && real_depths[id] < top_cut_off)) {
-			marked = true;
-			for (size_t idx=from_index+1; idx<=last; idx++ ) {
-				size_t jdx = 0;
-				std::string cube(std::to_string(Cells[cell_ids[jdx++]].get_value()));
-				while (cell_ids[jdx] != id) {
-					cube.append(" ");
-					cube.append(std::to_string(Cells[cell_ids[jdx++]].get_value()));
-				}
-				cube.append(" ");
-				cube.append(std::to_string(idx));
-				all_cubes.push_back(cube);
-			}
-			std::cout << "debug mark_root, depth: " << real_depths[id] << " all_cubes.size: " << all_cubes.size() << std::endl;
-			last = from_index;
-		}
-	}
-	return last;
-}
-*/
 
 void
-Cube::print_new_cube(int cube_length) {
+Cube::print_new_cube(int cube_length, int num_cells_filled) {
 	bool same = true;
 	if (last_printed.size() < cube_length)
 		last_printed.insert(last_printed.end(), cube_length, -1);
@@ -315,6 +287,8 @@ Cube::print_new_cube(int cube_length) {
   	std::cout << std::endl;
   	*/
   	std::cout << "cube";
+  	if (cubes_options & 2)
+  		std::cout << " " << num_cells_filled;
   	for (int idx = 0; idx < cube_length; ++idx)
   	  std::cout << " " << last_printed[idx];
   	std::cout << std::endl;

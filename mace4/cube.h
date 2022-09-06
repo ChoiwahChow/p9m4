@@ -13,7 +13,7 @@ public:
 	static const std::string  steal_cube_file_path;
 	static const int min_check_interval = 2;
 	std::vector<size_t> cell_ids;
-	int                 cubes_options;
+	int                 cubes_options;  // lsb for do work stealing, next for outputing num cells filled
 private:
 	std::vector<int>  cell_values;
 	size_t            order;
@@ -47,10 +47,11 @@ public:
 	bool reinitialize_cube();
 	void set_time(size_t seconds) {current_time = seconds;}
 	int  value(size_t depth, size_t id);
-	void print_new_cube(int cube_length);
+	void print_new_cube(int cube_length, int num_cells_filled);
 	// size_t mark_root(size_t id, size_t from_index, size_t last);
 	bool move_on(size_t id, std::vector<std::vector<int>>& all_nodes);
 	size_t real_depth(size_t depth, size_t id);
+	int  num_cells_filled(Cell Cells);
 	// void print_ordered_cells(int number_of_cells) const;
 };
 

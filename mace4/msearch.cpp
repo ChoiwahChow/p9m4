@@ -396,7 +396,7 @@ Search::search(int max_constrained, int depth, Cube& splitter)
       /*
       // If it is generating cubes, print out the cube and forget the model. The cube will generate the model later
       if (print_cubes >= 0) {
-    	splitter.print_new_cube(print_cubes);
+    	splitter.print_new_cube(print_cubes, num_cells_filled);
       	return SEARCH_GO_NO_MODELS;
       }
       */
@@ -438,13 +438,14 @@ Search::search(int max_constrained, int depth, Cube& splitter)
     	  from_index = value;
     	  last = value;
       }
+      int num_cells_filled = splitter.num_cells_filled(Cells);
       if (print_cubes >= 0 && splitter.real_depth(depth, id) >= print_cubes) {
-      	splitter.print_new_cube(print_cubes);
+      	splitter.print_new_cube(print_cubes, num_cells_filled);
     	return SEARCH_GO_NO_MODELS;
       }
       // end for cubes
 
-      all_nodes.push_back(std::vector<int> {id, from_index, last});
+      all_nodes.push_back(std::vector<int> {id, from_index, last, num_cells_filled});
       size_t curr_pos = all_nodes.size() - 1;
       for (int i = from_index, go = true; i <= all_nodes[curr_pos][2] && go; i++) {
     	all_nodes[curr_pos][1] = i;
