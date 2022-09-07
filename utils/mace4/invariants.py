@@ -124,8 +124,9 @@ def construct_mt(cube, radius, arities):
 
 
 def calc_invariant_vec(cubes, radius, arities, is_relation):
-    """
-        cube:  [[((0, (0, 0)), 0), ((1, (0, 0)), 0), ((2, (0, 0)), 0)], [((0, (0, 0)), 1), ((1, (0, 0)), 0), ((2, (0, 0)), 0)]]
+    """ Entry point for the module to partition a set of cubes by their invariants
+        A cube is represented by a list of (cell term, value), and in addition, there is a number of cells filled for each cube.
+        e.g. cubes:  [[[((0, (0, 0)), 0), ((1, (0, 0)), 0), ((2, (0, 0)), 0)], 8], [[((0, (0, 0)), 1), ((1, (0, 0)), 0), ((2, (0, 0)), 0)], 7]]
     Args:
         cubes (List[cube]): list of cubes
         radius (int): radius of the cubes
@@ -135,7 +136,7 @@ def calc_invariant_vec(cubes, radius, arities, is_relation):
     blocks = defaultdict(list)
     for cube in cubes:
         # calc invariants
-        mts = construct_mt(cube, radius, arities)
+        mts = construct_mt(cube[0], radius, arities)
         key = calc_combo_invariant_vec(mts, radius, arities, is_relation)
         # hashing
         blocks[key].append(cube)

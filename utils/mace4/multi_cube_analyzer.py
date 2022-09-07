@@ -186,7 +186,8 @@ def run_process_multi(id, slot_id, thread_slots, blocks, is_relation, all_permut
     cp = subprocess.run(iso_cubes_exec_multi, input=params_json.encode('utf-8'), stdout=subprocess.PIPE, shell=True)      # ; mv models.out {id}.out",
     # print(f"^^^^^^^^^^^^^^^{cp.stdout}^^^^^^^^^^^^")
     out_json = json.loads(cp.stdout.decode('utf-8'))
-    non_iso_cubes = [[tuple([tuple([y[0][0], tuple(y[0][1])]), y[1]]) for y in x] for x in out_json]
+    # non_iso_cubes = [[tuple([tuple([y[0][0], tuple(y[0][1])]), y[1]]) for y in x] for x in out_json]
+    non_iso_cubes = [tuple([[tuple([tuple([y[0][0], tuple(y[0][1])]), y[1]]) for y in x[0]], x[1]]) for x in out_json]
     # if len(cubes) != len(non_iso_cubes):
     #     print(f"******{len(cubes}********cut down to********{len(non_iso_cubes)}")
     seq.extend(non_iso_cubes)
@@ -203,6 +204,9 @@ def is_in_prev(all_cubes, x):
 def gen_sequence_multi(n, cube_length, radius, arities, is_relation, all_permutations, inv_threshold, iso_cubes_exec_multi,
                  prev_cubes_filepath, in_cubes_filepath, out_cubes_filepath, max_threads=8):
     """
+        A cube is represented by a list of (cell term, value), and in addition, there is a number of cells filled for each cube.
+        e.g. cubes:  [[[((0, (0, 0)), 0), ((1, (0, 0)), 0), ((2, (0, 0)), 0)], 8], [[((0, (0, 0)), 1), ((1, (0, 0)), 0), ((2, (0, 0)), 0)], 7]]
+    Args:
         n (int): order of the algebra
         cube_length (int): length of the search sequence
         radius (int): radius of the cube
@@ -226,17 +230,13 @@ def gen_sequence_multi(n, cube_length, radius, arities, is_relation, all_permuta
     all_cubes = list()
     for cube_str in full_cubes_str:
         cell_values = [int(x) for x in cube_str.split(" ")]
-        #num_cells_filled = cell_values[0]
-        #cell_values.pop(0)
-        cube = list()
-        for index, x in enumerate(ordered_cells):
-            cube.append((x, cell_values[index+1]))
+        cube = ([(x, cell_values[index+1]) for index, x in enumerate(ordered_cells)], cell_values[0])
         all_cubes.append(cube)
     
     print(f"debug gen_sequence_multi, starting number of cubes: {len(full_cubes_str)}, {len(ordered_cells)}", flush=True)
     if len(all_cubes) > inv_threshold or len(all_permutations) > 5000:
         buckets = invariants.calc_invariant_vec(all_cubes, radius, arities, is_relation)
-        all_blocks = sorted(buckets.items(), key=lambda item: item[1], reverse=True)   # list of [key, value]
+        all_blocks = sorted(buckets.items(), key=lambda item: len(item[1]), reverse=True)   # list of [key, value]
         thread_slots = [0] * max_threads
         seq = list()
         while all_blocks:
@@ -270,9 +270,11 @@ def gen_sequence_multi(n, cube_length, radius, arities, is_relation, all_permuta
     else:
         seq = iso_cubes.remove_isomorphic_cubes(all_cubes, is_relation, all_permutations)
     
+    seq = sorted(seq, key=lambda item: item[1], reverse=True)
+    print(f"Debug************* {seq[0][1]} {seq[-1][1]}")
     with (open(out_cubes_filepath, "w")) as fp:
         for cube in seq:
-            for term in cube:
+            for term in cube[0]:
                 fp.write(f"{term[1]} ")
             fp.write("\n")
     print(f"debug gen_sequence_multi, final number of cubes: {len(seq)}, {len(ordered_cells)}")
@@ -308,7 +310,7 @@ def gen_sequence(n, cube_length, radius, arities, is_relation, all_permutations,
         #cube = list()
         #for index, x in enumerate(ordered_cells):
         #    cube.append((x, cell_values[index+1]))
-        cube = [(x, cell_values[index+1]) for index, x in enumerate(ordered_cells)]
+        cube = ([(x, cell_values[index+1]) for index, x in enumerate(ordered_cells)], cell_values[0])
         all_cubes.append(cube)
     # print(f"{all_cubes}")
     

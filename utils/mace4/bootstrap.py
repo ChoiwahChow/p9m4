@@ -144,10 +144,10 @@ run_data = {'anti_monoid': {'seq': cube_sequence_1_2, 'relations': [False, False
                          'input': '107_ortho', 'arities': [2], 'radius': r_2, 'remove': -1},
             'ortho_modular':   {'seq': cube_sequence_2, 'relations': [False], 
                          'input': '108_ortho_modular', 'arities': [2], 'radius': r_2, 'remove': 0},
-            'quasi_holes': {'seq': cube_sequence_2_2, 'relations': [False, True], 
-                         'input': 'IQG4.n.2', 'arities': [2, 2], 'radius': r_2_2, 'remove': 1},
-            #'quasi_holes': {'seq': cube_sequence_2, 'relations': [False], 
-            #             'input': 'iqg4.n.2', 'arities': [2], 'radius': r_2, 'remove': -1},
+            'quasi_holes_2_2': {'seq': cube_sequence_2_2, 'relations': [False, True], 
+                         'input': 'sem_iqg4.n.2', 'arities': [2, 2], 'radius': r_2_2, 'remove': 1},
+            'quasi_holes_2': {'seq': cube_sequence_2, 'relations': [False], 
+                         'input': 'iqg4.n.2', 'arities': [2], 'radius': r_2, 'remove': -1},
             'quasi_impl':   {'seq': cube_sequence_2, 'relations': [False], 
                          'input': '109_quasi_implication_algebra', 'arities': [2], 'radius': r_2, 'remove': -1},
             'quasi_mv': {'seq': cube_sequence_1_2, 'relations': [False, False], 
@@ -352,12 +352,13 @@ if __name__ == "__main__":
     algebra = "meadows"         # 
     algebra = "compl_mod_lattice"  #order 12 
     algebra = "invol_lattices"   # #50  cube length 78, order 13 
-    algebra = "semi"
     algebra = "posets"           # #86 cube length 36, order 9
     algebra = "quasi_ordered"
+    algebra = "semi"
+    algebra = "quasi_holes_2_2"
 
-    target_cube_length = 25
-    order = 8
+    target_cube_length = 32
+    order = 19
 
     propagated_models_count = 0
     t0 = time.time()

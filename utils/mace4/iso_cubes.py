@@ -49,6 +49,8 @@ def has_iso(x, is_relation, all_permutations, non_iso_sorted):
 
 def remove_isomorphic_cubes(cubes, is_relation, all_permutations):
 	""" removes all cubes that have isomorphic cubes already seen
+        A cube is represented by a list of (cell term, value), and in addition, there is a number of cells filled for each cube.
+        e.g. cubes:  [[[((0, (0, 0)), 0), ((1, (0, 0)), 0), ((2, (0, 0)), 0)], 8], [[((0, (0, 0)), 1), ((1, (0, 0)), 0), ((2, (0, 0)), 0)], 7]]
 	Args:
 		cubes: list of cubes
 		is_relation (List[bool]): the operation is a relation
@@ -57,10 +59,10 @@ def remove_isomorphic_cubes(cubes, is_relation, all_permutations):
 	non_iso_sorted = dict()
 	non_iso_unsorted = list()
 	for x in cubes:
-		y = tuple(sorted(x))   # sorted by table, then by first coordinate, then second coordinate
+		y = tuple(sorted(x[0]))   # sorted by table, then by first coordinate, then second coordinate
 		if not has_iso(y, is_relation, all_permutations, non_iso_sorted):
-			non_iso_unsorted.append(tuple(x))
-			non_iso_sorted[y] = 1
+			non_iso_unsorted.append([tuple(x[0]), x[1]])
+			non_iso_sorted[y] = 1  # assign a value 1 just to put y into a dictionary
 	return tuple(non_iso_unsorted)
 
 

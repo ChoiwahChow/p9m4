@@ -57,14 +57,19 @@ def remove_isomorphic_cubes_multi(cubes, is_relation, all_permutations):
 	non_iso_sorted = dict()
 	non_iso_unsorted = list()
 	for x in cubes:
-		y = tuple(sorted(x))   # sorted by table, then by first coordinate, then second coordinate
+		y = tuple(sorted(x[0]))   # sorted by table, then by first coordinate, then second coordinate
 		if not has_iso(y, is_relation, all_permutations, non_iso_sorted):
-			non_iso_unsorted.append(tuple(x))
+			non_iso_unsorted.append([tuple(x[0]), x[1]])
 			non_iso_sorted[y] = 1
 	return tuple(non_iso_unsorted)
 
 
 def remove_isomorphic_cubes_multi_wrapper():
+	"""
+	blocks are lists of cubes having the same invariant vectors.  So there is no need to check for isomorphism of cubes across blocks.  
+        A cube is represented by a list of (cell term, value), and in addition, there is a number of cells filled for each cube.
+        e.g. block of cubes:  [[[((0, (0, 0)), 0), ((1, (0, 0)), 0), ((2, (0, 0)), 0)], 8], [[((0, (0, 0)), 1), ((1, (0, 0)), 0), ((2, (0, 0)), 0)], 7]]
+	"""
 	params_json = json.load(sys.stdin)
 	is_relation = params_json['is_relation']
 	all_permutations = params_json['all_permutations']
@@ -72,7 +77,7 @@ def remove_isomorphic_cubes_multi_wrapper():
 	# print(f"debug remove_isomorphic_cubes_multi_wrapper ^^^^^^^^^^^^^^^{blocks}^^^^^^^^^^^^^^")
 	outputs = []
 	for block in blocks:
-		cubes = [[tuple([tuple([y[0][0], tuple(y[0][1])]), y[1]]) for y in x] for x in block]
+		cubes = [tuple([[tuple([tuple([y[0][0], tuple(y[0][1])]), y[1]]) for y in x[0]], x[1]]) for x in block]
 		outputs.extend(remove_isomorphic_cubes_multi(cubes, is_relation, all_permutations))
 	# print(f"debug remove_isomorphic_cubes_multi_wrapper ^^^^^^^^^^^^^^^{outputs}^^^^^^^^^^^^^^")
 	return outputs
