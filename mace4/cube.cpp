@@ -287,8 +287,7 @@ Cube::print_new_cube(int cube_length, int num_cells_filled) {
   	std::cout << std::endl;
   	*/
   	std::cout << "cube";
-  	if (cubes_options & 2)
-  		std::cout << " " << num_cells_filled;
+  	std::cout << " " << num_cells_filled;
   	for (int idx = 0; idx < cube_length; ++idx)
   	  std::cout << " " << last_printed[idx];
   	std::cout << std::endl;

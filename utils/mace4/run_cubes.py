@@ -77,6 +77,7 @@ def run_mace_jobs(mace4_exec, input_file, order, cubes, print_models, cubes_opti
 
     with (open(cubes)) as fp:
         all_cubes = fp.read().splitlines()
+    # all_cubes.sort(key=lambda x: len(x))
     all_cubes = [x.rstrip() for x in all_cubes]
 
     while all_cubes:
@@ -91,6 +92,8 @@ def run_mace_jobs(mace4_exec, input_file, order, cubes, print_models, cubes_opti
             num = 100
         elif num > 10:
             num = 10
+        elif num > 3:
+            num = 3
         else:
             num = 1
         seqs = all_cubes[:num]
@@ -115,12 +118,13 @@ def run_mace(mace4_exec, input_file, order, cubes, print_models, cubes_options, 
     cube_file = cubes
     os.makedirs(f"{working_dir_prefix}_stealing", exist_ok=True)
     stealing_file = f"{working_dir_prefix}_stealing/new_work.out"
+    steal_work = cubes_options % 2 == 1
     id_counter = 0
     while not done:
         # Path(stealing_file).unlink(True)
         id_counter = run_mace_jobs(mace4_exec, input_file, order, cube_file, print_models, cubes_options, working_dir_prefix, id_counter, max_threads, thread_slots)
         work_list = list()
-        if cubes_options % 2 == 1:
+        if steal_work:
             work_list = request_work(working_dir_prefix, request_work_file, work_file, max_threads, thread_slots)
         print(f"debug run_mace, request work returns {len(work_list)} jobs", flush=True)
         if work_list:

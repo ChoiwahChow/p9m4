@@ -39,6 +39,10 @@ def all_done(thread_slots):
 
 
 def run_process(id, slot_id, thread_slots, order, cube_length, input_file, cubes, print_models, mace4, cubes_options, working_dir):
+    """
+    Args:
+        cubes_options (int): bit vector lsb 1 - work stealing, 2 - cube has num cells filled at beginning
+    """
     working_dir = f"{working_dir}_{slot_id}"
     os.makedirs(working_dir, exist_ok=True)
     
@@ -61,13 +65,14 @@ def run_process(id, slot_id, thread_slots, order, cube_length, input_file, cubes
 
 
 def extend_cube_jobs(input_file, order, new_cube_length, cubes, print_models, mace4, cubes_options, working_dir, max_threads, thread_slots):
-    """ 
-    
+    """
+    Args:
+        cubes_options (int): bit vector lsb 1 - work stealing, 2 - cube has num cells filled at beginning
     """
     id = 0
     if cubes is None:
         thread_slots[0] = threading.Thread(target=run_process, 
-                                                 args=(id, 0, thread_slots, order, new_cube_length, f"../{input_file}", None, print_models, f"../{mace4}", cubes_options, working_dir))
+                                           args=(id, 0, thread_slots, order, new_cube_length, f"../{input_file}", None, print_models, f"../{mace4}", cubes_options, working_dir))
         thread_slots[0].start()
     else:
         with (open(cubes)) as fp:
@@ -151,6 +156,10 @@ def request_work(working_dir_prefix, request_work_file, work_file, max_threads, 
     
 
 def extend_cubes(input_file, order, new_cube_length, cubes, print_models, mace4, working_dir_prefix, max_threads, cubes_options, request_work_file, work_file):
+    """
+    Args:
+        cubes_options (int): bit vector lsb 1 - work stealing, 2 - cube has num cells filled at beginning
+    """
     done = False
     thread_slots = [0] * max_threads
     cube_file = cubes

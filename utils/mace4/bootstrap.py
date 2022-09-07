@@ -97,7 +97,7 @@ run_data = {'anti_monoid': {'seq': cube_sequence_1_2, 'relations': [False, False
             'comm_ord_semi': {'seq': cube_sequence_2_2, 'relations': [False, True], 
                          'input': '24_comm_ord_semi', 'arities': [2, 2], 'radius': r_2_2, 'remove': -1},
             'compl_mod_lattice': {'seq': cube_sequence_1_2_2, 'relations': [False, False, False], 
-                         'input': '31_comp_modular_lattice', 'arities': [1, 2, 2], 'radius': r_1_2_2, 'remove': -1},
+                         'input': '31_comp_modular_lattice', 'arities': [1, 2, 2], 'radius': r_1_2_2, 'remove': 1},
             'dimonoid': {'seq': cube_sequence_2_2, 'relations': [False, False], 
                          'input': '152_dimonoid', 'arities': [2, 2], 'radius': r_2_2, 'remove': -1},
             'directoid':   {'seq': cube_sequence_2, 'relations': [False], 
@@ -144,16 +144,16 @@ run_data = {'anti_monoid': {'seq': cube_sequence_1_2, 'relations': [False, False
                          'input': '107_ortho', 'arities': [2], 'radius': r_2, 'remove': -1},
             'ortho_modular':   {'seq': cube_sequence_2, 'relations': [False], 
                          'input': '108_ortho_modular', 'arities': [2], 'radius': r_2, 'remove': 0},
-            #'quasi_holes': {'seq': cube_sequence_2_2, 'relations': [False, True], 
-            #             'input': 'iqg4.n.2', 'arities': [2, 2], 'radius': r_2_2, 'remove': 1},
-            'quasi_holes': {'seq': cube_sequence_2, 'relations': [False], 
-                         'input': 'iqg4.n.2', 'arities': [2], 'radius': r_2, 'remove': -1},
+            'quasi_holes': {'seq': cube_sequence_2_2, 'relations': [False, True], 
+                         'input': 'IQG4.n.2', 'arities': [2, 2], 'radius': r_2_2, 'remove': 1},
+            #'quasi_holes': {'seq': cube_sequence_2, 'relations': [False], 
+            #             'input': 'iqg4.n.2', 'arities': [2], 'radius': r_2, 'remove': -1},
             'quasi_impl':   {'seq': cube_sequence_2, 'relations': [False], 
                          'input': '109_quasi_implication_algebra', 'arities': [2], 'radius': r_2, 'remove': -1},
             'quasi_mv': {'seq': cube_sequence_1_2, 'relations': [False, False], 
                          'input': '88_quasi_mv', 'arities': [1, 2], 'radius': r_1_2, 'remove': 1},
             'quasi_ordered': {'seq': cube_sequence_2, 'relations': [True], 
-                         'input': 'quasi_ordered', 'arities': [2], 'radius': r_2, 'remove': -1},
+                         'input': '89_quasi_ordered', 'arities': [2], 'radius': r_2, 'remove': -1},
             'quandles': {'seq': cube_sequence_2_2, 'relations': [False, False], 
                          'input': '87_quandles', 'arities': [2, 2], 'radius': r_2_2, 'remove': -1},
             'right_hoop': {'seq': cube_sequence_2_2, 'relations': [False, False], 
@@ -207,7 +207,10 @@ def get_working_dir(algebra, order, cube_length):
     
 
 def collect_cubes(algebra, cube_dir, prev_cube_length, cube_length, threshold, data_dir, num_threads):
+    """ collect the cubes generated, and remove isomorphic cubes
+    """
     al = run_data[algebra]
+    # get rid of leading "cube "
     cmd = f"cat {cube_dir}_*/{cube_length}.out | grep '^cube' | sort --parallel={num_threads} -u | sed 's/[^ ]* //' > {data_dir}/cubes{cube_length}.out"
     subprocess.run(cmd, capture_output=False, text=True, check=False, shell=True)
     cube_file = f"{data_dir}/cubes{cube_length}.out"
@@ -236,6 +239,7 @@ def gen_all_cubes(algebra, order, target_cube_length, threshold, mace4_exe, cube
         target_cube_length (int): target cube length
         threshold (int):  use invariant when the number of models is at least this manany
         mace4_exe (str): path name of the mace4 executable
+        cubes_options (int): bit vector lsb 1 - work stealing, 2 - cube has num cells filled at beginning
         num_threads (int): max number of threads to use
     """
     data_dir = get_data_dir(algebra, order)
@@ -302,10 +306,8 @@ if __name__ == "__main__":
     algebra = "dist_lattice_ord_semi"           # #86 cube length 36, order 9
     algebra = "order_algebras"   # #74  cube length  25, order 8
     algebra = "m_zeriods"        # #58 order 10 length 150
-    algebra = "posets"           # #86 cube length 36, order 9
     algebra = "ord_semilattice"  # #78  cube length 72, order 9
     algebra = "quasi_holes"      # length 32 order 19 
-    algebra = "tarski"           # #102 cube length 36, order 12
     algebra = "loops"            # #32  cube length 16, order 8
     algebra = "hilbert"
     algebra = "semizero"
@@ -315,12 +317,9 @@ if __name__ == "__main__":
     algebra = "ortho_modular"    # no reduction
     algebra = "ortho"            # always half
     algebra = "ord_algebra"      # order 7/8
-    algebra = "quasi_ordered"
     algebra = "semi_varG2I2"
     algebra = "ord_semilattice"  # no reduction
-    algebra = "invol_lattices"   # #50  cube length 78, order 13, no reduction
     algebra = "comm_ord_monoid"
-    algebra = "compl_mod_lattice"  #order 12  no reduction
     algebra = "inv_semi"         # #121 cube length 20 order 9
     algebra = "mzeroid"          # no reduction
     algebra = "bck"          # no reduction
@@ -345,15 +344,20 @@ if __name__ == "__main__":
     algebra = "brouwerian"       # no reduction
     algebra = "neardist"       # no reduction
     algebra = "right_hoop"       # no reduction
-    algebra = "meadows"         # no reduction
     algebra = "directoid"       # order 9, no reduction
     algebra = "invol_quandle"       # order 9, no reduction
     algebra = "normal_bands"    # order 9
-    algebra = "quandles"         # order 10, no reduction
+    algebra = "quandles"         # order 10
+    algebra = "tarski"           # #102 cube length 36, order 12
+    algebra = "meadows"         # 
+    algebra = "compl_mod_lattice"  #order 12 
+    algebra = "invol_lattices"   # #50  cube length 78, order 13 
     algebra = "semi"
+    algebra = "posets"           # #86 cube length 36, order 9
+    algebra = "quasi_ordered"
 
-    target_cube_length = 2
-    order = 7
+    target_cube_length = 25
+    order = 8
 
     propagated_models_count = 0
     t0 = time.time()

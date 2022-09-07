@@ -11,6 +11,16 @@ The models generated in this step must be kept
 Remove duplicate cubes
 grep "^cube" working/2.out | sort | uniq | sed 's/[^ ]* //' > working/semi7/cubes2.out
 
+
+The cubes are of the format (the first number is num cells filled, -1 if not calculated)
+4 0 0 0 0
+4 0 0 1 1
+9 0 0 2 2
+4 0 1 0 0
+
+
+
+
 Examples of ordered cells for cube length of 25, the first element in the tuple is the function (represented by a number), the second is the cell coordinates.
 >>> arities = [1, 2]
 >>> gen_func_cells(cube_length, arities)
@@ -208,10 +218,7 @@ def gen_sequence_multi(n, cube_length, radius, arities, is_relation, all_permuta
     """    
     print(f"debug gen_sequence_multi Number of permutations {len(all_permutations)}")
     # prev_str = read_cubes_file(prev_cubes_filepath)    
-    in_cubes_str = read_cubes_file(in_cubes_filepath)
-    
-    # filter out those whose parents are already filtered out
-    full_cubes_str = in_cubes_str     #  [x for x in in_cubes_str if is_in_prev(prev_str, x)]
+    full_cubes_str = read_cubes_file(in_cubes_filepath)
     
     ordered_cells = gen_func_cells(cube_length, arities)
     
@@ -219,13 +226,15 @@ def gen_sequence_multi(n, cube_length, radius, arities, is_relation, all_permuta
     all_cubes = list()
     for cube_str in full_cubes_str:
         cell_values = [int(x) for x in cube_str.split(" ")]
+        #num_cells_filled = cell_values[0]
+        #cell_values.pop(0)
         cube = list()
         for index, x in enumerate(ordered_cells):
-            cube.append((x, cell_values[index]))
+            cube.append((x, cell_values[index+1]))
         all_cubes.append(cube)
     
-    print(f"debug gen_sequence_multi, starting number of cubes: {len(in_cubes_str)}, {len(ordered_cells)}", flush=True)
-    if len(all_cubes) > inv_threshold:
+    print(f"debug gen_sequence_multi, starting number of cubes: {len(full_cubes_str)}, {len(ordered_cells)}", flush=True)
+    if len(all_cubes) > inv_threshold or len(all_permutations) > 5000:
         buckets = invariants.calc_invariant_vec(all_cubes, radius, arities, is_relation)
         all_blocks = sorted(buckets.items(), key=lambda item: item[1], reverse=True)   # list of [key, value]
         thread_slots = [0] * max_threads
@@ -288,24 +297,22 @@ def gen_sequence(n, cube_length, radius, arities, is_relation, all_permutations,
     """	
     print(f"Number of permutations {len(all_permutations)}")
     # prev_str = read_cubes_file(prev_cubes_filepath)	
-    in_cubes_str = read_cubes_file(in_cubes_filepath)
-    
-    # filter out those whose parents are already filtered out
-    full_cubes_str = in_cubes_str     #  [x for x in in_cubes_str if is_in_prev(prev_str, x)]
+    full_cubes_str = read_cubes_file(in_cubes_filepath)
     
     ordered_cells = gen_func_cells(cube_length, arities)
     
     # print(f"***** {cube_length} {ordered_cells}")
     all_cubes = list()
     for cube_str in full_cubes_str:
-    	cell_values = [int(x) for x in cube_str.split(" ")]
-    	cube = list()
-    	for index, x in enumerate(ordered_cells):
-    		cube.append((x, cell_values[index]))
-    	all_cubes.append(cube)
+        cell_values = [int(x) for x in cube_str.split(" ")]
+        #cube = list()
+        #for index, x in enumerate(ordered_cells):
+        #    cube.append((x, cell_values[index+1]))
+        cube = [(x, cell_values[index+1]) for index, x in enumerate(ordered_cells)]
+        all_cubes.append(cube)
     # print(f"{all_cubes}")
     
-    print(f"debug gen_sequence, starting number of cubes: {len(in_cubes_str)}, {len(ordered_cells)}", flush=True)
+    print(f"debug gen_sequence, starting number of cubes: {len(full_cubes_str)}, {len(ordered_cells)}", flush=True)
     if len(all_cubes) > inv_threshold:
         blocks = invariants.calc_invariant_vec(all_cubes, radius, arities, is_relation)
         print(f"debug gen_sequence parallel invariants^^^^^^^^^^{len(all_cubes)}, blocks {len(blocks)}^^^^^^^^^^^^^^^^^^called")
