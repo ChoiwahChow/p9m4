@@ -357,7 +357,7 @@ if __name__ == "__main__":
     algebra = "semi"
     algebra = "quasi_holes_2_2"
 
-    target_cube_length = 32
+    target_cube_length = 50
     order = 19
 
     propagated_models_count = 0

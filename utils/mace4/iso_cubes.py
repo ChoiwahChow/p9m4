@@ -59,10 +59,12 @@ def remove_isomorphic_cubes(cubes, is_relation, all_permutations):
 	non_iso_sorted = dict()
 	non_iso_unsorted = list()
 	for x in cubes:
-		y = tuple(sorted(x[0]))   # sorted by table, then by first coordinate, then second coordinate
-		if not has_iso(y, is_relation, all_permutations, non_iso_sorted):
+		if all_permutations:
+			y = tuple(sorted(x[0]))   # sorted by table, then by first coordinate, then second coordinate
+		if not all_permutations or not has_iso(y, is_relation, all_permutations, non_iso_sorted):
 			non_iso_unsorted.append([tuple(x[0]), x[1]])
-			non_iso_sorted[y] = 1  # assign a value 1 just to put y into a dictionary
+			if all_permutations:
+				non_iso_sorted[y] = 1  # assign a value 1 just to put y into a dictionary
 	return tuple(non_iso_unsorted)
 
 

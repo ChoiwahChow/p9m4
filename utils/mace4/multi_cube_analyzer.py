@@ -234,7 +234,9 @@ def gen_sequence_multi(n, cube_length, radius, arities, is_relation, all_permuta
         all_cubes.append(cube)
     
     print(f"debug gen_sequence_multi, starting number of cubes: {len(full_cubes_str)}, {len(ordered_cells)}", flush=True)
-    if len(all_cubes) > inv_threshold or len(all_permutations) > 5000:
+    if len(all_cubes) > 2000000:
+        all_permutations = []
+    if all_permutations and (len(all_cubes) > inv_threshold or len(all_permutations) > 5000):
         buckets = invariants.calc_invariant_vec(all_cubes, radius, arities, is_relation)
         all_blocks = sorted(buckets.items(), key=lambda item: len(item[1]), reverse=True)   # list of [key, value]
         thread_slots = [0] * max_threads
