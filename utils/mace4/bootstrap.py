@@ -42,7 +42,7 @@ num_threads  = 8
 
 request_work_file = "request_work.txt"
 work_file = "release_work.out"
-print_models = "P0"  # P0 - don't output models, A1 - output models, P1 print models
+print_models = "A1"  # P0 - don't output models, A1 - output models, P1 print models
 
 cube_sequence_2 = [2, 4, 9, 16, 25, 36, 49, 64]   # for radius 2, 2, 3, 4, 5, 6, 7, ...
 cube_sequence_1_2 = [2, 4, 6, 12, 20, 30, 42, 56, 72]   # for radius 1, 2, 2, 3, 4, 5, 6...
@@ -126,6 +126,8 @@ run_data = {'anti_monoid': {'seq': cube_sequence_1_2, 'relations': [False, False
                          'input': '146_left_disemi', 'arities': [2, 2], 'radius': r_2_2, 'remove': -1},
             'monoid':   {'seq': cube_sequence_2, 'relations': [False], 
                          'input': 'monoids', 'arities': [2], 'radius': r_2, 'remove': 0},
+            'monoidplus':   {'seq': cube_sequence_2, 'relations': [False], 
+                         'input': 'monoid_12', 'arities': [2], 'radius': r_2, 'remove': 0},
             'mzeroid': {'seq': cube_sequence_1_2_2_2, 'relations': [False, False, False, True], 
                          'input': '58_m_zeroid', 'arities': [1, 2, 2, 2], 'radius': r_1_2_2_2, 'remove': 0},
             'mv_algebra': {'seq': cube_sequence_1_2, 'relations': [False, False], 
@@ -174,6 +176,8 @@ run_data = {'anti_monoid': {'seq': cube_sequence_1_2, 'relations': [False, False
                          'input': '100_skew_lattices', 'arities': [2, 2], 'radius': r_2_2, 'remove': -1},
             'sp_semi': {'seq': cube_sequence_1_2, 'relations': [False, False], 
                          'input': '124_sp_semi', 'arities': [1, 2], 'radius': r_1_2, 'remove': 0},
+            'iploops':   {'seq': cube_sequence_1_2, 'relations': [False, False], 
+                         'input': 'iploops', 'arities': [1, 2], 'radius': r_1_2, 'remove': 0},
             'loops':   {'seq': cube_sequence_2, 'relations': [False], 
                          'input': '32_loop', 'arities': [2], 'radius': r_2, 'remove': 0},
             'm_zeriods':   {'seq': cube_sequence_1_2_2_2_2, 'relations': [False, False, False, False, True], 
@@ -356,9 +360,11 @@ if __name__ == "__main__":
     algebra = "quasi_ordered"
     algebra = "semi"
     algebra = "quasi_holes_2_2"
+    algebra = "iploops"
+    algebra = "monoidplus"
 
-    target_cube_length = 50
-    order = 19
+    target_cube_length = 9
+    order = 7
 
     propagated_models_count = 0
     t0 = time.time()
