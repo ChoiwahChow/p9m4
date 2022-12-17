@@ -110,8 +110,11 @@ def simplify_permutation(p):
 
 
 def shorten_permutations(ps):
-	x = [simplify_permutation(p) for p in ps]
-	return [y for y in x if y]
+    el = len(ps[0]) - 1
+    if el > 2:
+        ps = [x for x in ps if x[el] != el]
+    x = [simplify_permutation(p) for p in ps]
+    return [y for y in x if y]
 
 
 def isomorphic_cube(cube, permutation, is_relation):
