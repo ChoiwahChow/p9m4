@@ -35,6 +35,8 @@ def mace_to_gap(fn):
                 tbl = list()
             elif '])' in line:
                 if tbl:
+                    row = extract_row(func, line)
+                    tbl.append(row)
                     alg.append(tbl)
                     tbl = list()
                     in_model = False
