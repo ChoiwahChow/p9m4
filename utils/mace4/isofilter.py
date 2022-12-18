@@ -10,6 +10,9 @@ def extract_row(func, line):
         arr = [x for x in line.split(',') if x]
         arr[-1] = re.sub("[^0-9]", "", arr[-1])
         arr = [int(x)+1 for x in arr]
+    elif func == 'un':
+        line = re.findall(r'\[.*?\]', line)
+        arr = [int(x)+1 for x in line.splie(',') if x]
     return arr
 
 
@@ -30,10 +33,12 @@ def mace_to_gap(fn):
                 if tbl:
                     alg.append(tbl)
                 if alg:
-                    models.append(alg)
+                    models.append(alg.reverse())
                 alg = list()
                 tbl = list()
             elif '])' in line:
+                if 'function' in line and '(_)' in line:
+                    func = 'un'
                 if tbl:
                     row = extract_row(func, line)
                     tbl.append(row)
@@ -45,10 +50,14 @@ def mace_to_gap(fn):
                     in_model = True
                     tbl = list()
                     func = 'bin'
+                elif '(_),' in line:
+                    func = 'un'
             elif in_model:
                 row = extract_row(func, line)
                 tbl.append(row)
             line = fp.readline()
+    if alg:
+        models.append(alg.reverse)
     return models 
 
 
