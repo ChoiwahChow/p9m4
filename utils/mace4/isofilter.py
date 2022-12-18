@@ -11,8 +11,9 @@ def extract_row(func, line):
         arr[-1] = re.sub("[^0-9]", "", arr[-1])
         arr = [int(x)+1 for x in arr]
     elif func == 'un':
-        line = re.findall(r'\[.*?\]', line)
-        arr = [int(x)+1 for x in line.splie(',') if x]
+        found = re.search(r'\[(.*?)\]', line)
+        line = found.group(1)
+        arr = [int(x)+1 for x in line.split(',') if x]
     return arr
 
 
@@ -33,31 +34,34 @@ def mace_to_gap(fn):
                 if tbl:
                     alg.append(tbl)
                 if alg:
-                    models.append(alg.reverse())
+                    alg.reverse()
+                    models.append(alg)
                 alg = list()
                 tbl = list()
             elif '])' in line:
                 if 'function' in line and '(_)' in line:
                     func = 'un'
-                if tbl:
+                if (func == 'un' or tbl) and not 'f1' in line:
                     row = extract_row(func, line)
-                    tbl.append(row)
+                    if func == 'un':
+                        tbl = row
+                    else:
+                        tbl.append(row)
                     alg.append(tbl)
                     tbl = list()
-                    in_model = False
+                in_model = False
             elif 'function' in line :
                 if '(_,_),' in line:
                     in_model = True
                     tbl = list()
                     func = 'bin'
-                elif '(_),' in line:
-                    func = 'un'
             elif in_model:
                 row = extract_row(func, line)
                 tbl.append(row)
             line = fp.readline()
     if alg:
-        models.append(alg.reverse)
+        alg.reverse()
+        models.append(alg)
     return models 
 
 
@@ -71,6 +75,9 @@ def write_alg(fp, alg):
                 row = [str(x) for x in row]
                 tbl.append(f"[ {','.join(row)} ]")
             all_models.append(f"[ {','.join(tbl)} ]")
+        else:
+            row = [str(x) for x in op]
+            all_models.append(f"[{','.join(row)}]")
             # fp.write(f"[ {','.join(tbl)} ]")
     fp.write(",".join(all_models))
     fp.write(' ]')
@@ -94,4 +101,4 @@ __all__ = ["isofilter"]
 
 if __name__ == "__main__":
     models = isofilter("models.out", "models.g")
-    print(models)
+
