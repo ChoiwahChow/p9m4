@@ -81,7 +81,7 @@ CmdLine::process_command_line_args(int argc, char **argv, Mace_options opt)
       break;
 
     case 'A':
-      command_line_flag(opt->print_models_interp, optarg);
+      command_line_parm(opt->print_models_interp, optarg);
       break;
     case 'C':
       command_line_parm(opt->print_cubes, optarg);
@@ -169,7 +169,7 @@ CmdLine::usage_message(std::ostream& fp, Mace_options opt)
      << "  -n n : (lower case) parm domain_size (" << LADR_GLOBAL_OPTIONS.parm(opt->domain_size) << ").\n"
      << "  -N n : (upper case) parm end_size (" << LADR_GLOBAL_OPTIONS.parm(opt->iterate_up_to) << ").\n"
      << "  -i n : (lower case) parm increment (" << LADR_GLOBAL_OPTIONS.parm(opt->increment) << ").\n"
-     << "  -A n : (upper case) flag print_models_interp (" << (LADR_GLOBAL_OPTIONS.flag(opt->print_models_interp) ? "set" : "clear") << ").\n"
+     << "  -A n : (upper case) parm print_models_interp (" << LADR_GLOBAL_OPTIONS.parm(opt->print_models_interp) << ").\n"
      << "  -C n : (upper case) parm print_cubes (" << LADR_GLOBAL_OPTIONS.parm(opt->print_cubes) << ").\n"
      << "  -P n : (upper case) flag print_models (" << (LADR_GLOBAL_OPTIONS.flag(opt->print_models) ? "set" : "clear") << ").\n"
      << "  -p n : (lower case) flag print_models_tabular (" << (LADR_GLOBAL_OPTIONS.flag(opt->print_models_tabular) ? "set" : "clear") << ").\n"

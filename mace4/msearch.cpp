@@ -284,7 +284,7 @@ Search::possible_model(void)
     Models = p_con.plist_append(Models, model);
   }
 
-  if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models_interp))
+  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) > 0)
     print_model_interp(*models_interp_file_stream);
   else if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models))
     print_model_standard(std::cout, true);
@@ -629,7 +629,7 @@ Search::mace4(Plist clauses)
   Memory::set_max_megs(8000);
 
   initialize_for_search(clauses);
-  if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models_interp)) {
+  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp)>0) {
 	  models_interp_file_stream = new ofstream();
 	  models_interp_file_stream->open(Search::interp_file_name, std::ios_base::app);
   }
@@ -662,7 +662,7 @@ Search::mace4(Plist clauses)
     n = next_domain_size(n);  /* returns -1 if we're done */
   }
 
-  if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models_interp)) {
+  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp)>0) {
 	  models_interp_file_stream->close();
 	  models_interp_file_stream = nullptr;
   }
@@ -865,6 +865,8 @@ void
 Search::print_model_interp(std::ostream& fp)
 {
   /* Prints the model the same format as interpformat, to be used as inputs to isofilter directly*/
+  /* also ignore constants */
+
   fp << "interpretation( " << Domain_size << ", [number=" << Total_models << ", seconds="
      << static_cast<int>(myClock::user_seconds()) << "], [";
 
@@ -873,7 +875,7 @@ Search::print_model_interp(std::ostream& fp)
   SymbolContainer   symbol_con;
 
   for (Symbol_data s = Symbols; s != nullptr; s = s->next) {
-    if (s->attribute != EQUALITY_SYMBOL) {
+    if (s->attribute != EQUALITY_SYMBOL && s->arity > 0) {
       if (syms_printed)
         fp << ",";
       fp << "\n  " << (s->type == type_FUNCTION ? "function" : "relation") << "("
