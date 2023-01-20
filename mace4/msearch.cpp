@@ -865,7 +865,15 @@ void
 Search::print_model_interp(std::ostream& fp)
 {
   /* Prints the model the same format as interpformat, to be used as inputs to isofilter directly*/
-  /* also ignore constants */
+  /* also ignore constants if not -A1 */
+  if (out_models_count >= 5000000 - 1) { // hard-coded for now
+    models_interp_file_stream->close();
+    models_interp_file_stream = new ofstream();
+    models_interp_file_stream->open(Search::interp_file_name + std::to_string(file_count), std::ios_base::app);
+    out_models_count = 0;
+    file_count++;
+  }
+  out_models_count++;
 
   fp << "interpretation( " << Domain_size << ", [number=" << Total_models << ", seconds="
      << static_cast<int>(myClock::user_seconds()) << "], [";
@@ -875,7 +883,7 @@ Search::print_model_interp(std::ostream& fp)
   SymbolContainer   symbol_con;
 
   for (Symbol_data s = Symbols; s != nullptr; s = s->next) {
-    if (s->attribute != EQUALITY_SYMBOL && s->arity > 0) {
+    if (s->attribute != EQUALITY_SYMBOL && (s->arity > 0 || LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 1)) {
       if (syms_printed)
         fp << ",";
       fp << "\n  " << (s->type == type_FUNCTION ? "function" : "relation") << "("
