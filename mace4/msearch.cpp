@@ -865,11 +865,25 @@ void
 Search::print_model_interp(std::ostream& fp)
 {
   /* Prints the model the same format as interpformat, to be used as inputs to isofilter directly*/
-  /* also ignore constants if not -A1 */
-  if (out_models_count >= 5000000 - 1) { // hard-coded for now
+  /* also ignore constants if not -A1. For -A3 execute a fixed script before moving on */
+  size_t max_count = out_models_count + 1;
+  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 2)
+    max_count = 5000000;
+  else if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 3) 
+    max_count = 1000000;
+ 
+  if (out_models_count > max_count) { // hard-coded for now
     models_interp_file_stream->close();
+    if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 3) {
+      int ret = system("../utils/mace4/run_mlex.sh"); 
+      if (ret != 0 )
+	std::cerr << "error in calling script run_mlex.sh" << std::endl;
+    }
     models_interp_file_stream = new ofstream();
-    models_interp_file_stream->open(Search::interp_file_name + std::to_string(file_count), std::ios_base::app);
+    if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 3) 
+      models_interp_file_stream->open(Search::interp_file_name, std::ios_base::app);
+    else
+      models_interp_file_stream->open(Search::interp_file_name + std::to_string(file_count), std::ios_base::app);
     out_models_count = 0;
     file_count++;
   }
