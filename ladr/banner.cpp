@@ -9,9 +9,10 @@
 
 
 
+/*
 void banner::print_separator(ostream &fp, string str, bool initial_newline)
 {
-  int len = 80;  /* total length of line */
+  int len = 80;  // total length of line
   string first_half = "==============================";
   if (initial_newline) fp<<endl;
   fp<<first_half<<" "<<str;
@@ -20,6 +21,19 @@ void banner::print_separator(ostream &fp, string str, bool initial_newline)
   for (int i=0; i<n; i++) fp<<"=";
   fp<<endl;
 }  
+*/
+
+void banner::print_separator(ostream &fp, string str, bool initial_newline)
+{
+   int len = 80;  /* total length of line */
+   string first_half = "==============================";
+   if (initial_newline) fp<<endl;
+   fp<<first_half<<" "<<str<<" ";
+
+   int n=len-(first_half.length() + str.length()+2);
+   for (int i=0; i<n; i++) fp<<"=";
+   fp<<endl;
+}
 
 
 void banner::print_banner(int argc, char *argv[], const string name, const string version, string date,const string in ,bool as_comments)
