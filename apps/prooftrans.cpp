@@ -250,7 +250,7 @@ int main(int argc, const char *argv[])
     proof = proof_con.reverse_plist();
     proofs = proofs_con.plist_append(proof);
     comments = comments_con.plist_append(comment_con.get_string_buf());
-    found = isu::read_to_line(*fin, "= PROOF=");
+    found = isu::read_to_line(*fin, "= PROOF =");
   }
 
   if (output_format == isu::Output_format::XML) {
