@@ -347,7 +347,7 @@ Search::mace4_skolem_check(int id)
   if (!LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->skolems_last))
     return true;
   else if (Cells[id].symbol->attribute == SKOLEM_SYMBOL) {
-    std::cout << "pruning\n";
+    // std::cout << "pruning\n";
     return false;
   }
   else
@@ -870,7 +870,7 @@ Search::print_model_interp(std::ostream& fp)
   if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 2)
     max_count = 5000000;
   else if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 3) 
-    max_count = 1000000;
+    max_count = 500000;
  
   if (out_models_count > max_count) { // hard-coded for now
     models_interp_file_stream->close();
