@@ -52,6 +52,11 @@ Search::Search(Mace4VGlobais* g) : Mace4vglobais(g), Domain_size(0), Domain(null
   Symbols(nullptr), Sn_to_mace_sn(nullptr), Sn_map_size(0), Models(nullptr), Grounder(nullptr),
   Total_models(0), Start_domain_seconds(0), Start_seconds(0), Start_megs(0), propagator(nullptr), print_cubes(-2), cubes_options(0)
 {
+  max_count = out_models_count + 1;
+  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 2)
+    max_count = 5000000;
+  else if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 3) 
+    max_count = 200000;
 }
 
 void
@@ -865,28 +870,8 @@ void
 Search::print_model_interp(std::ostream& fp)
 {
   /* Prints the model the same format as interpformat, to be used as inputs to isofilter directly*/
-  /* also ignore constants if not -A1. For -A3 execute a fixed script before moving on */
-  size_t max_count = out_models_count + 1;
-  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 2)
-    max_count = 5000000;
-  else if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 3) 
-    max_count = 500000;
+  /* Also ignore constants if not -A1. For -A3 execute a fixed script before moving on */
  
-  if (out_models_count > max_count) { // hard-coded for now
-    models_interp_file_stream->close();
-    if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 3) {
-      int ret = system("../utils/mace4/run_mlex.sh"); 
-      if (ret != 0 )
-	std::cerr << "error in calling script run_mlex.sh" << std::endl;
-    }
-    models_interp_file_stream = new ofstream();
-    if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 3) 
-      models_interp_file_stream->open(Search::interp_file_name, std::ios_base::app);
-    else
-      models_interp_file_stream->open(Search::interp_file_name + std::to_string(file_count), std::ios_base::app);
-    out_models_count = 0;
-    file_count++;
-  }
   out_models_count++;
 
   fp << "interpretation( " << Domain_size << ", [number=" << Total_models << ", seconds="
@@ -923,6 +908,22 @@ Search::print_model_interp(std::ostream& fp)
   }
 
   fp << "]).\n";
+
+  if (out_models_count >= max_count) { // hard-coded for now
+    models_interp_file_stream->close();
+    if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 3) {
+      int ret = system("../utils/mace4/run_hook.sh"); 
+      if (ret != 0 )
+	std::cerr << "error in calling script run_hook.sh" << std::endl;
+    }
+    models_interp_file_stream = new ofstream();
+    if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 3) 
+      models_interp_file_stream->open(Search::interp_file_name, std::ios_base::app);
+    else
+      models_interp_file_stream->open(Search::interp_file_name + std::to_string(file_count), std::ios_base::app);
+    out_models_count = 0;
+    file_count++;
+  }
 }
 
 void
