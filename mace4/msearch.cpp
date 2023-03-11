@@ -52,11 +52,6 @@ Search::Search(Mace4VGlobais* g) : Mace4vglobais(g), Domain_size(0), Domain(null
   Symbols(nullptr), Sn_to_mace_sn(nullptr), Sn_map_size(0), Models(nullptr), Grounder(nullptr),
   Total_models(0), Start_domain_seconds(0), Start_seconds(0), Start_megs(0), propagator(nullptr), print_cubes(-2), cubes_options(0)
 {
-  max_count = 0;
-  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 2)
-    max_count = 5000000;
-  else if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 3) 
-    max_count = 200000;
 }
 
 void
@@ -112,6 +107,12 @@ Search::initialize_for_search(Plist clauses) {
   }
   print_cubes = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_cubes);
   cubes_options = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->cubes_options);
+
+  max_count = 0;
+  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 2)
+    max_count = 5000000;
+  else if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 3) 
+    max_count = 200000;
 }
 
 
