@@ -41,7 +41,8 @@ mace_options::mace_options()
 
   iterate = LADR_GLOBAL_OPTIONS.init_stringparm("iterate",
                                                 5,
-                                                "all", "evens", "odds", "primes", "nonprimes");
+                                                std::string("all"), std::string("evens"), std::string("odds"),
+                                                std::string("primes"), std::string("nonprimes"));
 
   /* dependencies */
   LADR_GLOBAL_OPTIONS.flag_parm_dependency(print_models_tabular, true, print_models_interp, 0);

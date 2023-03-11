@@ -52,7 +52,7 @@ Search::Search(Mace4VGlobais* g) : Mace4vglobais(g), Domain_size(0), Domain(null
   Symbols(nullptr), Sn_to_mace_sn(nullptr), Sn_map_size(0), Models(nullptr), Grounder(nullptr),
   Total_models(0), Start_domain_seconds(0), Start_seconds(0), Start_megs(0), propagator(nullptr), print_cubes(-2), cubes_options(0)
 {
-  max_count = out_models_count + 1;
+  max_count = 0;
   if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 2)
     max_count = 5000000;
   else if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 3) 
@@ -909,7 +909,7 @@ Search::print_model_interp(std::ostream& fp)
 
   fp << "]).\n";
 
-  if (out_models_count >= max_count) { // hard-coded for now
+  if (max_count > 0 && out_models_count >= max_count) { // hard-coded for now
     models_interp_file_stream->close();
     if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 3) {
       int ret = system("../utils/mace4/run_hook.sh"); 
