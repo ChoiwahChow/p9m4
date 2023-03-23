@@ -25,6 +25,7 @@
 #include "string.h"
 #include "fatal.h"
 #include <iostream>
+#include <vector>
 
 /* INTRODUCTION
 There are 3 types of option:
@@ -197,6 +198,7 @@ class TStringParms {
                                 
                     public:            
                                 int init_stringparm(string , int, va_list);
+                                int init_stringparm_v2(const string& name, const vector<string>& arg);
                                 bool stringparm(int, string);
                                 string stringparm1(int);
                                 int str_to_stringparm_id(string);
@@ -294,6 +296,7 @@ class GlobalOptions {
                                 
                                 string stringparm1(int id);
                                 int init_stringparm(string name, int n, ...);
+                                int init_stringparm_v2(const string& name, const vector<string>& arg);
                                 TStringParms & getStringParms(void);
                                 int str_to_stringparm_id(string name) ;
                                 

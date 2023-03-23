@@ -39,10 +39,8 @@ mace_options::mace_options()
   skolems_last           = LADR_GLOBAL_OPTIONS.init_flag("skolems_last",           false);
   return_models          = LADR_GLOBAL_OPTIONS.init_flag("return_models",          false);
 
-  iterate = LADR_GLOBAL_OPTIONS.init_stringparm("iterate",
-                                                5,
-                                                std::string("all"), std::string("evens"), std::string("odds"),
-                                                std::string("primes"), std::string("nonprimes"));
+  std::vector<std::string> nums = {"all", "evens", "odds", "primes", "nonprimes"};
+  iterate = LADR_GLOBAL_OPTIONS.init_stringparm_v2("iterate", nums);
 
   /* dependencies */
   LADR_GLOBAL_OPTIONS.flag_parm_dependency(print_models_tabular, true, print_models_interp, 0);
