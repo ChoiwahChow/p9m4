@@ -1,0 +1,28 @@
+
+
+formulas(assumptions).
+
+% BCK-join-semilattice
+(x @ y) @ ((y @ z) @ (x @ z)) = 0.
+0 @ x = x.
+x @ 0 = 0.
+x @ (x v y) = 0.
+x v ((x @ y) @ y) = ((x @ y) @ y).
+x v x = x.
+x v y = y v x.
+(x v y) v z = x v (y v z).
+% BCK-meet-semilattice
+% (x @ y) @ ((y @ z) @ (x @ z)) = 0.
+% 0 @ x = x.
+% x @ 0 = 0.
+(x ^ y) @ y = 0.
+x ^ ((x @ y) @ y) = x.
+x ^ x = x.
+x ^ y = y ^ x.
+(x ^ y) ^ z = x ^ (y ^ z).
+
+x < y <-> x @ y = 0.
+
+
+end_of_list.
+

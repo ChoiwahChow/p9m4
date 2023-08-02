@@ -1,0 +1,15 @@
+
+assign(max_models, -1).
+
+formulas(assumptions).
+
+((x * y) * (x * z)) * (z * y) = 0.
+(x * (x * y)) * y = 0.
+x * x = 0.
+((x * y = 0) & (y * x = 0)) -> (x = y).
+(x * 0 = 0) -> (x = 0).
+%
+x * 0 = x.
+
+end_of_list.
+

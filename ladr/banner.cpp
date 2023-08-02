@@ -8,10 +8,11 @@
 
 
 
+
 /*
 void banner::print_separator(ostream &fp, string str, bool initial_newline)
 {
-  int len = 80;  // total length of line 
+  int len = 80;  // total length of line
   string first_half = "==============================";
   if (initial_newline) fp<<endl;
   fp<<first_half<<" "<<str;

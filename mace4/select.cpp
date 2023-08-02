@@ -92,6 +92,7 @@ Selection::num_occurrences(int id)
   return n;
 }
 
+/* original, depreicated 2022-06-15
 void
 Selection::selection_measure(int id, int *max, int *max_id, propagate* prop)
 {
@@ -108,6 +109,40 @@ Selection::selection_measure(int id, int *max, int *max_id, propagate* prop)
     *max_id = id;
   }
 }
+*/
+
+void
+Selection::selection_measure(int id, int *max, int *max_id, propagate* prop, int* secondary_max)
+{
+	/*
+	 * Allows secondary measure, added for higher discriminatory power
+	 */
+  int n = 0;
+  int m = -1;
+  switch (LADR_GLOBAL_OPTIONS.parm(Opt->selection_measure)) {
+  case MOST_OCCURRENCES:    n = num_occurrences(id);                break;
+  case MOST_PROPAGATIONS:   n = num_propagations(id, prop);         break;
+  case MOST_CONTRADICTIONS: n = num_contradictions(id, *max, prop); break;
+  case MOST_CROSSED:
+  case MOST_CROSSED_OCCUR:  n = num_crossed(id);                    break;
+  default: fatal::fatal_error("selection_measure: bad selection measure");
+  }
+  if (n >= *max) {
+	if (LADR_GLOBAL_OPTIONS.parm(Opt->selection_measure) == MOST_CROSSED_OCCUR) {
+		m = num_occurrences(id);
+		if (n > *max || m > *secondary_max) {
+			*max = n;
+			*secondary_max = m;
+			*max_id = id;
+		}
+	}
+	else if (n > *max) {
+		*max = n;
+		*max_id = id;
+	}
+  }
+}
+
 
 int
 Selection::select_linear(int min_id, int max_id, propagate* prop)
@@ -121,10 +156,11 @@ Selection::select_linear(int min_id, int max_id, propagate* prop)
   }
   else {
     int id_of_max = -1;
+    int secondary_max = -1;  // not used
     int max = -1;
     for (int i = min_id; i <= max_id; i++) {
       if (Cells[i].value == nullptr) {
-        selection_measure(i, &max, &id_of_max, prop);
+        selection_measure(i, &max, &id_of_max, prop, &secondary_max);
       }
     }
     return id_of_max;
@@ -151,31 +187,50 @@ Selection::select_concentric(int min_id, int max_id, Cell Ordered_cells[], propa
     /* Find the best cell with the same max_index as the first open cell. */
     int n = Ordered_cells[i]->max_index;
     int max_val = -1;
+    int secondary_max_val = -1;
     int id_of_max = -1;
 
     while (i <= max_id && Ordered_cells[i]->max_index <= n) {
       if (Ordered_cells[i]->value == nullptr)
-        selection_measure(Ordered_cells[i]->id, &max_val, &id_of_max, prop);
+        selection_measure(Ordered_cells[i]->id, &max_val, &id_of_max, prop, &secondary_max_val);
       i++;
     }
     return id_of_max;
   }
 }
 
+// added for cube-and-conquer, cell selection is strictly as ordered by indices of the cells
+int
+Selection::select_by_order(int min_id, int max_id, Cell Ordered_cells[])
+{
+  int i = min_id;
+  // std::cout << "Debug select_by_order ******************** " << i << "  max_id " << max_id << std::endl;
+  while (i <= max_id && Ordered_cells[i]->value != nullptr)
+	i++;
+  if (i <= max_id) {
+	// std::cout << "Debug select_by_order return ******************** " << i << " id " << Ordered_cells[i]->id << std::endl;
+	return Ordered_cells[i]->id;
+  }
+  else
+	return -1;
+}
+
 int
 Selection::select_concentric_band(int min_id, int max_id, int max_constrained, Cell Ordered_cells[], propagate* prop)
 {
   int max = -1;
+  int secondary_max = -1;
   int id_of_max = -1;
   int i = min_id;
 
   while (i <= max_id &&  Ordered_cells[i]->max_index <= max_constrained) {
     if (Ordered_cells[i]->value == nullptr)
-      selection_measure(Ordered_cells[i]->id, &max, &id_of_max, prop);
+      selection_measure(Ordered_cells[i]->id, &max, &id_of_max, prop, &secondary_max);
     i++;
   }
-  if (id_of_max >= 0)
+  if (id_of_max >= 0) {
     return id_of_max;
+  }
   else
     /* There is nothing in the band, so revert to select_concentric.
        This is a bit redundant, because it will scan (again) the full cells.
@@ -191,6 +246,7 @@ Selection::select_cell(int max_constrained, int First_skolem_cell, int Number_of
   case SELECT_LINEAR: id = select_linear(0, First_skolem_cell-1, prop); break;
   case SELECT_CONCENTRIC: id = select_concentric(0, First_skolem_cell-1, Ordered_cells, prop); break;
   case SELECT_CONCENTRIC_BAND: id = select_concentric_band(0, First_skolem_cell-1, max_constrained, Ordered_cells, prop); break;
+  case SELECT_BY_ORDER: id = select_by_order(0, First_skolem_cell-1, Ordered_cells); break;   // added for cube-and-conquer
   default: fatal::fatal_error("bad selection order");
   }
 
@@ -201,6 +257,7 @@ Selection::select_cell(int max_constrained, int First_skolem_cell, int Number_of
   case SELECT_LINEAR: id = select_linear(First_skolem_cell, Number_of_cells-1, prop); break;
   case SELECT_CONCENTRIC: id = select_concentric(First_skolem_cell, Number_of_cells-1, Ordered_cells, prop); break;
   case SELECT_CONCENTRIC_BAND: id = select_concentric_band(First_skolem_cell, Number_of_cells-1, max_constrained, Ordered_cells, prop); break;
+  case SELECT_BY_ORDER: id = select_by_order(0, Number_of_cells-1, Ordered_cells); break;   // added for cube-and-conquer
   default: fatal::fatal_error("bad selection order");
   }
 

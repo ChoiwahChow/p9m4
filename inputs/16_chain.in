@@ -1,0 +1,14 @@
+
+
+formulas(assumptions).
+
+% partially ordered set
+x < x.
+x < y & y < z -> x < z.
+x < y & y < x -> x = y.
+
+% total order
+x < y | y < x.
+
+end_of_list.
+

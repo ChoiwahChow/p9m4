@@ -1,0 +1,25 @@
+
+%# #73 Ockham algebras
+
+
+formulas(assumptions).
+
+% bounded distributive lattice
+(x v y) v z = x v (y v z).
+x v y = y v x.
+(x ^ y) ^ z = x ^ (y ^ z).
+x ^ y = y ^ x.
+(x v y) ^ x = x.
+(x ^ y) v x = x.
+0 v x = x.
+1 v x = 1.
+x ^ (y v z) = (x ^ y) v (x ^ z).
+
+% dual endomorphism
+(x ^ y)' = x' v y'.
+(x v y)' = x' ^ y'.
+0' = 1.
+1' = 0.
+
+end_of_list.
+

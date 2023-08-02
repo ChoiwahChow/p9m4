@@ -1,0 +1,14 @@
+
+% https://marciedb.pythonanywhere.com/definition/35
+% #35 Directoids N-arity (2)
+
+formulas(assumptions).
+
+x * x = x.
+(x * y) * x = x * y.
+y * (x * y) = x * y.
+x * ((x * y) * z) = (x * y) * z.
+
+
+end_of_list.
+

@@ -8,6 +8,14 @@
 #include "../ladr/topform.h"
 #include "syms.h"
 
+
+std::string&
+Symbol_dataContainer::get_op_symbol(int sn) {
+  SymbolContainer  sym_con;
+  Symbol symbol = sym_con.lookup_by_id(sn);
+  return *(symbol->name);
+}
+
 Symbol_data
 Symbol_dataContainer::get_symbol_data(void)
 {

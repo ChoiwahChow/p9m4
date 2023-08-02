@@ -42,7 +42,7 @@ String_buf read_heading(std::istream& fin, isu::Output_format output_format)
   int i = 0;
   bool read_ok = isu::read_line(fin, line);
 
-  while (read_ok && !myString::substring("=== end of head", line)) {
+  while (read_ok && !myString::substring("= end of head =", line)) {
     if (i != 0) {
       if (output_format == isu::Output_format::IVY)
         strbuf_con.sb_append(";; ");
@@ -54,7 +54,7 @@ String_buf read_heading(std::istream& fin, isu::Output_format output_format)
   }
 
   if (!read_ok)
-    fatal::fatal_error("read_heading, \"=== end of head\" not found");
+    fatal::fatal_error("read_heading, \"= end of head =\" not found");
 
   return strbuf_con.get_string_buf();
 }
@@ -250,7 +250,7 @@ int main(int argc, const char *argv[])
     proof = proof_con.reverse_plist();
     proofs = proofs_con.plist_append(proof);
     comments = comments_con.plist_append(comment_con.get_string_buf());
-    found = isu::read_to_line(*fin, "= PROOF=");
+    found = isu::read_to_line(*fin, "= PROOF =");
   }
 
   if (output_format == isu::Output_format::XML) {

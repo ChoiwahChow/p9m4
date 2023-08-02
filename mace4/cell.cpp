@@ -18,7 +18,7 @@ CellContainer::id_to_domain_size(int id, Cell Cells, int Domain_size)
 int
 CellContainer::sum_indexes(Term t)
 {
-  // Assume t is an eterm, that is, nonvariable with variable arguments.
+  // Assume t is an eterm, that is, non-variable with variable arguments.
   if (ARITY(t) == 0)
     return -1;
   else {
@@ -29,10 +29,26 @@ CellContainer::sum_indexes(Term t)
   }
 }
 
+// cube-and-conquer related change
+bool
+CellContainer::equal_index(Term t)
+{
+	// returns true if all arguments to an n-ary function are the same. E.g. f(1,1) returns true, f(2,3) returns false
+	if (ARITY(t) > 1) {
+		int index = VARNUM(ARG(t, 0));
+		for (int idx = 1; idx < ARITY(t); idx++) {
+			if (VARNUM(ARG(t,idx)) != index)
+				return false;
+		}
+	}
+	return true;
+}
+// end of cube-and-conquer related change
+
 OrderType
 CellContainer::compare_cells(Cell a, Cell b)
 {
-  // TODO: [Choiwah] we need to change the compare_cells prototype to include a extra
+  // TODO: [Choiwah] we need to change the compare_cells prototype to include an extra
   // param to hold Skolems_last.  This requires a change in merge_sort to include an optional param void*
   if (a->symbol->attribute == EQUALITY_SYMBOL &&
       b->symbol->attribute != EQUALITY_SYMBOL)       return OrderType::GREATER_THAN;
@@ -51,6 +67,16 @@ CellContainer::compare_cells(Cell a, Cell b)
   else if (a->max_index < b->max_index)              return OrderType::LESS_THAN;
 
   else if (a->max_index > b->max_index)              return OrderType::GREATER_THAN;
+
+  // cube-and-conquer related change, f(1,1) is searched before f(0,1) and f(1,0)
+
+  else if (equal_index(a->eterm) &&
+  		  !equal_index(b->eterm))                    return OrderType::LESS_THAN;
+
+  else if (!equal_index(a->eterm) &&
+  		  equal_index(b->eterm))                     return OrderType::GREATER_THAN;
+
+  // end of cube-and-conquer related change
 
   else if (a->symbol->mace_sn < b->symbol->mace_sn)  return OrderType::LESS_THAN;
 

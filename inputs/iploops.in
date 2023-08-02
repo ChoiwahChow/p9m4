@@ -1,0 +1,16 @@
+
+
+% definition from IEEE Access: Efficient enumeration of higher order algebraic structures
+
+formulas(sos).
+
+x * y = x * z -> y = z.
+x * y = z * y -> x = z.
+x * 0 = x.
+0 * x = x.
+
+x' * (x * y) = y.
+(y * x) * x' = y.
+
+end_of_list.
+

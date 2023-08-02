@@ -1,0 +1,19 @@
+
+% #148 Disemigroup
+% https://marciedb.pythonanywhere.com/definition/148
+
+formulas(assumptions).
+
+% Left disemigroup
+(x + y) + z = x + (y + z).
+(x * y) * z = x * (y * z).
+x + (y + z) = (x * y) + z.
+x + (y * z) = (x + y) * z.
+% Right disemigroup
+% (x + y) + z = x + (y + z).
+% (x * y) * z = x * (y * z).
+x + (y + z) = x + (y * z).
+(x * y) + z = x * (y + z).
+
+end_of_list.
+

@@ -1,0 +1,14 @@
+
+% #146 Left disemigroup
+% https://marciedb.pythonanywhere.com/definition/146
+
+formulas(assumptions).
+
+(x + y) + z = x + (y + z).
+(x * y) * z = x * (y * z).
+x + (y + z) = (x * y) + z.
+x + (y * z) = (x + y) * z.
+
+
+end_of_list.
+

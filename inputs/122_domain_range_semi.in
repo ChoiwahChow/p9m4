@@ -1,0 +1,19 @@
+
+% #122 Domain range semigroup
+
+
+formulas(assumptions).
+
+d(x) * x = x.
+d(x * y) = d(x * d(y)).
+d(d(x) * y) = d(x) * d(y).
+d(x) * d(y) = d(y) * d(x).
+d(k(x)) = k(x).
+x * k(x) = x.
+k(x * y) = k(k(x) * y).
+k(x * k(y)) = k(x) * k(y).
+k(x) * k(y) = k(y) * k(x).
+k(d(x)) = d(x).
+
+end_of_list.
+

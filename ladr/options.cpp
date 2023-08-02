@@ -709,7 +709,7 @@ int TStringParms::init_stringparm(string name, int n, va_list arg) {
             
             StringParms[id].range= new string[n];//cria um array de strings
             for (int i=0; i<n; i++) 
-                StringParms[id].range[i]=va_arg(arg, string);
+                StringParms[id].range[i]=va_arg(arg, const char*);
             
             StringParms[id].name=new string (name);
             StringParms[id].n=n;
@@ -720,6 +720,31 @@ int TStringParms::init_stringparm(string name, int n, va_list arg) {
 }
 
 
+//------------------------------------------string parms---------------------------------------------------------------------------------------
+
+int TStringParms::init_stringparm_v2(const string& name, const vector<string>& arg) {
+    
+    if(Next_stringparm==MAX_STRINGPARMS) {
+        fatal::fatal_error("init_string parm: too many stringparms");
+        return -1;   //To appease the compiler g++ 9.2.1, fatal_error above would have exited the program
+    }
+    else {
+            int id=-1;
+            
+            id=Next_stringparm++;
+            
+            int n = arg.size();
+            StringParms[id].range= new string[n];//cria um array de strings
+            for (int i=0; i<n; i++) 
+                StringParms[id].range[i]=arg[i];
+            
+            StringParms[id].name=new string (name);
+            StringParms[id].n=n;
+            StringParms[id].val = StringParms[id].range[0];
+            StringParms[id].default_val = StringParms[id].range[0];
+            return id;
+    }
+}
 
 int GlobalOptions::init_stringparm(string name, int n, ...) {
     int i;
@@ -730,6 +755,9 @@ int GlobalOptions::init_stringparm(string name, int n, ...) {
     return i;
 }
 
+int GlobalOptions::init_stringparm_v2(const string& name, const vector<string>& args) {
+    return Stringparms.init_stringparm_v2(name, args);
+}
 
 bool TStringParms::stringparm(int id, string s) {
     return myString::str_ident(StringParms[id].val,s);

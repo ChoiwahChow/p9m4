@@ -1,0 +1,17 @@
+
+% https://marciedb.pythonanywhere.com/definition/15
+
+formulas(assumptions).
+
+% hoop
+x * y = y * x.
+(x * y) * z = x * (y * z).
+0 * x = x.
+x @ (y @ z) = (x * y) @ z.
+x @ x = 0.
+(x @ y) * x = (y @ x) * y.
+% idempotent
+x * x = x.
+
+end_of_list.
+

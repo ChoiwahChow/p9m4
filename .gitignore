@@ -33,3 +33,7 @@
 
 # local
 build/
+__pycache__
+.pydevproject
+
+.project

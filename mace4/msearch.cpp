@@ -41,7 +41,7 @@
    list of occurrences of f(3,4) by looking in Cells[ID].occurrences.
 */
 
-int Search::next_message = 1;
+long long Search::next_message = 1;
 int Search::Next_report = 0;
 std::string Search::interp_file_name("models.out");
 
@@ -50,9 +50,8 @@ Search::Search(Mace4VGlobais* g) : Mace4vglobais(g), Domain_size(0), Domain(null
   max_sec_no_str("max_sec_no"), mace_sigint_str("mace_sigint"), mace_sigsegv_str("mace_sigsegv"), unknown_str("???"), Skolems_last(false),
   Number_of_cells(0), Cells(nullptr), Ordered_cells(nullptr), First_skolem_cell(0), Max_domain_element_in_input(0),
   Symbols(nullptr), Sn_to_mace_sn(nullptr), Sn_map_size(0), Models(nullptr), Grounder(nullptr),
-  Total_models(0), Start_domain_seconds(0), Start_seconds(0), Start_megs(0), propagator(nullptr)
+  Total_models(0), Start_domain_seconds(0), Start_seconds(0), Start_megs(0), propagator(nullptr), print_cubes(-2), cubes_options(0)
 {
-
 }
 
 void
@@ -106,6 +105,14 @@ Search::initialize_for_search(Plist clauses) {
   for (Symbol_data s = Symbols; s != nullptr; s = s->next) {
     Sn_to_mace_sn[s->sn] = s;
   }
+  print_cubes = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_cubes);
+  cubes_options = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->cubes_options);
+
+  max_count = 0;
+  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 2)
+    max_count = 5000000;
+  else if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 3) 
+    max_count = 200000;
 }
 
 
@@ -139,6 +146,7 @@ Search::init_for_domain_size(void)
   Number_of_cells = nextbase;
   Cells           = new cell[Number_of_cells];
   Ordered_cells   = new Cell[Number_of_cells];
+  // std::cout << "debug @@@@@@@@@@@@@@@@@@@@@@@@@ Number_of_cells " << Number_of_cells << std::endl;
   delete Grounder;
   Grounder = new Ground(Domain_size, Domain, Sn_to_mace_sn, Cells, &Mstats, Mace4vglobais->Arith, &mace4_gv);
   propagator = new propagate(Symbols, Domain_size, Domain, Cells, Sn_to_mace_sn, &Mstats,
@@ -282,17 +290,19 @@ Search::possible_model(void)
     Models = p_con.plist_append(Models, model);
   }
 
-  if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models_interp))
+  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) > 0)
     print_model_interp(*models_interp_file_stream);
   else if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models))
     print_model_standard(std::cout, true);
   else if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models_tabular))
     p_model(false);
   else if (next_message == Total_models) {
-    std::cout << "\nModel " << Total_models << " has been found.\n";
-    next_message *= 10;
+    std::cout << "\nModel " << Total_models << " has been found." << std::endl;
+    if (Total_models >= 100000000)
+    	next_message *= 2;
+    else
+    	next_message *= 10;
   }
-  fflush(stdout);
   if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->max_models) != -1 && Total_models >= LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->max_models))
     return SEARCH_MAX_MODELS;
   else
@@ -306,9 +316,9 @@ Search::mace_megs(void)
 }
 
 int
-Search::check_time_memory(void)
+Search::check_time_memory(int seconds)
 {
-  double seconds = myClock::user_seconds();
+  // double seconds = myClock::user_seconds();
   int max_seconds = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->max_seconds);
   int max_seconds_per = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->max_seconds_per);
   int max_megs = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->max_megs);
@@ -343,7 +353,7 @@ Search::mace4_skolem_check(int id)
   if (!LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->skolems_last))
     return true;
   else if (Cells[id].symbol->attribute == SKOLEM_SYMBOL) {
-    std::cout << "pruning\n";
+    // std::cout << "pruning\n";
     return false;
   }
   else
@@ -376,16 +386,26 @@ Search::mace4_skolem_check(int id)
  */
 
 int
-Search::search(int max_constrained, int depth)
+Search::search(int max_constrained, int depth, Cube& splitter)
 {
-  int rc = check_time_memory();
+  int seconds = current_time();
+  splitter.set_time(seconds);
+  int rc = check_time_memory(seconds);
   if (rc != SEARCH_GO_NO_MODELS)
     return rc;
   else {
-    Selection selector(Domain_size, Domain, Cells, &EScon, &Mstats, Mace4vglobais->Opt);
-    int id = selector.select_cell(max_constrained, First_skolem_cell, Number_of_cells, Ordered_cells, propagator); // TODO: [choiwah] check correctness
+	Selection selector(Domain_size, Domain, Cells, &EScon, &Mstats, Mace4vglobais->Opt);
+    // TODO: [cc] check correctness of conversion to C++
+    int id = selector.select_cell(max_constrained, First_skolem_cell, Number_of_cells, Ordered_cells, propagator);
 
     if (id == -1) {
+      /*
+      // If it is generating cubes, print out the cube and forget the model. The cube will generate the model later
+      if (print_cubes >= 0) {
+    	splitter.print_new_cube(print_cubes, num_cells_filled);
+      	return SEARCH_GO_NO_MODELS;
+      }
+      */
       rc = possible_model();
       return rc;
     }
@@ -407,24 +427,51 @@ Search::search(int max_constrained, int depth)
         last = std::min(max_constrained+1, Domain_size-1);
       else
         last = Domain_size-1;
-
       bool go = true;
+
+      // begin for cubes
       ParseContainer   pc;
-      for (int i = 0, go = true; i <= last && go; i++) {
+      int from_index = 0;
+      int value = splitter.value(depth, id);
+      if (value >= 0) {
+    	  if (last < value) {
+        	  std::cout << "debug Search::search exceeded bounds ***************************** do cell id = " << id << std::endl;
+    		  return SEARCH_GO_NO_MODELS;
+    	  }
+    	  std::cout << "debug Search::search ******************* do cell id = " << id
+    			    << ", cell value = " << value << ",  op = " << Symbol_dataContainer::get_op_symbol(Cells[id].get_sn())
+    	  	  	    << ", updated max_constrained " << max_constrained << ", depth = " << depth << std::endl;
+    	  from_index = value;
+    	  last = value;
+      }
+      if (print_cubes >= 0 && splitter.real_depth(depth, id) >= print_cubes) {
+      	splitter.print_new_cube(print_cubes, splitter.num_cells_filled(Cells));
+    	return SEARCH_GO_NO_MODELS;
+      }
+      // end for cubes
+
+      all_nodes.push_back(std::vector<int> {id, from_index, last});
+      size_t curr_pos = all_nodes.size() - 1;
+      for (int i = from_index, go = true; i <= all_nodes[curr_pos][2] && go; i++) {
+    	all_nodes[curr_pos][1] = i;
+        if (splitter.move_on(id, all_nodes)) {
+    		std::cout << "debug, Search::search stolen from " << i+1 << " to " << last << std::endl;
+    	}
         Estack stk;
         Mstats.assignments++;
 
         if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->trace)) {
           std::cout << "assign: ";
           pc.fwrite_term(std::cout, Cells[id].eterm);
-          std::cout << "=" << i << " (" << last << ") depth=" << depth << "\n";
+          std::cout << "=" << i << " (" << all_nodes[curr_pos][2] << ") depth=" << depth << "\n";
         }
 
         stk = propagator->assign_and_propagate(id, Domain[i]);
 
         if (stk != nullptr) {
           /* no contradiction found during propagation, so we recurse */
-          rc = search(std::max(max_constrained, i), depth+1);
+          rc = search(std::max(max_constrained, i), depth+1, splitter);
+
           /* undo assign_and_propagate changes */
           EScon.restore_from_stack(stk);
           if (rc == SEARCH_GO_MODELS)
@@ -433,6 +480,7 @@ Search::search(int max_constrained, int depth)
             go = (rc == SEARCH_GO_NO_MODELS);
         }
       }
+      all_nodes.pop_back();
       return rc;
     }
   }
@@ -496,12 +544,22 @@ Search::mace4n(Plist clauses, int order)
     std::flush(std::cout);
   }
 
+  Cube splitter(order, Cells, Ordered_cells, Number_of_cells, cubes_options);
+
   /* Here we go! */
   int rc = SEARCH_GO_NO_MODELS;
-  if (initial_state->ok)
-    rc = search(Max_domain_element_in_input, 0);
-  else
-    rc = SEARCH_GO_NO_MODELS;  /* contradiction in initial state */
+  if (initial_state->ok) {
+    rc = search(Max_domain_element_in_input, 0, splitter);
+    bool done = !splitter.reinitialize_cube();
+    while (!done) {
+    	all_nodes.clear();
+        rc = search(Max_domain_element_in_input, 0, splitter);
+    	done = !splitter.reinitialize_cube();
+    }
+  }
+  // CC: changed b/c it has no effect.  rc is initialized to SEARCH_GO_NO_MODELS
+  // else
+  //  rc = SEARCH_GO_NO_MODELS;  /* contradiction in initial state */
 
   /* Free all of the memory associated with the current domain size. */
 
@@ -577,9 +635,9 @@ Search::mace4(Plist clauses)
   Memory::set_max_megs(8000);
 
   initialize_for_search(clauses);
-  if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models_interp)) {
+  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp)>0) {
 	  models_interp_file_stream = new ofstream();
-	  models_interp_file_stream->open(Search::interp_file_name);
+	  models_interp_file_stream->open(Search::interp_file_name, std::ios_base::app);
   }
 
   int n = next_domain_size(0);  /* returns -1 if we're done */
@@ -610,7 +668,7 @@ Search::mace4(Plist clauses)
     n = next_domain_size(n);  /* returns -1 if we're done */
   }
 
-  if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models_interp)) {
+  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp)>0) {
 	  models_interp_file_stream->close();
 	  models_interp_file_stream = nullptr;
   }
@@ -812,7 +870,11 @@ Search::print_model_standard(std::ostream& fp, bool print_head)
 void
 Search::print_model_interp(std::ostream& fp)
 {
-  /* Prints the model the same format as interpformat, as isofilter input */
+  /* Prints the model the same format as interpformat, to be used as inputs to isofilter directly*/
+  /* Also ignore constants if not -A1. For -A3 execute a fixed script before moving on */
+ 
+  out_models_count++;
+
   fp << "interpretation( " << Domain_size << ", [number=" << Total_models << ", seconds="
      << static_cast<int>(myClock::user_seconds()) << "], [";
 
@@ -821,7 +883,7 @@ Search::print_model_interp(std::ostream& fp)
   SymbolContainer   symbol_con;
 
   for (Symbol_data s = Symbols; s != nullptr; s = s->next) {
-    if (s->attribute != EQUALITY_SYMBOL) {
+    if (s->attribute != EQUALITY_SYMBOL && (s->arity > 0 || LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 1)) {
       if (syms_printed)
         fp << ",";
       fp << "\n  " << (s->type == type_FUNCTION ? "function" : "relation") << "("
@@ -847,6 +909,22 @@ Search::print_model_interp(std::ostream& fp)
   }
 
   fp << "]).\n";
+
+  if (max_count > 0 && out_models_count >= max_count) { // hard-coded for now
+    models_interp_file_stream->close();
+    if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 3) {
+      int ret = system("../utils/mace4/run_hook.sh"); 
+      if (ret != 0 )
+	std::cerr << "error in calling script run_hook.sh" << std::endl;
+    }
+    models_interp_file_stream = new ofstream();
+    if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 3) 
+      models_interp_file_stream->open(Search::interp_file_name, std::ios_base::app);
+    else
+      models_interp_file_stream->open(Search::interp_file_name + std::to_string(file_count), std::ios_base::app);
+    out_models_count = 0;
+    file_count++;
+  }
 }
 
 void

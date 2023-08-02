@@ -1,0 +1,12 @@
+
+% #94 Semigroups with zero
+
+
+formulas(assumptions).
+
+(x * y) * z = x * (y * z).
+x * 0 = 0.
+0 * x = 0.
+
+end_of_list.
+

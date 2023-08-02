@@ -3,6 +3,7 @@
 #define MACE4_MSEARCH_H
 
 #include <string>
+#include <vector>
 #include <iostream>
 #include <fstream>
 #include "../ladr/clock.h"
@@ -11,6 +12,8 @@
 #include "mace4globalvalues.h"
 #include "mace4vglobais.h"
 #include "propagate.h"
+#include "partition.h"
+#include "cube.h"
 
 #include "syms.h"
 
@@ -59,11 +62,11 @@ private:
     SEARCH_DOMAIN_OUT_OF_RANGE  /* stop */
   };
 
-  static int next_message;    //TODO: [choiwah] take care of this to make it thread-safe
-  static int Next_report;     //TODO: [choiwah] take care of this too
+  static long long next_message;    //TODO: [choiwah] take care of this to make it thread-safe
+  static int Next_report;     		//TODO: [choiwah] take care of this too
 
   /* stats for entire run */
-  unsigned Total_models;      //TODO: [choiwah] take care of this - may not be meaningful for mult-threading
+  unsigned long long Total_models;      //TODO: [choiwah] take care of this - may not be meaningful for multi-threading
 
 private:
   std::string max_models_str;
@@ -88,6 +91,8 @@ private:
   Cell*       Ordered_cells;     /* (pointers to) permutation of Cells */
   int         First_skolem_cell;
   int         Domain_size;       /* domain size to search */
+  int         print_cubes;		 // print the cubes of length "print_cubes". -1 means do not print
+  int         cubes_options;     // 0 nothing, bit 1-use work stealing, bit 2-  bit 3 -
   Term*       Domain;            /* array of terms representing (shared) domain elements  */
   bool        Skolems_last;
   Plist       Models;
@@ -112,14 +117,16 @@ private:
   double Start_seconds;
   double Start_domain_seconds;
 
-private:
   // Global data for searching
   Mace4VGlobais* Mace4vglobais;
+  std::vector<std::vector<int>>  all_nodes;
 
-private:
   // printing functions
   static std::string interp_file_name;
   ofstream* models_interp_file_stream = nullptr;
+  size_t out_models_count = 0;
+  size_t max_count = 0;
+  size_t file_count = 1;
   int  id2val(int id);
   int  f0_val(int base);
   int  f1_val(int base, int i);
@@ -133,7 +140,6 @@ private:
   void p_stats(void);
   void p_mem(void);
 
-private:
   void initialize_for_search(Plist clauses);
   void init_for_domain_size(void);
   void built_in_assignments(void);
@@ -141,9 +147,10 @@ private:
   int  possible_model(void);
   Term interp_term(void);
   int  mace_megs(void);
-  int  check_time_memory(void);
+  int  current_time(void) const { return (int) myClock::user_seconds(); };
+  int  check_time_memory(int seconds);
   bool mace4_skolem_check(int id);
-  int  search(int max_constrained, int depth);
+  int  search(int max_constrained, int depth, Cube& splitter);
   int  mace4n(Plist clauses, int order);
   bool iterate_ok(int n, const std::string& class_name);
   int  next_domain_size(int n);

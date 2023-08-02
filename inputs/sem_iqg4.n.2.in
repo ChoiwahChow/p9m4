@@ -1,0 +1,18 @@
+
+
+formulas(sos).
+h(0,0).  
+h(0,1).
+h(1,0).
+h(1,1).
+
+-h(x,y) | x=0 | x=1.
+-h(y,x) | x=0 | x=1.
+
+h(x,z) | h(y,z) | f(x,z)!=f(y,z) | x=y.
+h(x,y) | h(x,z) | f(x,y)!=f(x,z) | y=z.
+f(x,x)=x.
+h(x,y) | f(f(y,x),f(x,y))=x.
+
+end_of_list.
+

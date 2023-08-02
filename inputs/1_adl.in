@@ -1,0 +1,22 @@
+
+% https://marciedb.pythonanywhere.com/definition/1
+
+formulas(assumptions).
+
+% neardistributive lattice
+(x v y) v z = x v (y v z).
+x v y = y v x.
+(x ^ y) ^ z = x ^ (y ^ z).
+x ^ y = y ^ x.
+(x v y) ^ x = x.
+(x ^ y) v x = x.
+x ^ (y v z) = x ^ (y v (x ^ (z v (x ^ y)))).
+x v (y ^ z) = x v (y ^ (x v (z ^ (x v y)))).
+
+%
+w ^ (u v (x ^ (y v (x ^ z)))) < u v ((x ^ (y v (x ^ z))) ^ ((w v (x ^ y)) v (x ^ z))).
+w v (u ^ (x v (y ^ (x v z)))) > u ^ ((x v (y ^ (x v z))) v ((w ^ (x v y)) ^ (x v z))).
+
+
+end_of_list.
+

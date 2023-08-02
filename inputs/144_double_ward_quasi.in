@@ -1,0 +1,14 @@
+
+% #144 Double Ward quasigroup
+
+formulas(assumptions).
+
+0 * 0 = 0.
+(0 * (x * z)) * ((0 * y) * z) = x * y.
+(y * x) * y = x & y * (x * y) = x.
+0 * x = x * 0.
+x * (x * 0) = 0 & (0 * x) * x = 0.
+x * y = 0 * ((0 * y) * (0 * x)).
+
+end_of_list.
+

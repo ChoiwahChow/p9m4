@@ -1,0 +1,15 @@
+
+% #71 Normal bands
+% https://marciedb.pythonanywhere.com/definition/71
+
+formulas(assumptions).
+
+% band
+(x * y) * z = x * (y * z).
+x * x = x.
+
+% normal
+((x * y) * z) * x = ((x * z) * y) * x.
+
+end_of_list.
+

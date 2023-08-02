@@ -108,7 +108,7 @@ Term next_interp(istream& fin, bool mace4_file)
 {
   ParseContainer pc;
   if (mace4_file) {
-    if (isu::read_to_line(fin, "==== MODEL="))
+    if (isu::read_to_line(fin, "==== MODEL ="))
       return pc.read_term(fin, std::cerr);
     else
       return nullptr;

@@ -1,0 +1,18 @@
+
+assign(max_models, -1).
+
+formulas(assumptions).
+
+% ordered semigroup
+(x * y) * z = x * (y * z).
+x < x.
+x < y & y < x -> x = y.
+x < y & y < z -> x < z.
+x < y -> ((x * z < y * z) & (z * x < z * y)).
+x < y | y < x.
+
+% commutative
+x * y = y * x.
+
+end_of_list.
+

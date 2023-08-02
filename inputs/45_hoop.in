@@ -1,0 +1,14 @@
+
+formulas(sos).
+
+% commutative monoid
+x * y = y * x.
+(x * y) * z = x * (y * z).
+0 * x = x.
+%
+x @ (y @ z) = (x * y) @ z.
+x @ x = 0.
+(x @ y) * x = (y @ x) * y.
+
+end_of_list.
+

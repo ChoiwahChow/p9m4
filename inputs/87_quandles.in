@@ -1,0 +1,14 @@
+
+
+formulas(sos).
+
+% left-selfdistributive
+x v (y v z) = (x v y) v (x v z).
+% right-selfdistributive
+(x ^ y) ^ z = (x ^ z) ^ (y ^ z).
+%
+(x v y) ^ x = y.
+x v (y ^ x) = y.
+x v x = x.
+
+end_of_list.

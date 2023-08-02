@@ -39,6 +39,13 @@ private:
 
 public:
   cell() : symbol(nullptr), max_index(0), possible(nullptr), occurrences(nullptr), value(nullptr), eterm(nullptr), id(0) {}
+  inline size_t get_base() const {return symbol->get_base();}
+  inline int get_sn() const {return symbol->get_sn();}
+  inline bool has_value() const {return value != nullptr;}
+  inline int get_value() const {return value->private_symbol;}
+  inline int get_id() const {return id;}
+  inline int get_index(int pos) const {if (ARITY(eterm) > pos) return VARNUM(ARG(eterm, pos)); else return -1;}
+  inline std::string& get_symbol() const {return Symbol_dataContainer::get_op_symbol(get_sn()); }
 
 public:
   friend class Ground;
@@ -50,10 +57,11 @@ public:
 
 class CellContainer {
 private:
-  static bool Skolems_last;  // TODO: [Choiwah] we need to get rid of this member variable to make it thread-safe
+  static bool Skolems_last;  // TODO: [Choiwah] we may need to get rid of this member variable to make it thread-safe, although it is set only once
 
 private:
-  static int sum_indexes(Term t);
+  static int  sum_indexes(Term t);
+  static bool equal_index(Term t);
   static OrderType compare_cells(Cell a, struct cell* b);
 
 public:

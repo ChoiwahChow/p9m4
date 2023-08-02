@@ -1,0 +1,19 @@
+
+% #50 Involutive lattices
+
+formulas(assumptions).
+
+% lattice
+(x v y) v z = x v (y v z).
+x v y = y v x.
+(x ^ y) ^ z = x ^ (y ^ z).
+x ^ y = y ^ x.
+(x v y) ^ x = x.
+(x ^ y) v x = x.
+
+% De Morgan involution
+-(x ^ y) = -x v -y.
+--x = x.
+
+end_of_list.
+
