@@ -3,6 +3,24 @@ Prover9/Mace4 with LADR library. But mainly for Mace4.
 
 ## Mace4
 
+## Integration of Nauty (sparse mode) into Mace4 
+Mace4 can internally do isomorphic model filtering using Nauty (sparse mode) to output non-isomorphic models.
+
+E.g.:
+```text
+mace4 -n5 -N5 -m-1 -A1 -W-1 -f <input-file>
+```
+
+The option -W tells Mace4 to do isomorphic model filter. `0` means the feature is off (default is 0), -1 means no 
+restriction on the number of non-isomorphic model cached.  `-W1000`, for example, means Mace4 keeps only the first 1000 non-isomorphic
+models in its memory. Models that are not isomorphic to these 1000 models are printed out as non-isomorphic models
+although some of them can be isomorphic to one another.  Additional rounds of external isofiltering will be needed to filter out the rest
+of the isomorphic models.  This is to limit the size of the Mace4 so that more copies of Mace4's can run in parallel.
+
+Another useful option is `-w1` (defaults 0) tells Mace4 to output the canonical graphs of the non-isomorphic models in addtion
+to the models in Mace4 format. This is useful if we need to check for isomorphism of models from different copies of Mace4 run
+in parallel.  We can compare the canonical graphs without running nauty again.
+
 ### Cell Selection
 
 The function/relation is implemented as a linearized array.  For example, an n x n 2-d function table is implemented
