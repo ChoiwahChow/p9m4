@@ -5,6 +5,7 @@
 #include "../ladr/ladrvglobais.h"
 #include "../ladr/memory.h"
 #include "../ladr/symbols.h"
+#include "inc/isofilter.h"
 
 #include "msearch.h"
 #include "select.h"
@@ -49,9 +50,10 @@ Search::Search(Mace4VGlobais* g) : Mace4vglobais(g), Domain_size(0), Domain(null
   exhausted_str("exhausted"), max_megs_yes_str("max_megs_yes"), max_megs_no_str("max_megs_no"), max_sec_yes_str("max_sec_yes"),
   max_sec_no_str("max_sec_no"), mace_sigint_str("mace_sigint"), mace_sigsegv_str("mace_sigsegv"), unknown_str("???"), Skolems_last(false),
   Number_of_cells(0), Cells(nullptr), Ordered_cells(nullptr), First_skolem_cell(0), Max_domain_element_in_input(0),
-  Symbols(nullptr), Sn_to_mace_sn(nullptr), Sn_map_size(0), Models(nullptr), Grounder(nullptr),
+  Symbols(nullptr), Sn_to_mace_sn(nullptr), Sn_map_size(0), Models(nullptr), Grounder(nullptr), non_iso_cache_exceeded(false),
   Total_models(0), Start_domain_seconds(0), Start_seconds(0), Start_megs(0), propagator(nullptr), print_cubes(-2), cubes_options(0)
 {
+  // Note: command line arguments are not available yet!  They are set in Search::initialize_for_search()!
 }
 
 void
@@ -107,6 +109,12 @@ Search::initialize_for_search(Plist clauses) {
   }
   print_cubes = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_cubes);
   cubes_options = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->cubes_options);
+
+  Options opt;
+  opt.out_cg = false;
+    
+  opt.max_cache = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->filter_models);
+  isofilter.set_options(opt);
 
   max_count = 0;
   if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 2)
@@ -277,8 +285,7 @@ Search::possible_model(void)
   else if (!propagator->check_that_ground_clauses_are_true())
     fatal::fatal_error("possible_model, bad model found");
 
-  Total_models++;
-  Mstats.current_models++;
+  bool to_output = true;
 
   if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->return_models)) {
     InterpContainer inter_con;
@@ -289,19 +296,42 @@ Search::possible_model(void)
     PlistContainer p_con;
     Models = p_con.plist_append(Models, model);
   }
-
-  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) > 0)
-    print_model_interp(*models_interp_file_stream);
-  else if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models))
-    print_model_standard(std::cout, true);
-  else if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models_tabular))
-    p_model(false);
-  else if (next_message == Total_models) {
+  std::string cg;
+  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->filter_models) != 0) {
+    std::vector<std::vector<size_t>>  un_ops;
+    std::vector<std::vector<std::vector<size_t>>>  bin_ops;
+    std::vector<std::vector<std::vector<size_t>>>  bin_rels;
+    construct_model(un_ops, bin_ops, bin_rels);
+    Model new_model(Domain_size, un_ops, bin_ops, bin_rels);
+    if (isofilter.is_non_isomorphic(new_model)) {
+      if (!non_iso_cache_exceeded && isofilter.cache_exceeded()) {
+        non_iso_cache_exceeded = true;
+        std::cout << "% Non-isomorphic models cache (size: " << LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->filter_models) 
+                  << ") " << "exceeded, some models may not be non-isomorphic.\n";
+      }
+      if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_canonical)) {
+        cg = new_model.cg_to_string("|");
+      }
+    }
+    else
+      to_output = false;
+  }
+  if (to_output) {
+    Total_models++;
+    Mstats.current_models++;
+    if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) > 0)
+      print_model_interp(*models_interp_file_stream, cg);
+    else if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models))
+      print_model_standard(std::cout, true);
+    else if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models_tabular))
+      p_model(false);
+  }
+  if (next_message == Total_models) {
     std::cout << "\nModel " << Total_models << " has been found." << std::endl;
     if (Total_models >= 100000000)
-    	next_message *= 2;
+      next_message *= 2;
     else
-    	next_message *= 10;
+      next_message *= 10;
   }
   if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->max_models) != -1 && Total_models >= LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->max_models))
     return SEARCH_MAX_MODELS;
@@ -490,7 +520,6 @@ int
 Search::mace4n(Plist clauses, int order)
 {
   Mstate initial_state = MScon.get_mstate();
-
   Variable_Style save_style = Variable_Style();
   SymbolContainer   symbol_con;
   symbol_con.set_variable_style(Variable_Style::INTEGER_STYLE);
@@ -821,6 +850,42 @@ Search::p_model(bool print_head)
 
 
 void
+Search::construct_model(std::vector<std::vector<size_t>>& un_ops,
+                        std::vector<std::vector<std::vector<size_t>>>& bin_ops,
+                        std::vector<std::vector<std::vector<size_t>>>& bin_rels)
+{
+  InterpContainer   interp_con;
+
+  for (Symbol_data s = Symbols; s != nullptr; s = s->next) {
+    if (s->attribute != EQUALITY_SYMBOL) {
+
+      int n = interp_con.int_power(Domain_size, s->arity);
+      if (s->arity == 1) {
+        std::vector<size_t>  row;
+        for (size_t idx = s->base; idx < s->base+n; ++idx)
+            row.push_back(VARNUM(Cells[idx].value)); 
+        un_ops.push_back(row);
+      }
+      else if (s->arity == 2) {
+        std::vector<std::vector<size_t>>  bin_matrix;
+        std::vector<size_t>  row;
+        for (size_t idx = s->base; idx < s->base+n; ++idx) {
+          row.push_back(VARNUM(Cells[idx].value)); 
+          if ((idx+1)%Domain_size == 0) {
+            bin_matrix.push_back(row);
+            row.clear();
+          }
+        }
+        if (s->type == type_FUNCTION)
+          bin_ops.push_back(bin_matrix);
+        else
+          bin_rels.push_back(bin_matrix);
+      }
+    }
+  }
+}
+
+void
 Search::print_model_standard(std::ostream& fp, bool print_head)
 {
   if (print_head)
@@ -868,9 +933,9 @@ Search::print_model_standard(std::ostream& fp, bool print_head)
 
 
 void
-Search::print_model_interp(std::ostream& fp)
+Search::print_model_interp(std::ostream& fp, const std::string& cg)
 {
-  /* Prints the model the same format as interpformat, to be used as inputs to isofilter directly*/
+  /* Prints the model the same format as interpformat */
   /* Also ignore constants if not -A1. For -A3 execute a fixed script before moving on */
  
   out_models_count++;
@@ -883,7 +948,8 @@ Search::print_model_interp(std::ostream& fp)
   SymbolContainer   symbol_con;
 
   for (Symbol_data s = Symbols; s != nullptr; s = s->next) {
-    if (s->attribute != EQUALITY_SYMBOL && (s->arity > 0 || LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 1)) {
+    if (s->attribute != EQUALITY_SYMBOL && 
+        (s->arity > 0 || LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 1)) {
       if (syms_printed)
         fp << ",";
       fp << "\n  " << (s->type == type_FUNCTION ? "function" : "relation") << "("
@@ -907,9 +973,11 @@ Search::print_model_interp(std::ostream& fp)
       syms_printed = true;
     }
   }
-
   fp << "]).\n";
 
+  if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_canonical)) {
+    fp << "%c%" << cg << std::endl;
+  }
   if (max_count > 0 && out_models_count >= max_count) { // hard-coded for now
     models_interp_file_stream->close();
     if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 3) {

@@ -8,11 +8,11 @@ struct mace_options {
   /* This structure holds the option IDs, not the option values! */
 
   /* flags */
-  int print_models_interp;
   int print_models;
   int print_models_tabular;
   int print_cubes;
   int cubes_options;
+  int print_canonical;
   int lnh;
   int trace;
   int negprop;
@@ -30,6 +30,8 @@ struct mace_options {
   int return_models;  /* special case */
 
   /* parms */
+  int print_models_interp;
+  int filter_models;
   int domain_size;
   int start_size;
   int end_size;

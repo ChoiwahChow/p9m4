@@ -53,7 +53,7 @@ CmdLine::process_command_line_args(int argc, char **argv, Mace_options opt)
      Two colons: argument optional.  (GNU extension!  Don't use it!)
   */
   while ((c = getopt(argc, argv,
-         "n:N:m:t:s:b:O:M:p:P:A:C:d:v:L:G:H:I:J:K:T:R:i:q:Q:S:cf:g")) != EOF) {
+         "n:N:m:t:s:b:O:M:p:P:A:W:w:C:d:v:L:G:H:I:J:K:T:R:i:q:Q:S:cf:g")) != EOF) {
     switch (c) {
     case 'n':
       command_line_parm(opt->domain_size, optarg);
@@ -82,6 +82,12 @@ CmdLine::process_command_line_args(int argc, char **argv, Mace_options opt)
 
     case 'A':
       command_line_parm(opt->print_models_interp, optarg);
+      break;
+    case 'W':
+      command_line_parm(opt->filter_models, optarg);
+      break;
+    case 'w':
+      command_line_flag(opt->print_canonical, optarg);
       break;
     case 'C':
       command_line_parm(opt->print_cubes, optarg);
@@ -170,6 +176,8 @@ CmdLine::usage_message(std::ostream& fp, Mace_options opt)
      << "  -N n : (upper case) parm end_size (" << LADR_GLOBAL_OPTIONS.parm(opt->iterate_up_to) << ").\n"
      << "  -i n : (lower case) parm increment (" << LADR_GLOBAL_OPTIONS.parm(opt->increment) << ").\n"
      << "  -A n : (upper case) parm print_models_interp (" << LADR_GLOBAL_OPTIONS.parm(opt->print_models_interp) << ").\n"
+     << "  -W n : (upper case) parm filter_models (" << LADR_GLOBAL_OPTIONS.parm(opt->filter_models) << ").\n"
+     << "  -w n : (lower case) flag print_canonical (" << (LADR_GLOBAL_OPTIONS.flag(opt->print_canonical) ? "set" : "clear") << ").\n"
      << "  -C n : (upper case) parm print_cubes (" << LADR_GLOBAL_OPTIONS.parm(opt->print_cubes) << ").\n"
      << "  -P n : (upper case) flag print_models (" << (LADR_GLOBAL_OPTIONS.flag(opt->print_models) ? "set" : "clear") << ").\n"
      << "  -p n : (lower case) flag print_models_tabular (" << (LADR_GLOBAL_OPTIONS.flag(opt->print_models_tabular) ? "set" : "clear") << ").\n"

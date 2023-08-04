@@ -9,6 +9,9 @@ endif()
 # set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
+include_directories(${CMAKE_SOURCE_DIR}/mace4/inc)
+link_directories(${CMAKE_SOURCE_DIR}/mace4/lib)
+
 add_library(libladr 
                ./ladr/banner.cpp ./ladr/nonport.cpp ./ladr/clock.cpp ./ladr/memory.cpp ./ladr/fatal.cpp ./ladr/options.cpp ./ladr/mystring.cpp ./ladr/attrib.cpp ./ladr/strbuf.cpp
                ./ladr/order.cpp ./ladr/ibuffer.cpp ./ladr/hash.cpp ./ladr/glist.cpp ./ladr/avltree.cpp ./ladr/symbols.cpp ./ladr/term.cpp ./ladr/ladrvglobais.cpp ./ladr/listterm.cpp ./ladr/parse.cpp ./ladr/tlist.cpp ./ladr/termflag.cpp
@@ -82,7 +85,7 @@ add_executable(unfast ./apps/inputs_util.cpp ./apps/unfast.cpp)
 add_executable(upper-covers ./apps/inputs_util.cpp ./apps/upper-covers.cpp)
 
 target_link_libraries(prover9 libladr)
-target_link_libraries(mace4 libladr)
+target_link_libraries(mace4 libladr libisonaut.a -l:nauty.a)
 target_link_libraries(clausefilter libladr)
 target_link_libraries(clausetester libladr)
 target_link_libraries(complex libladr)

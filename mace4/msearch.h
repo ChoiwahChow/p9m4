@@ -14,6 +14,7 @@
 #include "propagate.h"
 #include "partition.h"
 #include "cube.h"
+#include "inc/isofilter.h"
 
 #include "syms.h"
 
@@ -80,6 +81,10 @@ private:
   std::string mace_sigsegv_str;
   std::string unknown_str;
 
+  // Isofiltering
+  IsoFilter  isofilter;
+  bool       non_iso_cache_exceeded;
+
   /*
    * The following are "env/global" data used by a number of cooperating objects (e.g. msearch, select etc)
    * to do searching for models. This object owns all of them.  They are "pointers" passed to other objects,
@@ -132,7 +137,10 @@ private:
   int  f1_val(int base, int i);
   int  f2_val(int base, int i, int j);
   void print_model_standard(std::ostream& os, bool print_head);
-  void print_model_interp(std::ostream& os);
+  void print_model_interp(std::ostream& os, const std::string& cg = "");
+  void construct_model(std::vector<std::vector<size_t>>& un_ops,
+                       std::vector<std::vector<std::vector<size_t>>>& bin_ops,
+                       std::vector<std::vector<std::vector<size_t>>>& bin_rels);
   void p_model(bool print_head);
   void p_matom(Term atom);
   int  eterms_count(Term t);
