@@ -138,9 +138,9 @@ private:
   int  f2_val(int base, int i, int j);
   void print_model_standard(std::ostream& os, bool print_head);
   void print_model_interp(std::ostream& os, const std::string& cg = "");
-  void construct_model(std::vector<std::vector<size_t>>& un_ops,
-                       std::vector<std::vector<std::vector<size_t>>>& bin_ops,
-                       std::vector<std::vector<std::vector<size_t>>>& bin_rels);
+  void construct_model(std::vector<std::vector<int>>& un_ops,
+                       std::vector<std::vector<std::vector<int>>>& bin_ops,
+                       std::vector<std::vector<std::vector<int>>>& bin_rels);
   void p_model(bool print_head);
   void p_matom(Term atom);
   int  eterms_count(Term t);

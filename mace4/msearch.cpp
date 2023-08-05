@@ -298,9 +298,9 @@ Search::possible_model(void)
   }
   std::string cg;
   if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->filter_models) != 0) {
-    std::vector<std::vector<size_t>>  un_ops;
-    std::vector<std::vector<std::vector<size_t>>>  bin_ops;
-    std::vector<std::vector<std::vector<size_t>>>  bin_rels;
+    std::vector<std::vector<int>>  un_ops;
+    std::vector<std::vector<std::vector<int>>>  bin_ops;
+    std::vector<std::vector<std::vector<int>>>  bin_rels;
     construct_model(un_ops, bin_ops, bin_rels);
     Model new_model(Domain_size, un_ops, bin_ops, bin_rels);
     if (isofilter.is_non_isomorphic(new_model)) {
@@ -850,9 +850,9 @@ Search::p_model(bool print_head)
 
 
 void
-Search::construct_model(std::vector<std::vector<size_t>>& un_ops,
-                        std::vector<std::vector<std::vector<size_t>>>& bin_ops,
-                        std::vector<std::vector<std::vector<size_t>>>& bin_rels)
+Search::construct_model(std::vector<std::vector<int>>& un_ops,
+                        std::vector<std::vector<std::vector<int>>>& bin_ops,
+                        std::vector<std::vector<std::vector<int>>>& bin_rels)
 {
   InterpContainer   interp_con;
 
@@ -861,14 +861,14 @@ Search::construct_model(std::vector<std::vector<size_t>>& un_ops,
 
       int n = interp_con.int_power(Domain_size, s->arity);
       if (s->arity == 1) {
-        std::vector<size_t>  row;
+        std::vector<int>  row;
         for (size_t idx = s->base; idx < s->base+n; ++idx)
             row.push_back(VARNUM(Cells[idx].value)); 
         un_ops.push_back(row);
       }
       else if (s->arity == 2) {
-        std::vector<std::vector<size_t>>  bin_matrix;
-        std::vector<size_t>  row;
+        std::vector<std::vector<int>>  bin_matrix;
+        std::vector<int>  row;
         for (size_t idx = s->base; idx < s->base+n; ++idx) {
           row.push_back(VARNUM(Cells[idx].value)); 
           if ((idx+1)%Domain_size == 0) {
