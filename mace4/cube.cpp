@@ -268,7 +268,7 @@ Cube::print_unprocessed_cubes(int root_id, size_t from, size_t to)
 }
 
 void
-Cube::print_new_cube(int cube_length, int num_cells_filled) {
+Cube::print_new_cube(int cube_length, int num_cells_filled, const std::string& cg) {
 	bool same = true;
 	if (last_printed.size() < cube_length)
 		last_printed.insert(last_printed.end(), cube_length, -1);
@@ -290,6 +290,8 @@ Cube::print_new_cube(int cube_length, int num_cells_filled) {
   	std::cout << " " << num_cells_filled;
   	for (int idx = 0; idx < cube_length; ++idx)
   	  std::cout << " " << last_printed[idx];
+	if (!cg.empty())
+          std::cout << " %c%" << cg;
   	std::cout << std::endl;
 }
 

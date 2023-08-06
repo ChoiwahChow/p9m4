@@ -112,6 +112,7 @@ Search::initialize_for_search(Plist clauses) {
 
   Options opt;
   opt.out_cg = false;
+  opt.max_cache = -1;
     
   opt.max_cache = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->filter_models);
   isofilter.set_options(opt);
@@ -275,6 +276,31 @@ Search::interp_term(void)
                                     term_con.nat_to_term(Domain_size), symlist);
 }
 
+
+bool
+Search::is_new_non_isomorphic(bool print_canonical, std::string& cg)
+{
+  bool is_new_non_isomorphic = true;
+  std::vector<std::vector<int>>  un_ops;
+  std::vector<std::vector<std::vector<int>>>  bin_ops;
+  std::vector<std::vector<std::vector<int>>>  bin_rels;
+  construct_model(un_ops, bin_ops, bin_rels);
+  Model new_model(Domain_size, un_ops, bin_ops, bin_rels);
+  if (isofilter.is_non_isomorphic(new_model)) {
+    if (!non_iso_cache_exceeded && isofilter.cache_exceeded()) {
+      non_iso_cache_exceeded = true;
+      std::cout << "% Non-isomorphic models cache (size: " << LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->filter_models) 
+                << ") " << "exceeded, some models may not be non-isomorphic.\n";
+    }
+    if (print_canonical) {
+      cg = new_model.cg_to_string("|");
+    }
+  }
+  else
+    is_new_non_isomorphic = false;
+  return is_new_non_isomorphic;
+}
+
 int
 Search::possible_model(void)
 {
@@ -284,8 +310,6 @@ Search::possible_model(void)
   }
   else if (!propagator->check_that_ground_clauses_are_true())
     fatal::fatal_error("possible_model, bad model found");
-
-  bool to_output = true;
 
   if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->return_models)) {
     InterpContainer inter_con;
@@ -297,24 +321,9 @@ Search::possible_model(void)
     Models = p_con.plist_append(Models, model);
   }
   std::string cg;
+  bool to_output = true;
   if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->filter_models) != 0) {
-    std::vector<std::vector<int>>  un_ops;
-    std::vector<std::vector<std::vector<int>>>  bin_ops;
-    std::vector<std::vector<std::vector<int>>>  bin_rels;
-    construct_model(un_ops, bin_ops, bin_rels);
-    Model new_model(Domain_size, un_ops, bin_ops, bin_rels);
-    if (isofilter.is_non_isomorphic(new_model)) {
-      if (!non_iso_cache_exceeded && isofilter.cache_exceeded()) {
-        non_iso_cache_exceeded = true;
-        std::cout << "% Non-isomorphic models cache (size: " << LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->filter_models) 
-                  << ") " << "exceeded, some models may not be non-isomorphic.\n";
-      }
-      if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_canonical)) {
-        cg = new_model.cg_to_string("|");
-      }
-    }
-    else
-      to_output = false;
+    to_output = is_new_non_isomorphic(LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_canonical), cg);
   }
   if (to_output) {
     Total_models++;
@@ -475,7 +484,9 @@ Search::search(int max_constrained, int depth, Cube& splitter)
     	  last = value;
       }
       if (print_cubes >= 0 && splitter.real_depth(depth, id) >= print_cubes) {
-      	splitter.print_new_cube(print_cubes, splitter.num_cells_filled(Cells));
+	std::string cg;
+	if (is_new_non_isomorphic(true, cg))
+      	  splitter.print_new_cube(print_cubes, splitter.num_cells_filled(Cells), cg);
     	return SEARCH_GO_NO_MODELS;
       }
       // end for cubes
@@ -863,14 +874,14 @@ Search::construct_model(std::vector<std::vector<int>>& un_ops,
       if (s->arity == 1) {
         std::vector<int>  row;
         for (size_t idx = s->base; idx < s->base+n; ++idx)
-            row.push_back(VARNUM(Cells[idx].value)); 
+            row.push_back(id2val(idx)); 
         un_ops.push_back(row);
       }
       else if (s->arity == 2) {
         std::vector<std::vector<int>>  bin_matrix;
         std::vector<int>  row;
         for (size_t idx = s->base; idx < s->base+n; ++idx) {
-          row.push_back(VARNUM(Cells[idx].value)); 
+          row.push_back(id2val(idx)); 
           if ((idx+1)%Domain_size == 0) {
             bin_matrix.push_back(row);
             row.clear();

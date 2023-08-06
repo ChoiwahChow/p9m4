@@ -47,7 +47,7 @@ public:
 	bool reinitialize_cube();
 	void set_time(size_t seconds) {current_time = seconds;}
 	int  value(size_t depth, size_t id);
-	void print_new_cube(int cube_length, int num_cells_filled);
+	void print_new_cube(int cube_length, int num_cells_filled, const std::string& cg);
 	// size_t mark_root(size_t id, size_t from_index, size_t last);
 	bool move_on(size_t id, std::vector<std::vector<int>>& all_nodes);
 	size_t real_depth(size_t depth, size_t id);

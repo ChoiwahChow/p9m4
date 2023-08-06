@@ -162,6 +162,7 @@ private:
   int  mace4n(Plist clauses, int order);
   bool iterate_ok(int n, const std::string& class_name);
   int  next_domain_size(int n);
+  bool is_new_non_isomorphic(bool print_canonical, std::string& cg);
 
 public:
   Search() = delete;
