@@ -198,13 +198,6 @@ def collect_cubes(algebra, cube_dir, prev_cube_length, cube_length, threshold, d
     prev_file = f"{data_dir}/cubes_{order}_{prev_cube_length}.out"
     out_cube_file = f"{data_dir}/cubes_{order}_{cube_length}.out"
     
-    radius = al['radius'][cube_length]
-    all_permutations = perm[radius]
-    if al['remove'] == 0:
-        all_permutations = analyzer.remove0(all_permutations)
-    elif al['remove'] == 1:
-        all_permutations = analyzer.remove1(all_permutations)
-    
     t1 = time.time()
     analyzer.gen_sequence_multi(order, cube_length, radius, al['arities'], al['relations'], all_permutations, 
                           threshold, "utils/mace4/iso_cubes_multi.py", prev_file, cube_file, out_cube_file, max_threads=num_threads)
@@ -228,7 +221,7 @@ def gen_all_cubes(algebra, order, target_cube_length, threshold, mace4_exe, cube
 
     seq = run_data[algebra]['seq']
     cube_length = 0
-    input_file = f"inputs/{run_data[algebra]['input']}.in"
+    input_file = f"inputs/{run_data[algebra]['input']}"
     propagated_models_count = 0
     for index, new_cube_length in enumerate(seq):
         new_cube_dir = get_working_dir(algebra, order, new_cube_length)
