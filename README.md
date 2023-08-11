@@ -21,6 +21,10 @@ Another useful option is `-w1` (defaults 0) tells Mace4 to output the canonical 
 to the models in Mace4 format. This is useful if we need to check for isomorphism of models from different copies of Mace4 run
 in parallel.  We can compare the canonical graphs without running nauty again.
 
+The option `-a` sets the file path of the models output file. The default is `models.out`.
+
+The option `-x` sets the file path of an external script to process the models outputted so far.  The option`-X` sets the number of models outputed before call the extern script to process those models.  Once the external script is called, `mace` resets the output file to an empty file, and resets the count of models outputted so far to zero.
+
 ### Cell Selection
 
 The function/relation is implemented as a linearized array.  For example, an n x n 2-d function table is implemented
