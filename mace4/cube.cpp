@@ -269,30 +269,30 @@ Cube::print_unprocessed_cubes(int root_id, size_t from, size_t to)
 
 void
 Cube::print_new_cube(int cube_length, int num_cells_filled, const std::string& cg) {
-	bool same = true;
-	if (last_printed.size() < cube_length)
-		last_printed.insert(last_printed.end(), cube_length, -1);
-  	for (int idx = 0; idx < cube_length; ++idx) {
-  	  if (last_printed[idx] != Cells[cell_ids[idx]].get_value()) {
-  		  last_printed[idx] = Cells[cell_ids[idx]].get_value();
-  		  same = false;
-  	  }
-  	}
-  	if (same)
-  		return;
-	/* debug print
-  	std::cout << "model: depth " << depth << " cell";
-  	for (int idx = 0; idx < print_cubes; ++idx)
-      std::cout << " " << splitter.cell_ids[idx] << "|" << Cells[splitter.cell_ids[idx]].get_symbol();
-  	std::cout << std::endl;
-  	*/
-  	std::cout << "cube";
-  	// std::cout << " " << num_cells_filled;
-  	for (int idx = 0; idx < cube_length; ++idx)
-  	  std::cout << " " << last_printed[idx];
-	if (!cg.empty())
-          std::cout << " %c%" << cg;
-  	std::cout << std::endl;
+    bool same = true;
+    if (last_printed.size() < cube_length)
+        last_printed.insert(last_printed.end(), cube_length, -1);
+    for (int idx = 0; idx < cube_length; ++idx) {
+        if (last_printed[idx] != Cells[cell_ids[idx]].get_value()) {
+            last_printed[idx] = Cells[cell_ids[idx]].get_value();
+            same = false;
+        }
+    }
+    if (same)
+        return;
+    /* debug print
+      std::cout << "model: depth " << depth << " cell";
+      for (int idx = 0; idx < print_cubes; ++idx)
+          std::cout << " " << splitter.cell_ids[idx] << "|" << Cells[splitter.cell_ids[idx]].get_symbol();
+      std::cout << std::endl;
+      */
+    std::cout << "cube";
+    // std::cout << " " << num_cells_filled;
+    for (int idx = 0; idx < cube_length; ++idx)
+        std::cout << " " << last_printed[idx];
+    if (!cg.empty())
+        std::cout << " %c%" << cg;
+    std::cout << std::endl;
 }
 
 

@@ -67,7 +67,8 @@ Search::initialize_for_search(Plist clauses) {
 
   mace4_gv.init_globals();
 
-  interp_file_name = Mace4vglobais->m_opts.models_file;
+  if (!Mace4vglobais->m_opts.models_file.empty())
+      interp_file_name = Mace4vglobais->m_opts.models_file;
   max_count = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->restart_count);
 
   /* Set up Symbols list. */
