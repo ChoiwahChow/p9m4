@@ -20,7 +20,8 @@ mace_options::mace_options()
   print_cubes       = LADR_GLOBAL_OPTIONS.init_parm("print_cubes",       -2,   -2, INT_MAX);
   cubes_options     = LADR_GLOBAL_OPTIONS.init_parm("cubes_options",     0,     0, INT_MAX); 
   print_models_interp    = LADR_GLOBAL_OPTIONS.init_parm("print_models_interp",    0, 0, INT_MAX);
-  filter_models     = LADR_GLOBAL_OPTIONS.init_parm("filter_models",     0,     -1, INT_MAX);
+  filter_models     = LADR_GLOBAL_OPTIONS.init_parm("filter_models",     0,    -1, INT_MAX);
+  restart_count     = LADR_GLOBAL_OPTIONS.init_parm("restart_count",     0,     0, INT_MAX);
 
   print_models           = LADR_GLOBAL_OPTIONS.init_flag("print_models",           true);
   print_models_tabular   = LADR_GLOBAL_OPTIONS.init_flag("print_models_tabular",   false);
@@ -66,5 +67,24 @@ mace_options::mace_options()
   LADR_GLOBAL_OPTIONS.flag_flag_dependency(arithmetic, true, lnh, false);
 
   LADR_GLOBAL_OPTIONS.flag_parm_dependency(arithmetic, true, selection_order, 0);
+}
+
+std::string
+mace_local_options::assign_stringparm(char id, const char* optarg)
+{
+    std::string val("unknown option");
+    switch (id) {
+    case 'a':
+        models_file = optarg;
+        return models_file;
+        break;
+    case 'x':
+        hook_cmd = optarg;
+        return hook_cmd;
+        break;
+    default:
+        std::cerr << "Ignored: unknown string option " << id << "." << std::endl;
+    }
+    return val;
 }
 

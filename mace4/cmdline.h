@@ -21,10 +21,11 @@ public:
   static bool  member_args(int argc, char **argv, const std::string& str);
   static void  command_line_parm(int id, char *optarg);
   static void  command_line_flag(int id, char *optarg);
-  static void  process_command_line_args(int argc, char **argv, Mace_options opt);
+  static void  command_line_stringparm(char id, char *optarg, mace_local_options& m_opt, const std::string& parm_name);
+  static void  process_command_line_args(int argc, char **argv, Mace_options opt, mace_local_options& m_opt);
   static void  usage_message(std::ostream& fp, Mace_options opt);
   static Plist process_distinct_terms(Plist distinct);
-  static Plist read_mace4_input(int argc, char **argv, bool allow_unknown_things, Mace_options opt);
+  static Plist read_mace4_input(int argc, char **argv, bool allow_unknown_things, Mace_options opt, mace_local_options& m_opt);
 
 };
 

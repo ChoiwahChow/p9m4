@@ -2,6 +2,8 @@
 #ifndef MACE4_OPTIONS_H
 #define MACE4_OPTIONS_H
 
+#include <string>
+
 typedef struct mace_options* Mace_options;
 
 struct mace_options {
@@ -38,6 +40,7 @@ struct mace_options {
   int iterate_up_to;
   int increment;
   int max_models;
+  int restart_count;       // run the external script and restart the count when the count is restart_count
   int selection_order;
   int selection_measure;
   int max_seconds;
@@ -50,6 +53,14 @@ struct mace_options {
 
   mace_options();
 };
+
+struct mace_local_options {
+  std::string hook_cmd;
+  std::string models_file;
+
+  std::string assign_stringparm(char id, const char* optarg);
+};
+
 
 #endif
 

@@ -28,6 +28,13 @@ CmdLine::command_line_parm(int id, char *optarg)
 }
 
 void
+CmdLine::command_line_stringparm(char id, char *optarg, mace_local_options& m_opt, const std::string& parm_name)
+{
+  m_opt.assign_stringparm(id, optarg);
+  std::cout << "\n% From the command line: assign(\"" << parm_name << "\", " << optarg << ").\n";
+}
+
+void
 CmdLine::command_line_flag(int id, char *optarg)
 {
   if (!optarg || strcmp(optarg, "1") == 0) {
@@ -43,7 +50,7 @@ CmdLine::command_line_flag(int id, char *optarg)
 }
 
 void
-CmdLine::process_command_line_args(int argc, char **argv, Mace_options opt)
+CmdLine::process_command_line_args(int argc, char **argv, Mace_options opt, mace_local_options& m_opt)
 {
   extern char *optarg;
   int c;
@@ -53,7 +60,7 @@ CmdLine::process_command_line_args(int argc, char **argv, Mace_options opt)
      Two colons: argument optional.  (GNU extension!  Don't use it!)
   */
   while ((c = getopt(argc, argv,
-         "n:N:m:t:s:b:O:M:p:P:A:W:w:C:d:v:L:G:H:I:J:K:T:R:i:q:Q:S:cf:g")) != EOF) {
+         "n:N:m:t:s:b:O:M:p:P:A:a:W:w:x:X:C:d:v:L:G:H:I:J:K:T:R:i:q:Q:S:cf:g")) != EOF) {
     switch (c) {
     case 'n':
       command_line_parm(opt->domain_size, optarg);
@@ -88,6 +95,15 @@ CmdLine::process_command_line_args(int argc, char **argv, Mace_options opt)
       break;
     case 'w':
       command_line_flag(opt->print_canonical, optarg);
+      break;
+    case 'x':  // external shell script
+      command_line_stringparm(c, optarg, m_opt, "external shell script file path");
+      break;
+    case 'a':  // models output file
+      command_line_stringparm(c, optarg, m_opt, "models output file path");
+      break;
+    case 'X':
+      command_line_parm(opt->restart_count, optarg);
       break;
     case 'C':
       command_line_parm(opt->print_cubes, optarg);
@@ -247,7 +263,7 @@ CmdLine::process_distinct_terms(Plist distinct)
 }
 
 Plist
-CmdLine::read_mace4_input(int argc, char **argv, bool allow_unknown_things, Mace_options opt)
+CmdLine::read_mace4_input(int argc, char **argv, bool allow_unknown_things, Mace_options opt, mace_local_options& m_opt)
 {
   /*
    * Reads the inputs, and returns a Plist of Topform's
@@ -290,7 +306,7 @@ CmdLine::read_mace4_input(int argc, char **argv, bool allow_unknown_things, Mace
   if (hints)
     std::cout << "%   hints list(s) ignored\n";
 
-  process_command_line_args(argc, argv, opt);
+  process_command_line_args(argc, argv, opt, m_opt);
 
   banner::print_separator(std::cout, "end of input", true);
 

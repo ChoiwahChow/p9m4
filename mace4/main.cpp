@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 
   /* Following says whether to ignore unrecognized set/clear/assigns. */
   bool prover_compatability_mode = CmdLine::member_args(argc, argv, "-c");
-  Plist clauses = CmdLine::read_mace4_input(argc, argv, prover_compatability_mode, mace4vglobais.Opt);
+  Plist clauses = CmdLine::read_mace4_input(argc, argv, prover_compatability_mode, mace4vglobais.Opt, mace4vglobais.m_opts);
 
   banner::print_separator(std::cout, "CLAUSES FOR SEARCH", true);
   Ioutil::fwrite_clause_list(std::cout, clauses, "mace4_clauses", (int)Clause_print_format::CL_FORM_BARE);

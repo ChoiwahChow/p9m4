@@ -19,11 +19,12 @@ Mace4 options:
 -A1   print the models in the format expected by isofilter
 
 
-grep "Exiting with " semi_working_[0-9]/mace.log | grep model | utils/mace4/counter.py
+grep "Exiting with " semi_working_[0-9]/mace.log | grep model | utils/cubing/counter.py
 
 """
 
 
+import sys
 import os
 from datetime import datetime
 import time
@@ -32,10 +33,10 @@ import threading
 import ast
 
 import extend_cubes
-import multi_cube_analyzer as analyzer
+import analyzer
 import run_cubes
 
-top_data_dir = "utils/mace4/working"
+top_data_dir = "utils/cubing/working"
 num_threads  = 8
 
 
@@ -43,8 +44,8 @@ request_work_file = "request_work.txt"
 work_file = "release_work.out"
 print_models = "A1"  # P0 - don't output models, A1 - output models, P1 print models
 
-cube_sequence_2 = [2, 4, 9, 16, 25, 36, 49, 64]   # for radius 2, 2, 3, 4, 5, 6, 7, ...
-cube_sequence_1_2 = [2, 4, 6, 12, 20, 30, 42, 56, 72]   # for radius 1, 2, 2, 3, 4, 5, 6...
+cube_sequence_2 = [2, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121]   # for radius 2, 2, 3, 4, 5, 6, 7, ...
+cube_sequence_1_2 = [2, 4, 6, 12, 20, 30, 42, 56, 72, 90, 110, 132]   # for radius 1, 2, 2, 3, 4, 5, 6...
 cube_sequence_1_2_2 = [3, 6, 10, 21, 36, 55, 78, 105, 136]
 cube_sequence_2_2 = [2, 4, 8, 18, 32, 50, 72, 98, 128]
 cube_sequence_2_2_2 = [3, 6, 12, 27, 48, 75, 108, 147, 215]
@@ -53,6 +54,11 @@ cube_sequence_1_2_2_2 = [4, 8, 14, 30, 52, 80, 114, 154, 200]
 cube_sequence_2_2_2_2 = [4, 8, 16, 36, 64, 100, 144, 196, 256]
 cube_sequence_1_2_2_2_2 = [5, 10, 18, 39, 68, 105, 150, 203, 264]
 
+run_data = {'inverse_semi' : {'seq': cube_sequence_1_2},
+            'loops' : {'seq': cube_sequence_2},
+            'semi' : {'seq': cube_sequence_2}} 
+
+"""
 run_data = {'anti_monoid': {'seq': cube_sequence_1_2, 'relations': [False, False], 
                          'input': '123_antidomain_monoid', 'arities': [1, 2], 'radius': r_1_2, 'remove': 1},
             'assoc_dimonoid': {'seq': cube_sequence_2_2, 'relations': [False, False], 
@@ -175,6 +181,7 @@ run_data = {'anti_monoid': {'seq': cube_sequence_1_2, 'relations': [False, False
                          'input': '102_tarski', 'arities': [2], 'radius': r_2, 'remove': -1},
             'trigroup': {'seq': cube_sequence_1_2_2_2, 'relations': [False, False, False, False], 
                          'input': '142_trigroup', 'arities': [1, 2, 2, 2], 'radius': r_1_2_2_2, 'remove': 0}}
+"""
 
 
 def get_data_dir(algebra, order):
@@ -187,31 +194,29 @@ def get_working_dir(algebra, order, cube_length):
     return f"{algebra}_working_{order}_{cube_length}"
     
 
-def collect_cubes(algebra, cube_dir, prev_cube_length, cube_length, threshold, data_dir, num_threads):
+def collect_cubes(cube_dir, cube_length, data_dir, num_threads):
     """ collect the cubes generated, and remove isomorphic cubes
     """
-    al = run_data[algebra]
     # get rid of leading "cube "
-    cmd = f"cat {cube_dir}_*/{cube_length}.out | grep '^cube' | sort --parallel={num_threads} -u | sed 's/[^ ]* //' > {data_dir}/cubes{cube_length}.out"
+    # cmd = f"cat {cube_dir}_*/{cube_length}.out | grep '^cube' | sort --parallel={num_threads} -u | sed 's/[^ ]* //' > {data_dir}/cubes{cube_length}.out"
+    cmd = f"cat {cube_dir}_*/{cube_length}.out | grep '^cube' | sed 's/[^ ]* //' > {data_dir}/cubes{cube_length}.out"
     subprocess.run(cmd, capture_output=False, text=True, check=False, shell=True)
+
     cube_file = f"{data_dir}/cubes{cube_length}.out"
-    prev_file = f"{data_dir}/cubes_{order}_{prev_cube_length}.out"
     out_cube_file = f"{data_dir}/cubes_{order}_{cube_length}.out"
     
     t1 = time.time()
-    analyzer.gen_sequence_multi(order, cube_length, radius, al['arities'], al['relations'], all_permutations, 
-                          threshold, "utils/mace4/iso_cubes_multi.py", prev_file, cube_file, out_cube_file, max_threads=num_threads)
+    analyzer.gen_sequence (cube_file, out_cube_file, max_threads=num_threads)
     analyze_time = time.time() - t1
     return analyze_time
     
 
-def gen_all_cubes(algebra, order, target_cube_length, threshold, mace4_exe, cubes_options, num_threads):
+def gen_all_cubes(algebra, order, target_cube_length, input_file, mace4_exe, cubes_options, num_threads):
     """
     Args:
         algebra (str): name of the algebra
         order (int): order of the algebra
         target_cube_length (int): target cube length
-        threshold (int):  use invariant when the number of models is at least this manany
         mace4_exe (str): path name of the mace4 executable
         cubes_options (int): bit vector lsb 1 - work stealing, 2 - cube has num cells filled at beginning
         num_threads (int): max number of threads to use
@@ -221,7 +226,6 @@ def gen_all_cubes(algebra, order, target_cube_length, threshold, mace4_exe, cube
 
     seq = run_data[algebra]['seq']
     cube_length = 0
-    input_file = f"inputs/{run_data[algebra]['input']}"
     propagated_models_count = 0
     for index, new_cube_length in enumerate(seq):
         new_cube_dir = get_working_dir(algebra, order, new_cube_length)
@@ -233,22 +237,22 @@ def gen_all_cubes(algebra, order, target_cube_length, threshold, mace4_exe, cube
                                   new_cube_dir, num_threads, cubes_options, request_work_file, work_file)
         
         working_dir_prefix = get_working_dir(algebra, order, new_cube_length)    
-        cmd = f'grep "Exiting with " {working_dir_prefix}_*/{new_cube_length}.out | grep model | utils/mace4/counter.py'
+        cmd = f'grep "Exiting with " {working_dir_prefix}_*/{new_cube_length}.out | grep model | utils/cubing/counter.py'
         # print(f'^^^^^^^^^^^^^^^^^^^^^^{cmd}^^^^^^^^^^^^^^^^^^^^^')
         sp = subprocess.run(cmd, capture_output=True, text=True, check=False, shell=True)
         propagated_models_count += int(sp.stdout)
         
-        analyze_time = collect_cubes(algebra, new_cube_dir, cube_length, new_cube_length, threshold, data_dir, num_threads)        
-        print(f"{algebra}, {order}, cube length={new_cube_length}, threshold={threshold}, analyze time {analyze_time}, #propagated models {propagated_models_count}", flush=True)
+        analyze_time = collect_cubes(new_cube_dir, new_cube_length, data_dir, num_threads)        
+        print(f"{algebra}, {order}, cube length={new_cube_length}, analyze time {analyze_time}, #propagated models {propagated_models_count}", flush=True)
         if new_cube_length == target_cube_length:
             break
         cube_length = new_cube_length
     return propagated_models_count
     
     
-def run_all_cubes(algebra, order, target_cube_length, mace4_exe, cubes_options):
+def run_all_cubes(algebra, order, target_cube_length, input_file, mace4_exe, cubes_options):
     # print(f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")}, run all cubes...', flush=True)
-    input_file = f"inputs/{run_data[algebra]['input']}.in"
+    # input_file = f"inputs/{run_data[algebra]['input']}.in"
     cube_file = f"{top_data_dir}/{algebra}{order}/cubes_{order}_{target_cube_length}.out"
     working_dir_prefix = get_working_dir(algebra, order, target_cube_length)
     run_cubes.run_mace(mace4_exe, input_file, order, cube_file, print_models, cubes_options, working_dir_prefix, num_threads)
@@ -258,20 +262,19 @@ def run_all_cubes(algebra, order, target_cube_length, mace4_exe, cubes_options):
     return int(sp.stdout)
 
     
-def collect_stat(algebra, order, target_cube_length, cube_options, threshold, models_count, gen_cube_time, runtime):
+def collect_stat(algebra, order, target_cube_length, cube_options, models_count, gen_cube_time, runtime):
     data_dir = get_data_dir(algebra, order)
     out_cube_file = f"{data_dir}/cubes_{order}_{target_cube_length}.out"
     count = len(open(out_cube_file).readlines( ))
-    print(f'"{algebra}", order={order}, invariant threshold={threshold}, options={cube_options}, cubes count={count}, {gen_cube_time}, #model={models_count}, model gen time={runtime}\n',
+    print(f'"{algebra}", order={order}, ptions={cube_options}, cubes count={count}, {gen_cube_time}, #model={models_count}, model gen time={runtime}\n',
           flush=True)
 
 
 __all__ = ["run_all_cubes", "gen_all_cubes", "collect_stat"]
 
 if __name__ == "__main__":
-    mace4_exe = "../bin/mace4"
+    mace4_exe = "./build/mace4"
     cubes_options = 1      # bit-0  set to 1 if use work-stealing
-    threshold = 1000       # invariants will be used if number of cubes is above threshhold. Large number to disable invariants
 
     algebra = "quasi"
     algebra = "trigroup"
@@ -282,20 +285,24 @@ if __name__ == "__main__":
     algebra = "monoidplus"
 
     algebra = sys.argv[1]
-    order = sys.argv[2]
-    target_cube_length = sys.argv[3]
+    order = int(sys.argv[2])
+    target_cube_length = int(sys.argv[3])
+    input_file = sys.argv[4]
+    if len(sys.argv) > 5:
+        num_threads = int(sys.argv[5])
 
     propagated_models_count = 0
     t0 = time.time()
-    print(f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")} Generating all cubes...', flush=True)
-    propagated_models_count += gen_all_cubes(algebra, order, target_cube_length, threshold, mace4_exe, cubes_options, num_threads)
+    print(f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")} Generating all cubes to target length {target_cube_length} ...', flush=True)
+    propagated_models_count += gen_all_cubes(algebra, order, target_cube_length, input_file, 
+                                             mace4_exe, cubes_options, num_threads)
     t1 = time.time()
     gen_cube_time = t1 - t0
     t2 = time.time()
     print(f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")} Done generating cubes for {algebra}, order {order}. Generating models...', flush=True)
-    models_count = run_all_cubes(algebra, order, target_cube_length, mace4_exe, cubes_options)
+    models_count = run_all_cubes(algebra, order, target_cube_length, input_file, mace4_exe, cubes_options)
     t3 = time.time()
     runtime = t3 - t2
-    collect_stat(algebra, order, target_cube_length, cubes_options, threshold, models_count+propagated_models_count, gen_cube_time, runtime)
+    collect_stat(algebra, order, target_cube_length, cubes_options, models_count+propagated_models_count, gen_cube_time, runtime)
     print(f'Done {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}')
     

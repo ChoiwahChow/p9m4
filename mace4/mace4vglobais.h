@@ -14,6 +14,7 @@ public:
   Arithmetic    Arith;
   mace_options  opt;
   Mace_options  Opt;
+  mace_local_options m_opts;
     
                                 
 //public methods

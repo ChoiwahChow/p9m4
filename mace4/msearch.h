@@ -127,7 +127,7 @@ private:
   std::vector<std::vector<int>>  all_nodes;
 
   // printing functions
-  static std::string interp_file_name;
+  std::string interp_file_name;
   ofstream* models_interp_file_stream = nullptr;
   size_t out_models_count = 0;
   size_t max_count = 0;

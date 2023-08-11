@@ -8,7 +8,7 @@ Mace4 options:
 -A1   print the models in the format expected by isofilter
 
 
-cat quandles_working10_*/4.out | grep "^cube" | sort --parallel=8 -u | sed 's/[^ ]* //' > utils/mace4/working/quandles10/cubes4.out
+cat quandles_working10_*/4.out | grep "^cube" | sort --parallel=8 -u | sed 's/[^ ]* //' > utils/cubing/working/quandles10/cubes4.out
 
 
 grep "Exiting with " semi_working_[0-9]/mace.log | utils/mace4/counter.py
@@ -96,7 +96,7 @@ def extend_cube_jobs(input_file, order, new_cube_length, cubes, print_models, ma
             all_cubes = fp.read().splitlines()
         last_id = id
         while all_cubes:
-            num = len(all_cubes) / max_threads + 1
+            num = len(all_cubes) // max_threads + 1
             seqs = all_cubes[:num]
             all_cubes = all_cubes[num:]
     
