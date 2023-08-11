@@ -211,7 +211,7 @@ def collect_cubes(order, cube_dir, cube_length, data_dir, num_threads):
     return analyze_time
     
 
-def gen_all_cubes(mace4_args, target_cube_length, cubes_options, num_threads):
+def gen_all_cubes(mace4_args, target_cube_length, num_threads):
     """
     Args:
         algebra (str): name of the algebra
@@ -226,6 +226,7 @@ def gen_all_cubes(mace4_args, target_cube_length, cubes_options, num_threads):
     print_model = mace4_args['print_model']
     mace4_exe = mace4_args['mace4_exe']
     input_file = mace4_args['input_file']
+    cubes_options = mace4_args['cubes_options']
 
     data_dir = get_data_dir(algebra, order)
     os.makedirs(data_dir, exist_ok=True)
@@ -239,8 +240,8 @@ def gen_all_cubes(mace4_args, target_cube_length, cubes_options, num_threads):
             cube_file = None
         else:
             cube_file = f"{top_data_dir}/{algebra}{order}/cubes_{order}_{cube_length}.out"
-        extend_cubes.extend_cubes(input_file, order, new_cube_length, cube_file, print_model, mace4_exe,
-                                  new_cube_dir, num_threads, cubes_options, request_work_file, work_file)
+        extend_cubes.extend_cubes(mace4_args, new_cube_length, cube_file, 
+                                  new_cube_dir, num_threads, request_work_file, work_file)
         
         working_dir_prefix = get_working_dir(algebra, order, new_cube_length)    
         cmd = f'grep "Exiting with " {working_dir_prefix}_*/{new_cube_length}.out | grep model | utils/cubing/counter.py'
@@ -256,15 +257,15 @@ def gen_all_cubes(mace4_args, target_cube_length, cubes_options, num_threads):
     return propagated_models_count
     
     
-def run_all_cubes(mace4_args, target_cube_length, cubes_options):
+def run_all_cubes(mace4_args, target_cube_length):
     # print(f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")}, run all cubes...', flush=True)
     # input_file = f"inputs/{run_data[algebra]['input']}.in"
     order = mace4_args['order']
     algebra = mace4_args['algebra']
+    cubes_options = mace4_args['cubes_options']
     cube_file = f"{top_data_dir}/{algebra}{order}/cubes_{order}_{target_cube_length}.out"
     working_dir_prefix = get_working_dir(algebra, order, target_cube_length)
-    run_cubes.run_mace(mace4_args['mace4_exe'], mace4_args['input_file'], order, cube_file,
-                       mace4_args['print_model'], cubes_options, working_dir_prefix, num_threads)
+    run_cubes.run_mace(mace4_args, cube_file, working_dir_prefix, num_threads)
     
     cmd = f'grep "Exiting with " {working_dir_prefix}_*/mace.log | grep model | utils/mace4/counter.py'
     sp = subprocess.run(cmd, capture_output=True, text=True, check=False, shell=True)
@@ -304,19 +305,19 @@ if __name__ == "__main__":
 
     mace4_args = { 'mace4_exe': mace4_exe, 'algebra': args.algebra, 'order': args.order, 
                    'input_file': args.input_file[0], 'output_file': args.output_file,
-                   'print_model': args.print_model }
+                   'print_model': args.print_model, 'cubes_options': cubes_options }
     target_cube_length = args.target_cube_length
     num_threads = args.num_threads
 
     propagated_models_count = 0
     t0 = time.time()
     print(f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")} Generating all cubes to target length {target_cube_length} ...', flush=True)
-    propagated_models_count += gen_all_cubes(mace4_args, target_cube_length, cubes_options, num_threads)
+    propagated_models_count += gen_all_cubes(mace4_args, target_cube_length, num_threads)
     t1 = time.time()
     gen_cube_time = t1 - t0
     t2 = time.time()
     print(f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")} Done generating cubes for {mace4_args["algebra"]}, order {mace4_args["order"]}. Generating models...', flush=True)
-    models_count = run_all_cubes(mace4_args, target_cube_length, cubes_options)
+    models_count = run_all_cubes(mace4_args, target_cube_length)
     t3 = time.time()
     runtime = t3 - t2
     collect_stat(mace4_args, target_cube_length, cubes_options, models_count+propagated_models_count, gen_cube_time, runtime)

@@ -38,7 +38,7 @@ def all_done(thread_slots):
     return True
 
 
-def run_process(id, slot_id, thread_slots, order, cube_length, input_file, cubes, 
+def run_process(id, slot_id, thread_slots, order, cube_length, input_file, interp_out_file, cubes, 
                 print_models, mace4, cubes_options, working_dir):
     """
     Spawn a new Python process to do cube generation, and wait for the process to complete.  After the 
@@ -65,7 +65,11 @@ def run_process(id, slot_id, thread_slots, order, cube_length, input_file, cubes
                 fp.write(f"{cube}\n")
     # print(f"debug ******run_process in extend_cube, mace4 path name****************************** {mace4}")
 
-    opt = f"-n{order} -N{order} -m-1 -W-1 -w1 -{print_models} -d{cubes_options} -C{cube_length} -O3 -f {input_file}"
+    out_file = ""
+    if interp_out_file:
+        out_file = f"-a {interp_out_file}"
+
+    opt = f"-n{order} -N{order} -m-1 -W-1 -w1 -{print_models} -d{cubes_options} -C{cube_length} -O3 {out_file} -f {input_file}"
     cmd = f"cd {working_dir}; {mace4} {opt} >> {cube_length}.out 2>>mace.out"
     # print(f"debug mace4 cmd**************************{cmd}")
 
@@ -79,7 +83,7 @@ def run_process(id, slot_id, thread_slots, order, cube_length, input_file, cubes
     thread_slots[slot_id] = 0
 
 
-def extend_cube_jobs(input_file, order, new_cube_length, cubes, print_models, mace4, 
+def extend_cube_jobs(input_file, interp_out_file, order, new_cube_length, cubes, print_models, mace4, 
                      cubes_options, working_dir, max_threads, thread_slots):
     """
     Args:
@@ -89,7 +93,8 @@ def extend_cube_jobs(input_file, order, new_cube_length, cubes, print_models, ma
     if cubes is None:
         thread_slots[0] = threading.Thread(target=run_process, 
                                            args=(id, id, thread_slots, order, new_cube_length, f"../{input_file}",
-                                                 None, print_models, f"../{mace4}", cubes_options, working_dir))
+                                                 interp_out_file, None, print_models, f"../{mace4}",
+                                                 cubes_options, working_dir))
         thread_slots[0].start()
     else:
         with (open(cubes)) as fp:
@@ -110,8 +115,8 @@ def extend_cube_jobs(input_file, order, new_cube_length, cubes, print_models, ma
                 last_id = id
             thread_slots[slot_id] = threading.Thread(target=run_process, 
                                                      args=(id, slot_id, thread_slots, order, new_cube_length,
-                                                           f"../{input_file}", seqs, print_models, f"../{mace4}",
-                                                           cubes_options, working_dir))
+                                                           f"../{input_file}", interp_out_file, seqs, print_models,
+                                                           f"../{mace4}", cubes_options, working_dir))
             thread_slots[slot_id].start()
     
 
@@ -168,14 +173,23 @@ def request_work(working_dir_prefix, request_work_file, work_file, max_threads, 
     return work_list
     
 
-def extend_cubes(input_file, order, new_cube_length, cubes, print_models, mace4, working_dir_prefix, 
-                 max_threads, cubes_options, request_work_file, work_file):
+#def extend_cubes(input_file, order, new_cube_length, cubes, print_models, mace4, working_dir_prefix, 
+#                 max_threads, cubes_options, request_work_file, work_file):
+def extend_cubes(mace4_args, new_cube_length, cubes, working_dir_prefix, 
+                 max_threads, request_work_file, work_file):
     """
     spawns out Mac4 to extend cubes
     A file <working_dir_prefix>_stealing/new_work.out is used to hold the cubes given by busy workers
     Args:
         cubes_options (int): bit vector lsb 1 - do work stealing, 2 - cube has num cells filled at beginning
     """
+    input_file = mace4_args['input_file']
+    order = mace4_args['order']
+    print_model = mace4_args['print_model']
+    mace4 = mace4_args['mace4_exe']
+    cubes_options = mace4_args['cubes_options']
+    interp_out_file = mace4_args['output_file']
+    
     done = False
     thread_slots = [0] * max_threads
     cube_file = cubes
@@ -184,7 +198,7 @@ def extend_cubes(input_file, order, new_cube_length, cubes, print_models, mace4,
 
     while not done:
         # Path(stealing_file).unlink(True)
-        extend_cube_jobs(input_file, order, new_cube_length, cube_file, print_models,
+        extend_cube_jobs(input_file, interp_out_file, order, new_cube_length, cube_file, print_model,
                          mace4, cubes_options, working_dir_prefix, max_threads, thread_slots)
         work_list = list()
         if cubes_options % 2 == 1:
@@ -203,38 +217,10 @@ def extend_cubes(input_file, order, new_cube_length, cubes, print_models, mace4,
         time.sleep(1)
     
 
-def single_extend_cubes(input_file, order, new_cube_length, cubes, print_models, mace4, working_dir, max_threads, cubes_options):
-    thread_slots = [0] * max_threads
-    extend_cube_jobs(input_file, order, new_cube_length, cubes, print_models, mace4, cubes_options, working_dir, max_threads, thread_slots)
-
-    print("extend_cubes: All cubes are dispatched. Waiting for the last ones to finish...", flush=True)
-    while(not all_done(thread_slots)):
-        time.sleep(2)
-    
     
 __all__ =["extend_cubes"]
 
 if __name__ == "__main__":
     default_mace4 = "../bin/mace4"
     max_threads = 8
-    cubes_options = 0  # bit-0 for work stealing
-    order = 8
-    cube_length = 32
-    new_cube_length = 50
-    print_models = "P0"  # P0 - don't output models, A1 - output models
-    algebra = "quasi"
-    algebra = "hilbert"
-    algebra = "quasi_ordered"
-    algebra = "loops"
-    algebra = "tarski"
-    algebra = "semizero"
-    algebra = "inv_semi"
-    algebra = "semi"
-    algebra = "quandles"
-    
-    single_extend_cubes(f"inputs/{algebra}.in", order, new_cube_length, f"utils/mace4/working/{algebra}{order}/cubes_2_{order}_{cube_length}.out",
-             print_models, default_mace4, f"{algebra}_working{order}", max_threads, cubes_options)
-    
-    
-    
-    
+
