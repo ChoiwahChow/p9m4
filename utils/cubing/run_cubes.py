@@ -86,21 +86,7 @@ def run_mace_jobs(mace4_exec, input_file, interp_out_file, order, cubes, print_m
     all_cubes = [x.rstrip() for x in all_cubes]
 
     while all_cubes:
-        num = len(all_cubes) / max_threads
-        if num > 100000:
-            num = 100000
-        elif num > 10000:
-            num = 10000
-        elif num > 1000:
-            num = 1000
-        elif num > 100:
-            num = 100
-        elif num > 10:
-            num = 10
-        elif num > 3:
-            num = 3
-        else:
-            num = 1
+        num = len(all_cubes) // max_threads + 1
         seqs = all_cubes[:num]
         all_cubes = all_cubes[num:]
         
@@ -139,7 +125,7 @@ def run_mace(mace4_args, cubes, working_dir_prefix, max_threads):
         id_counter = run_mace_jobs(mace4_exec, input_file, interp_out_file, order, cube_file, print_model,
                                    cubes_options, working_dir_prefix, id_counter, max_threads, thread_slots)
         work_list = list()
-        if steal_work:
+        if steal_work and max_threads > 1:
             work_list = request_work(working_dir_prefix, request_work_file, work_file, max_threads, thread_slots)
         print(f"debug run_mace, request work returns {len(work_list)} jobs", flush=True)
         if work_list:

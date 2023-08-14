@@ -69,7 +69,8 @@ Search::initialize_for_search(Plist clauses) {
 
   if (!Mace4vglobais->m_opts.models_file.empty())
       interp_file_name = Mace4vglobais->m_opts.models_file;
-  max_count = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->restart_count);
+  max_count = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp);
+  file_count = 1;
 
   /* Set up Symbols list. */
   Symbols = Symbol_dataContainer::init_built_in_symbols(Symbols);  /* =/2 (and maybe others) */
@@ -328,7 +329,7 @@ Search::possible_model(void)
   if (to_output) {
     Total_models++;
     Mstats.current_models++;
-    if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) > 0)
+    if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) != 0)
       print_model_interp(*models_interp_file_stream, cg);
     else if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models))
       print_model_standard(std::cout, true);
@@ -675,7 +676,7 @@ Search::mace4(Plist clauses)
   Memory::set_max_megs(8000);
 
   initialize_for_search(clauses);
-  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp)>0) {
+  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) != 0) {
 	  models_interp_file_stream = new ofstream();
 	  models_interp_file_stream->open(Search::interp_file_name, std::ios_base::app);
   }
@@ -708,7 +709,7 @@ Search::mace4(Plist clauses)
     n = next_domain_size(n);  /* returns -1 if we're done */
   }
 
-  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp)>0) {
+  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) != 0) {
 	  models_interp_file_stream->close();
 	  models_interp_file_stream = nullptr;
   }
@@ -959,8 +960,8 @@ Search::print_model_interp(std::ostream& fp, const std::string& cg)
   SymbolContainer   symbol_con;
 
   for (Symbol_data s = Symbols; s != nullptr; s = s->next) {
-    if (s->attribute != EQUALITY_SYMBOL && 
-        (s->arity > 0 || LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 1)) {
+    if (s->attribute != EQUALITY_SYMBOL) {
+     //   (s->arity > 0 || LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) != 0)) {
       if (syms_printed)
         fp << ",";
       fp << "\n  " << (s->type == type_FUNCTION ? "function" : "relation") << "("
@@ -989,21 +990,22 @@ Search::print_model_interp(std::ostream& fp, const std::string& cg)
   if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_canonical)) {
     fp << "%c%" << cg << std::endl;
   }
-  if (max_count > 0 && out_models_count >= max_count) { // hard-coded for now
+  if (max_count > 0 && out_models_count >= max_count) { 
     models_interp_file_stream->close();
-    if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 3) {
-      // int ret = system("../utils/mace4/run_hook.sh"); 
-      int ret = system (Mace4vglobais->m_opts.hook_cmd.c_str());
-      if (ret != 0 )
-	std::cerr << "error in calling script run_hook.sh" << std::endl;
+    std::string cmd;
+    if (!Mace4vglobais->m_opts.hook_cmd.empty()) {
+        cmd = Mace4vglobais->m_opts.hook_cmd + " " + Search::interp_file_name;
     }
+    else {
+        cmd = "mv " + Search::interp_file_name + " " + Search::interp_file_name + std::to_string(file_count);
+        file_count++;
+    }
+    int ret = system (cmd.c_str());
+    if (ret != 0 )
+	std::cerr << "error in executing " << cmd << std::endl;
     models_interp_file_stream = new ofstream();
-    if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) == 3) 
-      models_interp_file_stream->open(Search::interp_file_name, std::ios_base::app);
-    else
-      models_interp_file_stream->open(Search::interp_file_name + std::to_string(file_count), std::ios_base::app);
+    models_interp_file_stream->open(Search::interp_file_name, std::ios_base::app);
     out_models_count = 0;
-    file_count++;
   }
 }
 

@@ -19,9 +19,8 @@ mace_options::mace_options()
   report_stderr     = LADR_GLOBAL_OPTIONS.init_parm("report_stderr",     -1,   -1, INT_MAX);
   print_cubes       = LADR_GLOBAL_OPTIONS.init_parm("print_cubes",       -2,   -2, INT_MAX);
   cubes_options     = LADR_GLOBAL_OPTIONS.init_parm("cubes_options",     0,     0, INT_MAX); 
-  print_models_interp    = LADR_GLOBAL_OPTIONS.init_parm("print_models_interp",    0, 0, INT_MAX);
+  print_models_interp    = LADR_GLOBAL_OPTIONS.init_parm("print_models_interp",    0, -1, INT_MAX);
   filter_models     = LADR_GLOBAL_OPTIONS.init_parm("filter_models",     0,    -1, INT_MAX);
-  restart_count     = LADR_GLOBAL_OPTIONS.init_parm("restart_count",     0,     0, INT_MAX);
 
   print_models           = LADR_GLOBAL_OPTIONS.init_flag("print_models",           true);
   print_models_tabular   = LADR_GLOBAL_OPTIONS.init_flag("print_models_tabular",   false);

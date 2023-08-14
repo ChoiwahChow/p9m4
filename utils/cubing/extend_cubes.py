@@ -201,7 +201,7 @@ def extend_cubes(mace4_args, new_cube_length, cubes, working_dir_prefix,
         extend_cube_jobs(input_file, interp_out_file, order, new_cube_length, cube_file, print_model,
                          mace4, cubes_options, working_dir_prefix, max_threads, thread_slots)
         work_list = list()
-        if cubes_options % 2 == 1:
+        if cubes_options % 2 == 1 and max_threads > 1:
             work_list = request_work(working_dir_prefix, request_work_file, work_file, max_threads, thread_slots)
         print(f"debug extend_cubes, back from requested work, got {len(work_list)} jobs")
         if work_list:
