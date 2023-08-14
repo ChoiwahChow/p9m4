@@ -318,10 +318,11 @@ if __name__ == "__main__":
     parser.add_argument('-t', dest='num_threads', type=int, default=num_threads)
     args = parser.parse_args()
 
-    mace4_args = { 'mace4_exe': mace4_exe, 'algebra': args.algebra, 'order': args.order, 
+    mace4_args = { 'mace4_exe': mace4_exe, 'cubes_options': cubes_options,
+                   'hook': '../utils/cubing/isonaut.sh',
+                   'algebra': args.algebra, 'order': args.order, 
                    'input_file': args.input_file[0], 'output_file': args.output_file,
-                   'print_model': args.print_model, 'cubes_options': cubes_options,
-                   'print_canonical': args.print_canonical }
+                   'print_model': args.print_model, 'print_canonical': args.print_canonical }
     target_cube_length = args.target_cube_length
     num_threads = args.num_threads
 
@@ -336,6 +337,7 @@ if __name__ == "__main__":
     # Model generation
     print(f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")} Done generating cubes for {mace4_args["algebra"]}, order {mace4_args["order"]}. Generating models...', flush=True)
     models_count = run_all_cubes(mace4_args, target_cube_length, num_threads)
+
     t3 = time.time()
     runtime = t3 - t2
     collect_stat(mace4_args, target_cube_length, cubes_options, models_count+propagated_models_count, gen_cube_time, runtime)

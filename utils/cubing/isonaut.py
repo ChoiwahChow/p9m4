@@ -26,9 +26,8 @@ def is_non_iso(fp, non_iso_store, model, keep_cg):
     return False
 
 
-def find_non_iso(fp, ofp, keep_cg):
+def find_non_iso(non_iso_store, fp, ofp, keep_cg):
     model_count = 0
-    non_iso_store = set()
     line = fp.readline()
     while line:
         if "interpretation" in line:
@@ -38,17 +37,30 @@ def find_non_iso(fp, ofp, keep_cg):
             if inim:
                 ofp.write("".join(model))
         line = fp.readline()
-    ofp.write(f"%Processed {model_count} models. Number of non-isomorphic models: {len(non_iso_store)}\n")
 
-    return model_count, len(non_iso_store)
+    return model_count
+
+
+def process_files(input_files, output_file, keep_cg):
+    non_iso_store = set()
+    total_model_count = 0
+    with open (output_file, "a") as ofp:
+        for input_file in input_files:
+            with open (input_file) as fp:
+                model_count = find_non_iso(non_iso_store, fp, ofp, keep_cg)
+                total_model_count += model_count
+        ofp.write(f"%Processed {total_model_count} models. Number of non-isomorphic models: {len(non_iso_store)}\n")
+    print(f"total number of models processed: {total_model_count}\ntotal number of non isomorphic models: {len(non_iso_store)}")
 
 
 def process_file(input_file, output_file, keep_cg):
+    non_iso_store = set()
     with open (input_file) as fp, \
          open (output_file, "a") as ofp:
-        (model_count, non_iso_count) = find_non_iso(fp, ofp, keep_cg)
-    print(f"number of models processed: {model_count}\nnumber of non isomorphic models: {non_iso_count}")
-        
+        model_count = find_non_iso(non_iso_store, fp, ofp, keep_cg)
+        ofp.write(f"%Processed {model_count} models. Number of non-isomorphic models: {len(non_iso_store)}\n")
+    print(f"number of models processed: {model_count}\nnumber of non isomorphic models: {len(non_iso_store)}")
+     
 
 
 __all__ = ["isonaut"]
@@ -57,6 +69,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
         description='hashing to filter out models having the same canonical form')
+    parser.add_argument('input_files', nargs='*', type=str, default=None,
+                        help='mace4 input files.')
     parser.add_argument('-i', dest='input_file', type=str, default="models.out", help='models input file path')
     parser.add_argument('-o', dest='output_file', type=str, default="non_iso_models.out",
                         help='models output file path')
@@ -65,7 +79,10 @@ if __name__ == "__main__":
 
     t0 = time.time()
     cpu0 = time.process_time()
-    process_file (args.input_file, args.output_file, args.keep_cg)
+    if args.input_files:
+        process_files (args.input_files, args.output_file, args.keep_cg)
+    else:
+        process_file (args.input_file, args.output_file, args.keep_cg)
     cpu1 = time.process_time()
     t1 = time.time()
     cpu_time = cpu1 - cpu0

@@ -35,23 +35,35 @@ def run_a_proc(working_dir, input_file, output_file, keep_cg):
 
 def run_process(slot_id, thread_slots, working_dir, input_file, out_dir, keep_cg):
     """ Required: the model files are: <input_file> (e.g. models.out),
-            leve1_non_iso_models.out, level2_non_iso_models.out.
+            non_iso_models.out, leve1_non_iso_models.out, level2_non_iso_models.out.
         One or all of the models files may be absent.
         The final non-iso models file is <out_dir>/<input_file> (e.g.
          semi_working_7_0_1_models/semi_7.out.
     """
-    has_out = os.path.isfile(f"{working_dir}/{input_file}")
+    has_out = os.path.isfile(f"{working_dir}/{input_file}") and os.path.getsize(f"{working_dir}/{input_file}") > 0
+    has_non_iso = os.path.isfile(f"{working_dir}/non_iso_models.out")
     has_level1 = os.path.isfile(f"{working_dir}/level1_non_iso_models.out")
     has_level2 = os.path.isfile(f"{working_dir}/level2_non_iso_models.out")
 
     if has_out:
-        if has_level1:
+        if has_non_iso:
+            next_out = "non_iso_models.out"
+        elif has_level1:
             next_out = "level1_non_iso_models.out"
         elif has_level2:
             next_out = "level2_non_iso_models.out"
         else:
             next_out = f"../{out_dir}/{input_file}"
         run_a_proc(working_dir, input_file, next_out, keep_cg)
+
+    if has_non_iso:
+        if has_level1:
+            next_out = "level1_non_iso_models.out"
+        elif has_level2:
+            next_out = "level2_non_iso_models.out"
+        else:
+            next_out = f"../{out_dir}/{input_file}"
+        run_a_proc(working_dir, "non_iso_models.out", next_out, keep_cg)
 
     if has_level1:
         if has_level2:
