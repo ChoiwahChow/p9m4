@@ -51,6 +51,7 @@ def process_files(input_files, output_file, keep_cg):
                 total_model_count += model_count
         ofp.write(f"%Processed {total_model_count} models. Number of non-isomorphic models: {len(non_iso_store)}\n")
     print(f"total number of models processed: {total_model_count}\ntotal number of non isomorphic models: {len(non_iso_store)}")
+    return total_model_count, len(non_iso_store)
 
 
 def process_file(input_file, output_file, keep_cg):
@@ -60,6 +61,7 @@ def process_file(input_file, output_file, keep_cg):
         model_count = find_non_iso(non_iso_store, fp, ofp, keep_cg)
         ofp.write(f"%Processed {model_count} models. Number of non-isomorphic models: {len(non_iso_store)}\n")
     print(f"number of models processed: {model_count}\nnumber of non isomorphic models: {len(non_iso_store)}")
+    return model_count, len(non_iso_store)
      
 
 
