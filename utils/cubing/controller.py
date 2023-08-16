@@ -285,6 +285,7 @@ def run_all_cubes(mace4_args, target_cube_length, num_threads):
     model_count = int(sp.stdout)
 
     # iso-filtering
+    print(f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")}, run iso-filtering...', flush=True)
     run_isonaut.run_isonaut( working_dir_prefix, num_threads, mace4_args['output_file'], 1, num_threads )
 
     # final step of iso-filtering
@@ -382,6 +383,7 @@ if __name__ == "__main__":
     t3 = time.time()
     runtime = t3 - t2
 
+    print(f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")} model generation/filtering done. Collecting statistics...')
     (iso_cpu_time, iso_wall_time) = collect_iso_filter_time()
 
     collect_stat(mace4_args, target_cube_length, cubes_options, models_count+propagated_models_count, num_non_iso, gen_cube_time, runtime, iso_cpu_time, iso_wall_time)
