@@ -52,7 +52,7 @@ def run_process(id, slot_id, thread_slots, order, cube_length, input_file, cube,
 
     # print(f"************************************ {cube}")
     subprocess.run(f"cd {working_dir}; {mace4} -n{order} -N{order} -m-1 -{print_models} -C{cube_length} -O3 -f {input_file} >> {cube_length}.out 2>>mace.out", 
-                    capture_output=False, text=True, check=False, shell=True)      # ; mv models.out {id}.out",
+                    capture_output=False, text=True, check=False, shell=True)
     #if cp.returncode != 0:
     #    with( open("mace.log", "a")) as fp:
     #        fp.write(f"return code: {cp.returncode}\n\n")
@@ -65,7 +65,7 @@ def run_process(id, slot_id, thread_slots, cubes, is_relation, all_permutations,
     params = {'cubes': cubes, 'is_relation': is_relation, 'all_permutations': all_permutations}
     params_json = json.dumps(params)
     
-    cp = subprocess.run(iso_cubes_exec, input=params_json.encode('utf-8'), stdout=subprocess.PIPE, shell=True)      # ; mv models.out {id}.out",
+    cp = subprocess.run(iso_cubes_exec, input=params_json.encode('utf-8'), stdout=subprocess.PIPE, shell=True)
     out_json = json.loads(cp.stdout.decode('utf-8'))
     non_iso_cubes = [[tuple([tuple([y[0][0], tuple(y[0][1])]), y[1]]) for y in x] for x in out_json]
     # if len(cubes) != len(non_iso_cubes):
@@ -80,7 +80,7 @@ def run_process_multi(id, slot_id, thread_slots, blocks, is_relation, all_permut
     params_json = json.dumps(params)
     # print(f"debug run_process_multi ^^^^^^^^^^^^^^^{params_json}^^^^^^^^^^^^")
     
-    cp = subprocess.run(iso_cubes_exec_multi, input=params_json.encode('utf-8'), stdout=subprocess.PIPE, shell=True)      # ; mv models.out {id}.out",
+    cp = subprocess.run(iso_cubes_exec_multi, input=params_json.encode('utf-8'), stdout=subprocess.PIPE, shell=True)
     # print(f"^^^^^^^^^^^^^^^{cp.stdout}^^^^^^^^^^^^")
     out_json = json.loads(cp.stdout.decode('utf-8'))
     # non_iso_cubes = [[tuple([tuple([y[0][0], tuple(y[0][1])]), y[1]]) for y in x] for x in out_json]

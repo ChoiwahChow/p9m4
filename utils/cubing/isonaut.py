@@ -73,7 +73,7 @@ if __name__ == "__main__":
         description='hashing to filter out models having the same canonical form')
     parser.add_argument('input_files', nargs='*', type=str, default=None,
                         help='mace4 input files.')
-    parser.add_argument('-i', dest='input_file', type=str, default="models.out", help='models input file path')
+    parser.add_argument('-i', dest='input_file', type=str, default="isonaut_py_models.out", help='models input file path')
     parser.add_argument('-o', dest='output_file', type=str, default="non_iso_models.out",
                         help='models output file path')
     parser.add_argument('-k', dest='keep_cg', type=int, default=0, help='output the canonical form')

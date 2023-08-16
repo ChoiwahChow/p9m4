@@ -289,6 +289,7 @@ def run_all_cubes(mace4_args, target_cube_length, num_threads):
     run_isonaut.run_isonaut( working_dir_prefix, num_threads, mace4_args['output_file'], 1, num_threads )
 
     # final step of iso-filtering
+    print(f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")}, run final iso-filtering to merge all model files...', flush=True)
     models_dir_prefix = get_working_dir_prefix(algebra, order)
     model_files = list()
     cube_seq = run_data[algebra]['seq']
@@ -309,19 +310,19 @@ def collect_iso_filter_time():
         Done CPU time = 1.09120982 s.  Wall-clock time = 1.1853587627410889 seconds
     """
 
-    cmd = "grep 'CPU time' ../../*_working_*[0-9]/isonaut.log | gawk -F' ' '{ sum += $5 } END{ print sum, NR }'"
+    cmd = "grep 'CPU time' *_working_*[0-9]/isonaut.log | gawk -F' ' '{ sum += $5 } END{ print sum }'"
     sp = subprocess.run(cmd, capture_output=True, text=True, check=False, shell=True)
     cpu_time = float(sp.stdout)
     
-    cmd = "grep 'CPU time' ../../*_working_*[0-9]/isonaut.log | gawk -F' ' '{ sum += $10 } END{ print sum, NR }'"
-    sp = subprocess.run(cmd, capture_output=True, text=True, check=False, shell=True)
-    wall_time = float(sp.stdout)
+    # cmd = "grep 'CPU time' ../../*_working_*[0-9]/isonaut.log | gawk -F' ' '{ sum += $10 } END{ print sum }'"
+    # sp = subprocess.run(cmd, capture_output=True, text=True, check=False, shell=True)
+    # wall_time = float(sp.stdout)
 
-    return cpu_time, wall_time
+    return cpu_time               #, wall_time
 
  
 def collect_stat(mace4_args, target_cube_length, cube_options, models_count, num_non_iso,
-                 gen_cube_time, runtime, iso_cpu_time, iso_wall_time):
+                 gen_cube_time, runtime, iso_cpu_time):
     order = mace4_args['order']
     algebra = mace4_args["algebra"]
     data_dir = get_data_dir(algebra, order)
@@ -329,7 +330,7 @@ def collect_stat(mace4_args, target_cube_length, cube_options, models_count, num
     count = len(open(out_cube_file).readlines( ))
     print(f'\nSummary: algebra: {algebra}, order={order}, ptions={cube_options}, cubes count={count}')
     print(f'Gen cube time: {gen_cube_time}, #model={models_count}, model gen time={runtime}')
-    print(f'Isofilter (hashing only) : cpu time={iso_cpu_time}, wall-clock time={iso_wall_time}, #Non-iso models={num_non_iso}\n', flush=True)
+    print(f'Isofilter (hashing only) : cpu time={iso_cpu_time}, #Non-iso models={num_non_iso}\n', flush=True)
 
 
 __all__ = ["run_all_cubes", "gen_all_cubes", "collect_stat"]
@@ -384,8 +385,8 @@ if __name__ == "__main__":
     runtime = t3 - t2
 
     print(f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")} model generation/filtering done. Collecting statistics...')
-    (iso_cpu_time, iso_wall_time) = collect_iso_filter_time()
+    iso_cpu_time = collect_iso_filter_time()
 
-    collect_stat(mace4_args, target_cube_length, cubes_options, models_count+propagated_models_count, num_non_iso, gen_cube_time, runtime, iso_cpu_time, iso_wall_time)
+    collect_stat(mace4_args, target_cube_length, cubes_options, models_count+propagated_models_count, num_non_iso, gen_cube_time, runtime, iso_cpu_time)
     print(f'Done {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}')
     

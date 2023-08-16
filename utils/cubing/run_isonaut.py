@@ -27,12 +27,6 @@ def all_done(thread_slots):
     return True
 
 
-def run_a_proc(working_dir, input_file, output_file, keep_cg):
-    cmd = f"../utils/cubing/isonaut.py -i {input_file} -o {output_file} -k {keep_cg} >> isonaut.log 2>&1"
-    subprocess.run(f"cd {working_dir}; {cmd} ",
-                       capture_output=False, text=True, check=False, shell=True)
-
-
 def run_process(slot_id, thread_slots, working_dir, input_file, out_dir, keep_cg):
     """ Required: the model files are: <input_file> (e.g. models.out),
             non_iso_models.out, leve1_non_iso_models.out, level2_non_iso_models.out.
@@ -40,44 +34,24 @@ def run_process(slot_id, thread_slots, working_dir, input_file, out_dir, keep_cg
         The final non-iso models file is <out_dir>/<input_file> (e.g.
          semi_working_7_0_1_models/semi_7.out.
     """
-    has_out = os.path.isfile(f"{working_dir}/{input_file}") and os.path.getsize(f"{working_dir}/{input_file}") > 0
-    has_non_iso = os.path.isfile(f"{working_dir}/non_iso_models.out")
-    has_level1 = os.path.isfile(f"{working_dir}/level1_non_iso_models.out")
-    has_level2 = os.path.isfile(f"{working_dir}/level2_non_iso_models.out")
+    input_files = list()
+    if os.path.isfile(f"{working_dir}/{input_file}") and os.path.getsize(f"{working_dir}/{input_file}") > 0:
+        input_files.append(input_file)
+    if os.path.isfile(f"{working_dir}/non_iso_models.out"):
+        input_files.append("non_iso_models.out")
+    if os.path.isfile(f"{working_dir}/level1_non_iso_models.out"):
+        input_files.append("level1_non_iso_models.out")
+    if os.path.isfile(f"{working_dir}/level2_non_iso_models.out"):
+        input_files.append("level2_non_iso_models.out")
 
-    if has_out:
-        if has_non_iso:
-            next_out = "non_iso_models.out"
-        elif has_level1:
-            next_out = "level1_non_iso_models.out"
-        elif has_level2:
-            next_out = "level2_non_iso_models.out"
-        else:
-            next_out = f"../{out_dir}/{input_file}"
-        run_a_proc(working_dir, input_file, next_out, keep_cg)
+    output_file = f"../{out_dir}/{input_file}"
+    input_files_str = ' '.join(input_files)
 
-    if has_non_iso:
-        if has_level1:
-            next_out = "level1_non_iso_models.out"
-        elif has_level2:
-            next_out = "level2_non_iso_models.out"
-        else:
-            next_out = f"../{out_dir}/{input_file}"
-        run_a_proc(working_dir, "non_iso_models.out", next_out, keep_cg)
-
-    if has_level1:
-        if has_level2:
-            next_out = "level2_non_iso_models.out"
-        else:
-            next_out = f"../{out_dir}/{input_file}"
-        run_a_proc(working_dir, "level1_non_iso_models.out", next_out, keep_cg)
-
-    if has_level2:
-        run_a_proc(working_dir, "level2_non_iso_models.out", f"../{out_dir}/{input_file}", keep_cg)
-
-    #if os.path.isfile(f"{out_dir}/{input_file}"):
-    #    subprocess.run(f"cd {out_dir}; touch {input_file}.available",
-    #                   capture_output=False, text=True, check=False, shell=True)
+    if input_files_str:
+        cmd = f"../utils/cubing/isonaut.py {input_files_str} -o {output_file} -k {keep_cg} >> isonaut.log 2>&1"
+        # print(f"debug print: run_process {cmd}")
+        subprocess.run(f"cd {working_dir}; {cmd} ",
+                       capture_output=False, text=True, check=False, shell=True)
 
     thread_slots[slot_id] = 0
 
@@ -115,9 +89,11 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(
         description='parallel processing for isonaut.')
+
     parser.add_argument('-d', dest='input_dir_prefix', type=str, default=None, help='models input file dir prefix')
     parser.add_argument('-n', dest='num_dir', type=int, default=1, help='number of input directories')
-    parser.add_argument('-i', dest='input_file_name', type=str, default="models.out", help='models output file path')
+    parser.add_argument('-i', dest='input_file_name', type=str, default="run_isonaut_models.out",
+                        help='models output file path')
     parser.add_argument('-w', dest='print_canonical', type=int, default=1, help='output the canonical graph')
     parser.add_argument('-t', dest='num_threads', type=int, default=num_threads)
     args = parser.parse_args()
