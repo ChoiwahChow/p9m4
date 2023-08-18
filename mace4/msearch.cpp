@@ -439,13 +439,6 @@ Search::search(int max_constrained, int depth, Cube& splitter)
     int id = selector.select_cell(max_constrained, First_skolem_cell, Number_of_cells, Ordered_cells, propagator);
 
     if (id == -1) {
-      /*
-      // If it is generating cubes, print out the cube and forget the model. The cube will generate the model later
-      if (print_cubes >= 0) {
-    	splitter.print_new_cube(print_cubes, num_cells_filled);
-      	return SEARCH_GO_NO_MODELS;
-      }
-      */
       rc = possible_model();
       return rc;
     }
