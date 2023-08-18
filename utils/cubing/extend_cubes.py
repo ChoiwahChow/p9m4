@@ -11,7 +11,7 @@ Mace4 options:
 cat quandles_working10_*/4.out | grep "^cube" | sort --parallel=8 -u | sed 's/[^ ]* //' > utils/cubing/working/quandles10/cubes4.out
 
 
-grep "Exiting with " semi_working_[0-9]/mace.log | utils/mace4/counter.py
+grep "Exiting with " semi_working_[0-9]/mace.log | utils/cubing/counter.py
 
 """
 

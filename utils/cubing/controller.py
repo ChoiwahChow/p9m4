@@ -280,7 +280,7 @@ def run_all_cubes(mace4_args, target_cube_length, num_threads):
     working_dir_prefix = get_working_dir(algebra, order, target_cube_length)
     run_cubes.run_mace(mace4_args, cube_file, working_dir_prefix, num_threads)
     
-    cmd = f'grep "Exiting with " {working_dir_prefix}_*/mace.log | grep model | utils/mace4/counter.py'
+    cmd = f'grep "Exiting with " {working_dir_prefix}_*/mace.log | grep model | utils/cubing/counter.py'
     sp = subprocess.run(cmd, capture_output=True, text=True, check=False, shell=True)
     model_count = int(sp.stdout)
 
@@ -336,7 +336,7 @@ def collect_stat(mace4_args, target_cube_length, cube_options, models_count, num
 __all__ = ["run_all_cubes", "gen_all_cubes", "collect_stat"]
 
 if __name__ == "__main__":
-    mace4_exe = "./build/mace4"
+    default_mace4_exe = "./build/mace4"
     cubes_options = 1      # bit-0  set to 1 if use work-stealing
     algebra = "semi"
     print_model = "A-1"
@@ -355,13 +355,14 @@ if __name__ == "__main__":
     parser.add_argument('-w', dest='print_canonical', type=int, default=print_canonical,
                         help='output the canonical graph')
     parser.add_argument('-t', dest='num_threads', type=int, default=num_threads)
+    parser.add_argument('-x', dest='mace4_exe', type=str, default=default_mace4_exe)
     args = parser.parse_args()
 
     if args.print_model.startswith("A"):
         max_cache = args.print_model.replace("A", "W")
     else:
         max_cache = "W-1"
-    mace4_args = { 'mace4_exe': mace4_exe, 'cubes_options': cubes_options,
+    mace4_args = { 'mace4_exe': args.mace4_exe, 'cubes_options': cubes_options,
                    'hook': '../utils/cubing/isonaut.sh', 'max_cache': max_cache,
                    'algebra': args.algebra, 'order': args.order, 
                    'input_file': args.input_file[0], 'output_file': args.output_file,
