@@ -57,7 +57,11 @@ cube_sequence_1_2_2_2 = [4, 8, 14, 30, 52, 80, 114, 154, 200]
 cube_sequence_2_2_2_2 = [4, 8, 16, 36, 64, 100, 144, 196, 256]
 cube_sequence_1_2_2_2_2 = [5, 10, 18, 39, 68, 105, 150, 203, 264]
 
+cube_seqs = {'2': cube_sequence_2, '1_2': cube_sequence_1_2, '1_2_2': cube_sequence_1_2_2,
+            '2_2': cube_sequence_2_2, '2_2_2': cube_sequence_2_2_2 }
+
 run_data = {'inverse_semi' : {'seq': cube_sequence_1_2},
+            'invol_quandles' : {'seq': cube_sequence_2},
             'loops' : {'seq': cube_sequence_2},
             'semi' : {'seq': cube_sequence_2}} 
 
@@ -216,7 +220,7 @@ def collect_cubes(order, cube_dir, cube_length, data_dir, num_threads):
     return analyze_time
     
 
-def gen_all_cubes(mace4_args, target_cube_length, num_threads):
+def gen_all_cubes(mace4_args, target_cube_length, cube_seq, num_threads):
     """
     Args:
         algebra (str): name of the algebra
@@ -228,18 +232,13 @@ def gen_all_cubes(mace4_args, target_cube_length, num_threads):
     """
     algebra = mace4_args['algebra']
     order = mace4_args['order']
-    print_model = mace4_args['print_model']
-    mace4_exe = mace4_args['mace4_exe']
-    input_file = mace4_args['input_file']
-    cubes_options = mace4_args['cubes_options']
 
     data_dir = get_data_dir(algebra, order)
     os.makedirs(data_dir, exist_ok=True)
 
-    seq = run_data[algebra]['seq']
     cube_length = 0
     propagated_models_count = 0
-    for index, new_cube_length in enumerate(seq):
+    for index, new_cube_length in enumerate(cube_seq):
         new_cube_dir = get_working_dir(algebra, order, new_cube_length)
         os.makedirs(f"{new_cube_dir}_models", exist_ok=True)
         if index == 0:
@@ -268,7 +267,7 @@ def gen_all_cubes(mace4_args, target_cube_length, num_threads):
     return propagated_models_count
     
     
-def run_all_cubes(mace4_args, target_cube_length, num_threads):
+def run_all_cubes(mace4_args, target_cube_length, cube_seq, num_threads):
     # print(f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")}, run all cubes...', flush=True)
     # input_file = f"inputs/{run_data[algebra]['input']}.in"
     order = mace4_args['order']
@@ -292,7 +291,6 @@ def run_all_cubes(mace4_args, target_cube_length, num_threads):
     print(f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")}, run final iso-filtering to merge all model files...', flush=True)
     models_dir_prefix = get_working_dir_prefix(algebra, order)
     model_files = list()
-    cube_seq = run_data[algebra]['seq']
     for x in cube_seq:
         if x > target_cube_length:
             break;
@@ -356,6 +354,7 @@ if __name__ == "__main__":
                         help='output the canonical graph')
     parser.add_argument('-t', dest='num_threads', type=int, default=num_threads)
     parser.add_argument('-x', dest='mace4_exe', type=str, default=default_mace4_exe)
+    parser.add_argument('-s', dest='cube_seq', type=str, default='2')
     args = parser.parse_args()
 
     if args.print_model.startswith("A"):
@@ -368,19 +367,20 @@ if __name__ == "__main__":
                    'input_file': args.input_file[0], 'output_file': args.output_file,
                    'print_model': args.print_model, 'print_canonical': args.print_canonical }
     target_cube_length = args.target_cube_length
+    cube_seq = cube_seqs[args.cube_seq]
     num_threads = args.num_threads
 
     propagated_models_count = 0
     t0 = time.time()
     print(f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")} Generating all cubes to target length {target_cube_length} ...', flush=True)
-    propagated_models_count += gen_all_cubes(mace4_args, target_cube_length, num_threads)
+    propagated_models_count += gen_all_cubes(mace4_args, target_cube_length, cube_seq, num_threads)
     t1 = time.time()
     gen_cube_time = t1 - t0
     t2 = time.time()
 
     # Model generation
     print(f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")} Done generating cubes for {mace4_args["algebra"]}, order {mace4_args["order"]}. Generating models...', flush=True)
-    models_count, num_non_iso = run_all_cubes(mace4_args, target_cube_length, num_threads)
+    models_count, num_non_iso = run_all_cubes(mace4_args, target_cube_length, cube_seq, num_threads)
 
     t3 = time.time()
     runtime = t3 - t2
