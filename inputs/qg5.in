@@ -4,11 +4,11 @@
 formulas(assumptions).
 
 x * y = x * z -> y = z.
-y * x = z * x -> y = z.
+x * y = z * y -> x = z.
 
-x * 0 = x.
-0 * x = x.
+((x * y) * x) * x = y.
 
 
 end_of_list.
+
 

@@ -5,8 +5,10 @@
 #include "../ladr/ladrvglobais.h"
 #include "../ladr/memory.h"
 #include "../ladr/symbols.h"
-#include "inc/isofilter.h"
+#include "inc/isonaut/isofilter.h"
+#include "inc/lexmin/minlex_filter.h"
 
+#include <zlib.h>
 #include "msearch.h"
 #include "select.h"
 #include "smallprime.h"
@@ -51,7 +53,7 @@ Search::Search(Mace4VGlobais* g) : Mace4vglobais(g), Domain_size(0), Domain(null
   Number_of_cells(0), Cells(nullptr), Ordered_cells(nullptr), First_skolem_cell(0), Max_domain_element_in_input(0),
   Symbols(nullptr), Sn_to_mace_sn(nullptr), Sn_map_size(0), Models(nullptr), Grounder(nullptr), non_iso_cache_exceeded(false),
   Total_models(0), Start_domain_seconds(0), Start_seconds(0), Start_megs(0), propagator(nullptr), print_cubes(-2), cubes_options(0),
-  interp_file_name("models.out")
+  interp_file_name("models.out"), isomorph_free(false)
 {
   // Note: command line arguments are not available yet!  They are set in Search::initialize_for_search()!
 }
@@ -120,8 +122,14 @@ Search::initialize_for_search(Plist clauses) {
   opt.max_cache = -1;
     
   opt.max_cache = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->filter_models);
+  if (opt.max_cache != 0)
+    isomorph_free = true;
+  opt.shorten_str = true;
+  // 50% slower, 55% the size,   opt.compress = true;
   isofilter.set_options(opt);
-
+  bool by_row = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->selection_order) == Selection::SELECT_BY_ROW; 
+  std::cerr << "% Search setting: isomorph_free (bool) " << isomorph_free << std::endl;
+  std::cerr << "% Search setting: by_row (bool) " << by_row << std::endl;
 }
 
 
@@ -176,7 +184,9 @@ Search::init_for_domain_size(void)
       c->possible[j] = Domain[j];  /* really just a flag */
   }
 
-  CellContainer::order_cells(LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->verbose), Cells, Number_of_cells, Skolems_last, Ordered_cells);
+  bool by_row = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->selection_order) == Selection::SELECT_BY_ROW; 
+  bool verbose = LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->verbose);
+  CellContainer::order_cells(verbose, Cells, Number_of_cells, Skolems_last, by_row, Ordered_cells);
 }
 
 void
@@ -278,23 +288,46 @@ Search::interp_term(void)
 
 
 bool
-Search::is_new_non_isomorphic(bool print_canonical, std::string& cg)
+Search::is_minlex_model(bool ignore_constants)
 {
-  bool is_new_non_isomorphic = true;
+  std::vector<int>  constants;
   std::vector<std::vector<int>>  un_ops;
   std::vector<std::vector<std::vector<int>>>  bin_ops;
   std::vector<std::vector<std::vector<int>>>  bin_rels;
-  construct_model(un_ops, bin_ops, bin_rels);
-  Model new_model(Domain_size, un_ops, bin_ops, bin_rels);
-  if (isofilter.is_non_isomorphic(new_model)) {
+
+  construct_model(constants, un_ops, bin_ops, bin_rels, ignore_constants);
+  if (un_ops.size() != 0 || bin_rels.size() != 0 || bin_ops.size() != 1) {
+    std::cerr << "Only one bin op is supported for minlex filtering" << std::endl;
+    return false;
+  }
+
+  return minlex_isofilter(bin_ops[0]);
+}
+
+bool
+Search::is_new_non_isomorphic(bool print_canonical, std::string& cg, bool ignore_constants)
+{
+  bool is_new_non_isomorphic = true;
+  std::vector<int>  constants;
+  std::vector<std::vector<int>>  un_ops;
+  std::vector<std::vector<std::vector<int>>>  bin_ops;
+  std::vector<std::vector<std::vector<int>>>  bin_rels;
+  size_t num_ops = construct_model(constants, un_ops, bin_ops, bin_rels, ignore_constants);
+  if (num_ops == 0)
+    return true;
+
+  Model new_model(Domain_size, constants, un_ops, bin_ops, bin_rels);
+  if (isofilter.is_non_isomorphic(new_model, cg)) {
     if (!non_iso_cache_exceeded && isofilter.cache_exceeded()) {
       non_iso_cache_exceeded = true;
       std::cout << "% Non-isomorphic models cache (size: " << LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->filter_models) 
                 << ") " << "exceeded, some models may not be non-isomorphic.\n";
     }
+/*
     if (print_canonical) {
       cg = new_model.cg_to_string("|");
     }
+*/
   }
   else
     is_new_non_isomorphic = false;
@@ -302,7 +335,7 @@ Search::is_new_non_isomorphic(bool print_canonical, std::string& cg)
 }
 
 int
-Search::possible_model(void)
+Search::possible_model(Cube& splitter, int parent_id)
 {
   if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->arithmetic)) {
     if (!propagator->check_with_arithmetic())
@@ -324,7 +357,10 @@ Search::possible_model(void)
   bool to_output = true;
   if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->filter_models) != 0 ||
       LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_canonical) ) {
-    to_output = is_new_non_isomorphic(LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_canonical), cg);
+    to_output = is_new_non_isomorphic(LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_canonical), cg, true);
+  }
+  else if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->minlex) > 0) {
+    to_output = is_minlex_model(true);
   }
   if (to_output) {
     Total_models++;
@@ -336,6 +372,8 @@ Search::possible_model(void)
     else if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_models_tabular))
       p_model(false);
   }
+  else
+      return SEARCH_GO_NO_MODELS;
   if (next_message == Total_models) {
     std::cout << "\nModel " << Total_models << " has been found." << std::endl;
     if (Total_models >= 100000000)
@@ -426,7 +464,7 @@ Search::mace4_skolem_check(int id)
  */
 
 int
-Search::search(int max_constrained, int depth, Cube& splitter)
+Search::search(int max_constrained, int depth, Cube& splitter, int parent_id)
 {
   int seconds = current_time();
   splitter.set_time(seconds);
@@ -434,12 +472,12 @@ Search::search(int max_constrained, int depth, Cube& splitter)
   if (rc != SEARCH_GO_NO_MODELS)
     return rc;
   else {
-	Selection selector(Domain_size, Domain, Cells, &EScon, &Mstats, Mace4vglobais->Opt);
+    Selection selector(Domain_size, Domain, Cells, &EScon, &Mstats, Mace4vglobais->Opt);
     // TODO: [cc] check correctness of conversion to C++
     int id = selector.select_cell(max_constrained, First_skolem_cell, Number_of_cells, Ordered_cells, propagator);
 
     if (id == -1) {
-      rc = possible_model();
+      rc = possible_model(splitter, parent_id);
       return rc;
     }
     else {
@@ -460,6 +498,7 @@ Search::search(int max_constrained, int depth, Cube& splitter)
         last = std::min(max_constrained+1, Domain_size-1);
       else
         last = Domain_size-1;
+      int max_constrained = last;
       bool go = true;
 
       // begin for cubes
@@ -477,10 +516,16 @@ Search::search(int max_constrained, int depth, Cube& splitter)
     	  from_index = value;
     	  last = value;
       }
+/*
+      std::string cg;
+std::cerr << "parent_id " << parent_id << std::endl;
+      if (isomorph_free && parent_id >= 0 && Cells[parent_id].get_arity() > 0 && !is_new_non_isomorphic(false, cg, false)) {
+    	return SEARCH_GO_NO_MODELS;
+      }
+std::cerr << "parent_id 2 " << parent_id << std::endl;
+*/
       if (print_cubes >= 0 && splitter.real_depth(depth, id) >= print_cubes) {
-	std::string cg;
-	if (is_new_non_isomorphic(true, cg))
-      	  splitter.print_new_cube(print_cubes, splitter.num_cells_filled(Cells), cg);
+      	splitter.print_new_cube(print_cubes, splitter.num_cells_filled(Cells), "");
     	return SEARCH_GO_NO_MODELS;
       }
       // end for cubes
@@ -490,8 +535,12 @@ Search::search(int max_constrained, int depth, Cube& splitter)
       for (int i = from_index, go = true; i <= all_nodes[curr_pos][2] && go; i++) {
     	all_nodes[curr_pos][1] = i;
         if (splitter.move_on(id, all_nodes)) {
-    		std::cout << "debug, Search::search stolen from " << i+1 << " to " << last << std::endl;
+          std::cout << "debug, Search::search stolen from " << i+1 << " to " << last << std::endl;
     	}
+        if (splitter.break_symmetries(parent_id, id, i)) {
+          continue;
+        }
+
         Estack stk;
         Mstats.assignments++;
 
@@ -500,12 +549,27 @@ Search::search(int max_constrained, int depth, Cube& splitter)
           pc.fwrite_term(std::cout, Cells[id].eterm);
           std::cout << "=" << i << " (" << all_nodes[curr_pos][2] << ") depth=" << depth << "\n";
         }
-
         stk = propagator->assign_and_propagate(id, Domain[i]);
+// std::cerr << "here2 " << isomorph_free << " " << id << " i " << i << " stk " << stk << std::endl;
 
         if (stk != nullptr) {
           /* no contradiction found during propagation, so we recurse */
-          rc = search(std::max(max_constrained, i), depth+1, splitter);
+          int next_id = 0;
+//std::cerr << "here " << isomorph_free << " " << id << std::endl;
+          if (isomorph_free && id >= 0 && Cells[id].get_arity() > 0) {
+//std::cerr << "here " << isomorph_free << " " << id << std::endl;
+            std::string cg;
+            next_id = selector.select_cell(std::max(max_constrained, i), First_skolem_cell, Number_of_cells, Ordered_cells, propagator);
+// std::cerr << "here " << isomorph_free << " next_id " << next_id << std::endl;
+            if (next_id >= 0 && !is_new_non_isomorphic(false, cg, false)) {
+    	      rc = SEARCH_GO_NO_MODELS;
+              next_id = -2;
+            }
+            else
+              next_id = 0;
+          }
+          if (next_id >= 0)
+            rc = search(std::max(max_constrained, i), depth+1, splitter, id);
 
           /* undo assign_and_propagate changes */
           EScon.restore_from_stack(stk);
@@ -578,16 +642,16 @@ Search::mace4n(Plist clauses, int order)
     std::flush(std::cout);
   }
 
-  Cube splitter(order, Cells, Ordered_cells, Number_of_cells, cubes_options);
+  Cube splitter(order, Cells, Ordered_cells, Number_of_cells, cubes_options, LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->minlex));
 
   /* Here we go! */
   int rc = SEARCH_GO_NO_MODELS;
   if (initial_state->ok) {
-    rc = search(Max_domain_element_in_input, 0, splitter);
+    rc = search(Max_domain_element_in_input, 0, splitter, -1);
     bool done = !splitter.reinitialize_cube();
     while (!done) {
     	all_nodes.clear();
-        rc = search(Max_domain_element_in_input, 0, splitter);
+        rc = search(Max_domain_element_in_input, 0, splitter, -1);
     	done = !splitter.reinitialize_cube();
     }
   }
@@ -853,11 +917,12 @@ Search::p_model(bool print_head)
 
 }
 
-
-void
-Search::construct_model(std::vector<std::vector<int>>& un_ops,
+size_t
+Search::construct_model(std::vector<int>&  constants,
+                        std::vector<std::vector<int>>& un_ops,
                         std::vector<std::vector<std::vector<int>>>& bin_ops,
-                        std::vector<std::vector<std::vector<int>>>& bin_rels)
+                        std::vector<std::vector<std::vector<int>>>& bin_rels,
+                        bool ignore_constants)
 {
   InterpContainer   interp_con;
 
@@ -865,19 +930,29 @@ Search::construct_model(std::vector<std::vector<int>>& un_ops,
     if (s->attribute != EQUALITY_SYMBOL) {
 
       int n = interp_con.int_power(Domain_size, s->arity);
-      if (s->arity == 1) {
+      if (s->arity == 0) {
+        if (!ignore_constants) {
+            constants.push_back(id2val(s->base));
+        }
+      }
+      else if (s->arity == 1) {
         std::vector<int>  row;
         for (size_t idx = s->base; idx < s->base+n; ++idx)
-            row.push_back(id2val(idx)); 
+          row.push_back(id2val(idx)); 
+        //if (!std::all_of(row.begin(), row.end(), [](int i) { return i==-1; })) {
         un_ops.push_back(row);
+        //}
       }
       else if (s->arity == 2) {
         std::vector<std::vector<int>>  bin_matrix;
+        bool        non_empty = false;
         std::vector<int>  row;
         for (size_t idx = s->base; idx < s->base+n; ++idx) {
           row.push_back(id2val(idx)); 
-          if ((idx+1)%Domain_size == 0) {
+          if (row.size() == Domain_size) {
             bin_matrix.push_back(row);
+            //if (!std::all_of(row.begin(), row.end(), [](int i) { return i==-1; }))
+            //  non_empty = true;
             row.clear();
           }
         }
@@ -888,6 +963,7 @@ Search::construct_model(std::vector<std::vector<int>>& un_ops,
       }
     }
   }
+  return constants.size() + un_ops.size() + bin_ops.size() + bin_rels.size();
 }
 
 void

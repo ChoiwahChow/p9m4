@@ -4,6 +4,8 @@ formulas(sos).
 
 x * ( y * z) = (x * y) * z.
 
-% 0 * 0 = 0.
+a0 * a0 = a0.
+
+%a0 = 0.
 
 end_of_list.

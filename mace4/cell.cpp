@@ -93,8 +93,43 @@ CellContainer::compare_cells(Cell a, Cell b)
 
 }
 
+
+OrderType
+CellContainer::compare_cells_by_row(Cell a, Cell b)
+{
+  if (a->symbol->attribute == EQUALITY_SYMBOL &&
+      b->symbol->attribute != EQUALITY_SYMBOL)       return OrderType::GREATER_THAN;
+
+  else if (a->symbol->attribute != EQUALITY_SYMBOL &&
+           b->symbol->attribute == EQUALITY_SYMBOL)  return OrderType::LESS_THAN;
+
+  else if (Skolems_last &&
+           a->symbol->attribute == SKOLEM_SYMBOL &&
+           b->symbol->attribute != SKOLEM_SYMBOL)    return OrderType::GREATER_THAN;
+
+  else if (Skolems_last &&
+           a->symbol->attribute != SKOLEM_SYMBOL &&
+           b->symbol->attribute == SKOLEM_SYMBOL)    return OrderType::LESS_THAN;
+
+  else if (ARITY(a->eterm) == ARITY(b->eterm)) {
+    if (a->id - a->symbol->base < b->id - b->symbol->base)
+      return OrderType::LESS_THAN;
+    else if (a->id - a->symbol->base > b->id - b->symbol->base)
+      return OrderType::GREATER_THAN;
+    else if (a->id < b->id)
+      return OrderType::LESS_THAN;
+    else if (a->id > b->id)
+      return OrderType::GREATER_THAN;
+    else
+      return OrderType::SAME_AS;
+  }
+  else
+    return OrderType::SAME_AS;  /* For now, support only one binary op  */
+
+}
+
 int
-CellContainer::order_cells(bool verbose, Cell Cells, int Number_of_cells, bool Skolems_last, Cell Ordered_cells[])
+CellContainer::order_cells(bool verbose, Cell Cells, int Number_of_cells, bool Skolems_last, bool by_row, Cell Ordered_cells[])
 {
   int First_skolem_cell = Number_of_cells;
 
@@ -103,8 +138,12 @@ CellContainer::order_cells(bool verbose, Cell Cells, int Number_of_cells, bool S
 
   CellContainer::Skolems_last = Skolems_last;
 
-  myOrder::merge_sort((void**)Ordered_cells, Number_of_cells,
-                      (OrderType (*) (void*,void*))compare_cells);
+  if (by_row)
+    myOrder::merge_sort((void**)Ordered_cells, Number_of_cells,
+                        (OrderType (*) (void*,void*))compare_cells_by_row);
+  else
+    myOrder::merge_sort((void**)Ordered_cells, Number_of_cells,
+                        (OrderType (*) (void*,void*))compare_cells);
 
   if (Skolems_last) {
     int i;

@@ -46,6 +46,8 @@ public:
   inline int get_id() const {return id;}
   inline int get_index(int pos) const {if (ARITY(eterm) > pos) return VARNUM(ARG(eterm, pos)); else return -1;}
   inline std::string& get_symbol() const {return Symbol_dataContainer::get_op_symbol(get_sn()); }
+  inline int get_arity() { return ARITY(eterm); }
+  inline int get_max_index() { return max_index; }
 
 public:
   friend class Ground;
@@ -58,15 +60,17 @@ public:
 class CellContainer {
 private:
   static bool Skolems_last;  // TODO: [Choiwah] we may need to get rid of this member variable to make it thread-safe, although it is set only once
+  static int Domain_size;    // TODO: get rid of it
 
 private:
   static int  sum_indexes(Term t);
   static bool equal_index(Term t);
   static OrderType compare_cells(Cell a, struct cell* b);
+  static OrderType compare_cells_by_row(Cell a, struct cell* b);
 
 public:
   static int id_to_domain_size(int id, Cell Cells, int Domain_size);
-  static int order_cells(bool verbose, Cell Cells, int Number_of_cells, bool Skolems_last, Cell Ordered_cells[]);
+  static int order_cells(bool verbose, Cell Cells, int Number_of_cells, bool Skolems_last, bool by_row, Cell Ordered_cells[]);
 
 };
 

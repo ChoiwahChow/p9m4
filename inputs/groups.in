@@ -1,0 +1,14 @@
+
+
+formulas(assumptions).
+
+0 * x = x.
+x * 0 = x.
+(x * y) * z = x * (y * z).
+x * x' = 0.
+x' * x = 0.
+
+% x * y = y * x.
+
+end_of_list.
+

@@ -1,0 +1,12 @@
+
+% #102 Tarski algebras
+
+formulas(assumptions).
+
+(x @ y) @ x = x.
+(x @ y) @ y = (y @ x) @ x.
+x @ (y @ z) = y @ (x @ z).
+
+
+end_of_list.
+

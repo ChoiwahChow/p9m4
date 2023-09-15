@@ -1,5 +1,7 @@
 
 #include <ostream>
+#include <sys/resource.h>
+#include <sys/time.h>
 
 #include "../ladr/banner.h"
 #include "../ladr/ioutil.h"
@@ -47,6 +49,11 @@ int main(int argc, char *argv[])
   banner::print_separator(std::cout, "end of clauses for search", true);
 
   Mace_results results = searcher.mace4(clauses);
+
+  struct rusage usage;
+  int ret = getrusage(RUSAGE_THREAD, &usage);
+
+  std::cerr << "\nMaximum resident size: " << usage.ru_maxrss/1000000.0 << " GB\n\n=====================================" << std::endl;
 
   MACE4::mace4_exit(results->return_code);  /* print messages and exit */
 

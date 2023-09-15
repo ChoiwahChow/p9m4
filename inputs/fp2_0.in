@@ -1,0 +1,12 @@
+
+
+% for ip loops
+% no fixed points of second order
+
+formulas(fixed_points2_0).
+
+((x*x) * (x*x) != x*x) | (x*x=x).   % negation of x^4 = x^2 and x^2 != x.
+
+end_of_list.
+
+

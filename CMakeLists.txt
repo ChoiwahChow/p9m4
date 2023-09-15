@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 project(prover9)
 
+find_package(ZLIB)
+
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
 endif()
@@ -85,7 +87,8 @@ add_executable(unfast ./apps/inputs_util.cpp ./apps/unfast.cpp)
 add_executable(upper-covers ./apps/inputs_util.cpp ./apps/upper-covers.cpp)
 
 target_link_libraries(prover9 libladr)
-target_link_libraries(mace4 libladr libisonaut.a -l:nauty.a)
+target_link_libraries(mace4 libladr libmlex.a libisonaut.a -l:nauty.a libminisat.a)
+target_link_libraries(mace4 PUBLIC ZLIB::ZLIB)
 target_link_libraries(clausefilter libladr)
 target_link_libraries(clausetester libladr)
 target_link_libraries(complex libladr)

@@ -14,7 +14,7 @@
 #include "propagate.h"
 #include "partition.h"
 #include "cube.h"
-#include "inc/isofilter.h"
+#include "inc/isonaut/isofilter.h"
 
 #include "syms.h"
 
@@ -84,6 +84,7 @@ private:
   // Isofiltering
   IsoFilter  isofilter;
   bool       non_iso_cache_exceeded;
+  bool       isomorph_free;
 
   /*
    * The following are "env/global" data used by a number of cooperating objects (e.g. msearch, select etc)
@@ -138,9 +139,11 @@ private:
   int  f2_val(int base, int i, int j);
   void print_model_standard(std::ostream& os, bool print_head);
   void print_model_interp(std::ostream& os, const std::string& cg = "");
-  void construct_model(std::vector<std::vector<int>>& un_ops,
-                       std::vector<std::vector<std::vector<int>>>& bin_ops,
-                       std::vector<std::vector<std::vector<int>>>& bin_rels);
+  size_t construct_model(std::vector<int> & constants,
+                         std::vector<std::vector<int>>& un_ops,
+                         std::vector<std::vector<std::vector<int>>>& bin_ops,
+                         std::vector<std::vector<std::vector<int>>>& bin_rels,
+                         bool ignore_constants = true);
   void p_model(bool print_head);
   void p_matom(Term atom);
   int  eterms_count(Term t);
@@ -152,17 +155,18 @@ private:
   void init_for_domain_size(void);
   void built_in_assignments(void);
   void special_assignments(void);
-  int  possible_model(void);
+  int  possible_model(Cube& splitter, int parent_id);
   Term interp_term(void);
   int  mace_megs(void);
   int  current_time(void) const { return (int) myClock::user_seconds(); };
   int  check_time_memory(int seconds);
   bool mace4_skolem_check(int id);
-  int  search(int max_constrained, int depth, Cube& splitter);
+  int  search(int max_constrained, int depth, Cube& splitter, int parent_id);
   int  mace4n(Plist clauses, int order);
   bool iterate_ok(int n, const std::string& class_name);
   int  next_domain_size(int n);
-  bool is_new_non_isomorphic(bool print_canonical, std::string& cg);
+  bool is_new_non_isomorphic(bool print_canonical, std::string& cg, bool ignore_constants = true);
+  bool is_minlex_model(bool ignore_constant = true);
 
 public:
   Search() = delete;

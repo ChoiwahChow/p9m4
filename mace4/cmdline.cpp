@@ -60,7 +60,7 @@ CmdLine::process_command_line_args(int argc, char **argv, Mace_options opt, mace
      Two colons: argument optional.  (GNU extension!  Don't use it!)
   */
   while ((c = getopt(argc, argv,
-         "n:N:m:t:s:b:O:M:p:P:A:a:W:w:x:C:d:v:L:G:H:I:J:K:T:R:i:q:Q:S:cf:g")) != EOF) {
+         "n:N:m:t:s:b:O:M:p:P:A:a:W:w:x:X:C:d:v:L:G:H:I:J:K:T:R:i:q:Q:S:cf:g")) != EOF) {
     switch (c) {
     case 'n':
       command_line_parm(opt->domain_size, optarg);
@@ -90,14 +90,17 @@ CmdLine::process_command_line_args(int argc, char **argv, Mace_options opt, mace
     case 'A':
       command_line_parm(opt->print_models_interp, optarg);
       break;
-    case 'W':
+    case 'W':   // filter models with nauty, store up to W canonical graphs
       command_line_parm(opt->filter_models, optarg);
       break;
-    case 'w':
+    case 'w':   // print canonical graph string after model string
       command_line_flag(opt->print_canonical, optarg);
       break;
     case 'x':  // external shell script
       command_line_stringparm(c, optarg, m_opt, "external shell script file path");
+      break;
+    case 'X':  // Apply minlex to cubes
+      command_line_parm(opt->minlex, optarg);
       break;
     case 'a':  // models output file
       command_line_stringparm(c, optarg, m_opt, "models output file path");

@@ -246,6 +246,7 @@ Selection::select_cell(int max_constrained, int First_skolem_cell, int Number_of
   case SELECT_LINEAR: id = select_linear(0, First_skolem_cell-1, prop); break;
   case SELECT_CONCENTRIC: id = select_concentric(0, First_skolem_cell-1, Ordered_cells, prop); break;
   case SELECT_CONCENTRIC_BAND: id = select_concentric_band(0, First_skolem_cell-1, max_constrained, Ordered_cells, prop); break;
+  case SELECT_BY_ROW:
   case SELECT_BY_ORDER: id = select_by_order(0, First_skolem_cell-1, Ordered_cells); break;   // added for cube-and-conquer
   default: fatal::fatal_error("bad selection order");
   }
@@ -257,6 +258,7 @@ Selection::select_cell(int max_constrained, int First_skolem_cell, int Number_of
   case SELECT_LINEAR: id = select_linear(First_skolem_cell, Number_of_cells-1, prop); break;
   case SELECT_CONCENTRIC: id = select_concentric(First_skolem_cell, Number_of_cells-1, Ordered_cells, prop); break;
   case SELECT_CONCENTRIC_BAND: id = select_concentric_band(First_skolem_cell, Number_of_cells-1, max_constrained, Ordered_cells, prop); break;
+  case SELECT_BY_ROW:
   case SELECT_BY_ORDER: id = select_by_order(0, Number_of_cells-1, Ordered_cells); break;   // added for cube-and-conquer
   default: fatal::fatal_error("bad selection order");
   }

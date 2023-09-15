@@ -1,0 +1,13 @@
+
+
+
+formulas(fixed_point2_2_or_more).
+
+a0 != a1.
+
+((a0 * a0) * (a0 * a0) = a0 * a0) & (a0 * a0 != a0).
+((a1 * a1) * (a1 * a1) = a1 * a1) & (a1 * a1 != a1).
+
+
+end_of_list.
+

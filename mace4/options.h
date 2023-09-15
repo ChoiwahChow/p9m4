@@ -39,9 +39,10 @@ struct mace_options {
   int end_size;
   int iterate_up_to;
   int increment;
+  int minlex;
   int max_models;
   int restart_count;       // run the external script and restart the count when the count is restart_count
-  int selection_order;
+  int selection_order;     // 3 - strictly concentric, 4 - strictly by row
   int selection_measure;
   int max_seconds;
   int max_seconds_per;

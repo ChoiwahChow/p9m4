@@ -16,6 +16,7 @@ public:
   static constexpr int SELECT_CONCENTRIC      = 1;
   static constexpr int SELECT_CONCENTRIC_BAND = 2;
   static constexpr int SELECT_BY_ORDER		  = 3;  // added for cube-and-conquer
+  static constexpr int SELECT_BY_ROW		  = 4;  // added for isomorph-free
 
   static constexpr int NO_MEASURE          = 0;    /* selection measures */
   static constexpr int MOST_OCCURRENCES    = 1;

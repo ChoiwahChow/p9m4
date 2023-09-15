@@ -1,0 +1,8 @@
+
+
+formulas(assumptions).
+
+(x * y = u) & (z * w = u) & (y * v) = x & (w * v = z) -> (x = z & y = w).
+
+end_of_list.
+
