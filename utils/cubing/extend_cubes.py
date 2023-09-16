@@ -77,7 +77,7 @@ def run_process(id, slot_id, thread_slots, order, cube_length, input_file, inter
     else:
         iso_filter_opt = "W-1"
     opt = f"-n{order} -N{order} -m-1 -{iso_filter_opt} -w1 -{print_models} -d{cubes_options} "
-    opt += f"-C{cube_length} {hook} -O3 {out_file} -f {input_file}"
+    opt += f"-b100000 -C{cube_length} {hook} -O3 {out_file} -f {input_file}"
     cmd = f"cd {working_dir}; {mace4} {opt} >> {cube_length}.out 2>>mace.out"
     # print(f"debug mace4 cmd**************************{cmd}")
 

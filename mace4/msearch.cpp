@@ -525,7 +525,9 @@ std::cerr << "parent_id " << parent_id << std::endl;
 std::cerr << "parent_id 2 " << parent_id << std::endl;
 */
       if (print_cubes >= 0 && splitter.real_depth(depth, id) >= print_cubes) {
-      	splitter.print_new_cube(print_cubes, splitter.num_cells_filled(Cells), "");
+        std::string cg;
+        is_new_non_isomorphic(false, cg, false);
+      	splitter.print_new_cube(print_cubes, splitter.num_cells_filled(Cells), cg);
     	return SEARCH_GO_NO_MODELS;
       }
       // end for cubes
@@ -550,17 +552,13 @@ std::cerr << "parent_id 2 " << parent_id << std::endl;
           std::cout << "=" << i << " (" << all_nodes[curr_pos][2] << ") depth=" << depth << "\n";
         }
         stk = propagator->assign_and_propagate(id, Domain[i]);
-// std::cerr << "here2 " << isomorph_free << " " << id << " i " << i << " stk " << stk << std::endl;
 
         if (stk != nullptr) {
           /* no contradiction found during propagation, so we recurse */
           int next_id = 0;
-//std::cerr << "here " << isomorph_free << " " << id << std::endl;
           if (isomorph_free && id >= 0 && Cells[id].get_arity() > 0) {
-//std::cerr << "here " << isomorph_free << " " << id << std::endl;
             std::string cg;
             next_id = selector.select_cell(std::max(max_constrained, i), First_skolem_cell, Number_of_cells, Ordered_cells, propagator);
-// std::cerr << "here " << isomorph_free << " next_id " << next_id << std::endl;
             if (next_id >= 0 && !is_new_non_isomorphic(false, cg, false)) {
     	      rc = SEARCH_GO_NO_MODELS;
               next_id = -2;

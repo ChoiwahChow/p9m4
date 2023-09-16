@@ -59,7 +59,7 @@ def run_process(id, slot_id, thread_slots, order, input_file, interp_out_file, c
         iso_filter_opt = print_models.replace("A", "W")
     else:
         iso_filter_opt = "W-1"
-    opt = f"-n{order} -N{order} -{print_models} -{iso_filter_opt} -w1 -m-1 -b10000 -d{cubes_options} "
+    opt = f"-n{order} -N{order} -{print_models} -{iso_filter_opt} -w1 -m-1 -b100000 -d{cubes_options} "
     opt += f'-x {hook_cmd} -O3 {out_file} -f {input_file}'
     subprocess.run(f"cd {working_dir}; {mace4} {opt} >> mace.log 2>&1", 
                    capture_output=False, text=True, check=False, shell=True)
