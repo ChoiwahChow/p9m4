@@ -481,6 +481,11 @@ Search::search(int max_constrained, int depth, Cube& splitter, int parent_id)
       return rc;
     }
     else {
+      std::string cg;
+      if (isomorph_free && parent_id >= 0 && Cells[parent_id].get_arity() > 0 && !is_new_non_isomorphic(false, cg, false)) {
+    	return SEARCH_GO_NO_MODELS;
+      }
+
       int x = Cells[id].max_index;
       max_constrained = std::max(max_constrained, x);
       Mstats.selections++;
@@ -498,7 +503,11 @@ Search::search(int max_constrained, int depth, Cube& splitter, int parent_id)
         last = std::min(max_constrained+1, Domain_size-1);
       else
         last = Domain_size-1;
-      int max_constrained = last;
+
+      // an heuristic to rm cubes faster
+      // if (isomorph_free)
+      //  max_constrained = last;
+
       bool go = true;
 
       // begin for cubes
@@ -507,8 +516,8 @@ Search::search(int max_constrained, int depth, Cube& splitter, int parent_id)
       int value = splitter.value(depth, id);
       if (value >= 0) {
     	  if (last < value) {
-        	  std::cout << "debug Search::search exceeded bounds ***************************** do cell id = " << id << std::endl;
-    		  return SEARCH_GO_NO_MODELS;
+              std::cout << "debug Search::search exceeded bounds ***************************** do cell id = " << id << std::endl;
+    	      return SEARCH_GO_NO_MODELS;
     	  }
     	  std::cout << "debug Search::search ******************* do cell id = " << id
     			    << ", cell value = " << value << ",  op = " << Symbol_dataContainer::get_op_symbol(Cells[id].get_sn())
@@ -516,16 +525,9 @@ Search::search(int max_constrained, int depth, Cube& splitter, int parent_id)
     	  from_index = value;
     	  last = value;
       }
-/*
-      std::string cg;
-std::cerr << "parent_id " << parent_id << std::endl;
-      if (isomorph_free && parent_id >= 0 && Cells[parent_id].get_arity() > 0 && !is_new_non_isomorphic(false, cg, false)) {
-    	return SEARCH_GO_NO_MODELS;
-      }
-std::cerr << "parent_id 2 " << parent_id << std::endl;
-*/
       if (print_cubes >= 0 && splitter.real_depth(depth, id) >= print_cubes) {
         std::string cg;
+        // TODO: adjust!
         is_new_non_isomorphic(false, cg, false);
       	splitter.print_new_cube(print_cubes, splitter.num_cells_filled(Cells), cg);
     	return SEARCH_GO_NO_MODELS;
@@ -539,9 +541,6 @@ std::cerr << "parent_id 2 " << parent_id << std::endl;
         if (splitter.move_on(id, all_nodes)) {
           std::cout << "debug, Search::search stolen from " << i+1 << " to " << last << std::endl;
     	}
-        if (splitter.break_symmetries(parent_id, id, i)) {
-          continue;
-        }
 
         Estack stk;
         Mstats.assignments++;
@@ -555,19 +554,7 @@ std::cerr << "parent_id 2 " << parent_id << std::endl;
 
         if (stk != nullptr) {
           /* no contradiction found during propagation, so we recurse */
-          int next_id = 0;
-          if (isomorph_free && id >= 0 && Cells[id].get_arity() > 0) {
-            std::string cg;
-            next_id = selector.select_cell(std::max(max_constrained, i), First_skolem_cell, Number_of_cells, Ordered_cells, propagator);
-            if (next_id >= 0 && !is_new_non_isomorphic(false, cg, false)) {
-    	      rc = SEARCH_GO_NO_MODELS;
-              next_id = -2;
-            }
-            else
-              next_id = 0;
-          }
-          if (next_id >= 0)
-            rc = search(std::max(max_constrained, i), depth+1, splitter, id);
+          rc = search(std::max(max_constrained, i), depth+1, splitter, id);
 
           /* undo assign_and_propagate changes */
           EScon.restore_from_stack(stk);
