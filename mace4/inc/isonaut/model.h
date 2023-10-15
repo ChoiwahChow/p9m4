@@ -22,6 +22,7 @@ public:
     static const std::string Interpretation_label;
     static const std::string Function_label;
     static const std::string Relation_label;
+    static const std::string Function_arity_label;
     static const std::string Function_unary_label;
     static const std::string Function_binary_label;
     static const std::string Function_stopper;
@@ -33,31 +34,34 @@ public:
     std::vector<std::vector<std::vector<int>>> bin_rels;
     std::vector<std::vector<int>> un_ops;
     std::vector<int> constants;
+    size_t num_unassigned;
 
     std::vector<std::string>  op_symbols;
 
     size_t       order;
+    size_t       el_fixed_width;
     sparsegraph* cg;
     std::string  model_str;
     std::vector<std::size_t>  iso;
 
 private:
-    static const char  Base64Table[];
-    static const std::string spaceEnded; 
-    static const char unassigned = ',';
-    static const char op_end = '.';
-    static const std::string truth_values;
+    static const char Base64Table[];
+    static const char unassigned = '?';
+    static const char op_end = ';';
 
 private:
-    size_t compress_str(size_t label, std::string& cms) const;
+    void   set_width(size_t order);
+    size_t compress_str(int label, size_t width, std::string& cms) const;
     size_t find_graph_size(size_t& num_vertices, size_t& num_edges);
     void   color_vertices(int* ptn, int* lab, int ptn_sz);
     void   count_occurrences(std::vector<size_t>& R_v_count);
     void   count_truth_values(std::vector<size_t>& L_v_count);
+    size_t count_unassigned();
+    size_t count_unassigned_rels();
     void   build_vertices(sparsegraph& sg1, const int E_e, const int F_a, const int S_a, 
-                          const int R_v, const int L_v, const int A_c);
+                          const int R_v, const int L_v, const int U_v, const int A_c);
     void   build_edges(sparsegraph& sg1, const int E_e, const int F_a, const int S_a, 
-                       const int R_v, const int L_v, const int A_c);
+                       const int R_v, const int L_v, const int U_v, const int A_c);
 
     void   debug_print_edges(sparsegraph& sg1, const int E_e, const int F_a, const int S_a, 
                              const int R_v, const int A_c, bool has_S);
@@ -69,7 +73,7 @@ private:
     void blankout(std::string& s) { std::replace( s.begin(), s.end(), ']', ' '); std::replace( s.begin(), s.end(), ',', ' '); };
 
 public:
-    Model(): order(2), cg(0) {};
+    Model(): order(2), el_fixed_width(1), cg(nullptr), num_unassigned(0) {};
     Model(size_t odr, std::vector<int>& constants, std::vector<std::vector<int>>& un_ops,
           std::vector<std::vector<std::vector<int>>>& bin_ops, std::vector<std::vector<std::vector<int>>>& bin_rels);
     ~Model();

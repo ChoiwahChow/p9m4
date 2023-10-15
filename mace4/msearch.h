@@ -155,7 +155,7 @@ private:
   void init_for_domain_size(void);
   void built_in_assignments(void);
   void special_assignments(void);
-  int  possible_model(Cube& splitter, int parent_id);
+  int  possible_model(Cube& splitter);
   Term interp_term(void);
   int  mace_megs(void);
   int  current_time(void) const { return (int) myClock::user_seconds(); };

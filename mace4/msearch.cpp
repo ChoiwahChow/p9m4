@@ -335,7 +335,7 @@ Search::is_new_non_isomorphic(bool print_canonical, std::string& cg, bool ignore
 }
 
 int
-Search::possible_model(Cube& splitter, int parent_id)
+Search::possible_model(Cube& splitter)
 {
   if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->arithmetic)) {
     if (!propagator->check_with_arithmetic())
@@ -477,12 +477,13 @@ Search::search(int max_constrained, int depth, Cube& splitter, int parent_id)
     int id = selector.select_cell(max_constrained, First_skolem_cell, Number_of_cells, Ordered_cells, propagator);
 
     if (id == -1) {
-      rc = possible_model(splitter, parent_id);
+      rc = possible_model(splitter);
       return rc;
     }
     else {
       std::string cg;
-      if (isomorph_free && parent_id >= 0 && Cells[parent_id].get_arity() > 0 && !is_new_non_isomorphic(false, cg, false)) {
+      if (isomorph_free && parent_id >= 0 && Cells[parent_id].get_arity() > 0 && 
+          !is_new_non_isomorphic(false, cg, false)) {
     	return SEARCH_GO_NO_MODELS;
       }
 
