@@ -34,7 +34,11 @@ struct mace_stats {
 
     neg_near_elim_attempts,
     neg_near_elim_agone,
-    neg_near_elim_egone;
+    neg_near_elim_egone,
+
+    // cubes
+    num_cubes,
+    num_cubes_cut;
 
   mace_stats();
 

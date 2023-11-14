@@ -13,7 +13,6 @@
 #include "select.h"
 #include "smallprime.h"
 
-
 /* Ground terms.  MACE4 operates on ground clauses, which are
    represented by the structure mclause.  Ground terms (and
    atoms) are represented with ordinary LADR terms.  There are
@@ -469,6 +468,7 @@ Search::search(int max_constrained, int depth, Cube& splitter, int parent_id)
   int seconds = current_time();
   splitter.set_time(seconds);
   int rc = check_time_memory(seconds);
+
   if (rc != SEARCH_GO_NO_MODELS)
     return rc;
   else {
@@ -481,10 +481,14 @@ Search::search(int max_constrained, int depth, Cube& splitter, int parent_id)
       return rc;
     }
     else {
+      Mstats.num_cubes++;
       std::string cg;
       if (isomorph_free && parent_id >= 0 && Cells[parent_id].get_arity() > 0 && 
           !is_new_non_isomorphic(false, cg, false)) {
-    	return SEARCH_GO_NO_MODELS;
+        if (!splitter.is_inside_input_cube() ) {
+          Mstats.num_cubes_cut++;
+    	  return SEARCH_GO_NO_MODELS;
+        }
       }
 
       int x = Cells[id].max_index;
@@ -923,8 +927,9 @@ Search::construct_model(std::vector<int>&  constants,
       }
       else if (s->arity == 1) {
         std::vector<int>  row;
-        for (size_t idx = s->base; idx < s->base+n; ++idx)
+        for (size_t idx = s->base; idx < s->base+n; ++idx) {
           row.push_back(id2val(idx)); 
+        }
         //if (!std::all_of(row.begin(), row.end(), [](int i) { return i==-1; })) {
         un_ops.push_back(row);
         //}

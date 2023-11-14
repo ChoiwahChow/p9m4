@@ -33,6 +33,7 @@ Cube::initialize_cube()
         cell_values[cell_ids[max_pos++]] = cell_value;
         config >> cell_value;
     }
+    std::cout << std::endl;
     all_cubes.erase(all_cubes.begin());  // first cube is to be processed now
     initialized = true;
     return initialized;
@@ -96,7 +97,7 @@ Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_c
     if (!all_cubes.empty())
         initialize_cube();
 
-    std::cout << "\ndebug Cube*********************** cubes_options " << cubes_options << " max_pos = " << max_pos << std::endl;
+    std::cout << "\ndebug constructor Cube*********************** cubes_options " << cubes_options << " max_pos = " << max_pos << std::endl;
     // /* debug
     for (size_t idx = 0; idx < mult_table_size && idx < 65; ++idx) {
       std::cout <<  idx << "|" << Ordered_cells[idx]->get_symbol() << "|" << Ordered_cells[idx]->get_id() << "  ";
@@ -130,8 +131,9 @@ Cube::num_cells_filled(Cell Cells)
 
 int
 Cube::value(size_t depth, size_t id) {
-    if (initialized && current_pos < max_pos) {
-        std::cout << "Debug, Cube::value, incoming id " << id << " current_pos " << current_pos << std::endl;
+    //if (initialized && current_pos < max_pos) {
+    if (is_inside_input_cube()) {
+        std::cout << "Debug, Cube::value, incoming id " << id << " current_pos " << current_pos << " depth: " << depth << std::endl;
         while (id != cell_ids[current_pos] && current_pos < max_pos) {
             if ((Cells[cell_ids[current_pos]].get_value() != cell_values[cell_ids[current_pos]]) && (cell_values[cell_ids[current_pos]] != -1)) {
                 std::cout << "Debug, Cube::value, Mis-matched cell id =" << cell_ids[current_pos] << ", cell value = " << cell_values[cell_ids[current_pos]]
@@ -148,7 +150,7 @@ Cube::value(size_t depth, size_t id) {
         if (id == cell_ids[current_pos]) {
             current_pos++;
         }
-        std::cout << "Debug value pos" << current_pos << " max position " << max_pos << std::endl;
+        std::cout << "Debug Cube::value pos " << current_pos << " max position " << max_pos << " cell value: " << cell_values[id] << std::endl;
         return cell_values[id];
     }
     return -1;
@@ -679,7 +681,6 @@ Cube::print_new_cube(int cube_length, int num_cells_filled, const std::string& c
     if (same)
         return;
     /* debug print
-      std::cout << "model: depth " << depth << " cell";
       for (int idx = 0; idx < print_cubes; ++idx)
           std::cout << " " << splitter.cell_ids[idx] << "|" << Cells[splitter.cell_ids[idx]].get_symbol();
       std::cout << std::endl;

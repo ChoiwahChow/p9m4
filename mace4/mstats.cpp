@@ -38,6 +38,10 @@ mace_stats::reset_current_stats(void)
   neg_near_elim_attempts = 0;
   neg_near_elim_agone = 0;
   neg_near_elim_egone = 0;
+
+  // cubes
+  num_cubes = 0;
+  num_cubes_cut = 0;
 }
 
 
@@ -66,6 +70,7 @@ mace_stats::p_stats(int Domain_size, myClock& Mace4_clock)
             << neg_near_elim_agone << " " << std::setw(10) << neg_near_elim_egone << "\n";
   std::cout << "Neg_near_assign " << std::setw(10) << neg_near_assign_attempts << " " << std::setw(10) << neg_near_assign_agone
             << " " << std::setw(10) << neg_near_assign_egone << "\n";
+  std::cout << "Number of cubes processed: " << num_cubes << " Number of cubes cut: "  << num_cubes_cut << std::endl;
 #endif
   banner::print_separator(std::cout, "end of statistics", true);
 }

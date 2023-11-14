@@ -84,6 +84,7 @@ public:
     // void print_ordered_cells(int number_of_cells) const;
     bool break_symmetries(int parent_id, int id, int val);
     bool break_symmetries(int parent_id);
+    bool is_inside_input_cube() { return initialized && current_pos < max_pos; };
 };
 
 
