@@ -59,7 +59,7 @@ mace_stats::p_stats(int Domain_size, myClock& Mace4_clock)
             << propagations << ", current_models=" << current_models << ".\n";
   std::cout << "Rewrite_terms=" << rewrite_terms << ", rewrite_bools=" << rewrite_bools << ", indexes=" << indexes << ".\n";
   std::cout << "Rules_from_neg_clauses=" << rules_from_neg << ", cross_offs=" << cross_offs << ".\n";
-  std::cout << "Number of cubes processed: " << num_cubes << " Number of cubes cut: "  << num_cubes_cut << std::endl;
+  std::cout << "Number of cubes processed: " << num_cubes << ", Number of cubes cut: "  << num_cubes_cut << std::endl;
 #if 0
   std::cout << "Negative propagation:\n";
   std::cout << "                 attempts      agone      egone\n";

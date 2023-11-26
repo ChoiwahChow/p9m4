@@ -116,7 +116,6 @@ CmdLine::process_command_line_args(int argc, char **argv, Mace_options opt, mace
       break;
     case 'd':
       command_line_parm(opt->cubes_options, optarg);
-      // std::cout << "debug cubes options as read in ************************* " << opt->domain_size << "@" << opt->cubes_options << "@" << std::endl;
       break;
 #if 0 /* Prolog-style variables cannot be set from the command line. */
     case 'V':
