@@ -111,20 +111,16 @@ CellContainer::compare_cells_by_row(Cell a, Cell b)
            a->symbol->attribute != SKOLEM_SYMBOL &&
            b->symbol->attribute == SKOLEM_SYMBOL)    return OrderType::LESS_THAN;
 
-  else if (ARITY(a->eterm) == ARITY(b->eterm)) {
-    if (a->id - a->symbol->base < b->id - b->symbol->base)
-      return OrderType::LESS_THAN;
-    else if (a->id - a->symbol->base > b->id - b->symbol->base)
-      return OrderType::GREATER_THAN;
-    else if (a->id < b->id)
-      return OrderType::LESS_THAN;
-    else if (a->id > b->id)
-      return OrderType::GREATER_THAN;
-    else
-      return OrderType::SAME_AS;
-  }
+  if (a->id - a->symbol->base < b->id - b->symbol->base)
+    return OrderType::LESS_THAN;
+  else if (a->id - a->symbol->base > b->id - b->symbol->base)
+    return OrderType::GREATER_THAN;
+  else if (a->id < b->id)
+    return OrderType::LESS_THAN;
+  else if (a->id > b->id)
+    return OrderType::GREATER_THAN;
   else
-    return OrderType::SAME_AS;  /* For now, support only one binary op  */
+    return OrderType::SAME_AS;  /* For now, support only binary ops  */
 
 }
 

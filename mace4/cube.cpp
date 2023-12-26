@@ -301,23 +301,6 @@ Cube::break_symmetries(int parent_id)
     // a model is found, make sure it is not a non-minlex model
     // returns true if it is sure that it is not min lex
 
-    if (sym_breaking <= 0 || parent_id < 0)
-        return false;
-
-    int row = Cells[parent_id].get_index(0);
-    int col = Cells[parent_id].get_index(1);
-    size_t base_id = parent_id - row * order - col;
-
-    for (size_t iptr = parent_id+1; iptr < base_id + order * order; ++iptr)
-        if (sym_breaking == 1) {
-            if (break_symmetries_by_row(iptr, Cells[iptr].get_value()))
-                return true;
-        }
-        else if (sym_breaking == 2) {
-            if (break_symmetries_concentric (iptr, Cells[iptr].get_value()))
-                return true;
-        }
- 
     return false;
 }
 

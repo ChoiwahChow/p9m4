@@ -52,7 +52,7 @@ Search::Search(Mace4VGlobais* g) : Mace4vglobais(g), Domain_size(0), Domain(null
   Number_of_cells(0), Cells(nullptr), Ordered_cells(nullptr), First_skolem_cell(0), Max_domain_element_in_input(0),
   Symbols(nullptr), Sn_to_mace_sn(nullptr), Sn_map_size(0), Models(nullptr), Grounder(nullptr), non_iso_cache_exceeded(false),
   Total_models(0), Start_domain_seconds(0), Start_seconds(0), Start_megs(0), propagator(nullptr), print_cubes(-2), cubes_options(0),
-  interp_file_name("models.out"), isomorph_free(false)
+  interp_file_name("models.out"), isomorph_free(false), minlex(false)
 {
   // Note: command line arguments are not available yet!  They are set in Search::initialize_for_search()!
 }
@@ -126,9 +126,9 @@ Search::initialize_for_search(Plist clauses) {
   opt.shorten_str = true;
   // 50% slower, 55% the size,   opt.compress = true;
   isofilter.set_options(opt);
-  bool by_row = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->selection_order) == Selection::SELECT_BY_ROW; 
+  minlex = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->selection_order) == Selection::SELECT_BY_ROW; 
   std::cerr << "% Search setting: isomorph_free (bool) " << isomorph_free << std::endl;
-  std::cerr << "% Search setting: by_row (bool) " << by_row << std::endl;
+  std::cerr << "% Search setting: minlex ordering in search (bool) " << minlex << std::endl;
 }
 
 
@@ -183,9 +183,8 @@ Search::init_for_domain_size(void)
       c->possible[j] = Domain[j];  /* really just a flag */
   }
 
-  bool by_row = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->selection_order) == Selection::SELECT_BY_ROW; 
   bool verbose = LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->verbose);
-  CellContainer::order_cells(verbose, Cells, Number_of_cells, Skolems_last, by_row, Ordered_cells);
+  First_skolem_cell = CellContainer::order_cells(verbose, Cells, Number_of_cells, Skolems_last, minlex, Ordered_cells);
 }
 
 void

@@ -145,12 +145,12 @@ Selection::selection_measure(int id, int *max, int *max_id, propagate* prop, int
 
 
 int
-Selection::select_linear(int min_id, int max_id, propagate* prop)
+Selection::select_linear(int min_id, int max_id, int min_arity, propagate* prop)
 {
   if (LADR_GLOBAL_OPTIONS.parm(Opt->selection_measure) == NO_MEASURE) {
     /* Return the first open cell. */
     int i = min_id;
-    while (i <= max_id && Cells[i].value != NULL)
+    while (i <= max_id && (Cells[i].get_arity() < min_arity || Cells[i].value != NULL))
       i++;
     return (i > max_id ? -1 : i);
   }
@@ -243,7 +243,13 @@ Selection::select_cell(int max_constrained, int First_skolem_cell, int Number_of
 {
   int id = -1;
   switch (LADR_GLOBAL_OPTIONS.parm(Opt->selection_order)) {
-  case SELECT_LINEAR: id = select_linear(0, First_skolem_cell-1, prop); break;
+  case SELECT_LINEAR: 
+  {
+    int min_arity = 0;
+    if (Opt->skolems_last) min_arity = 1;
+    id = select_linear(0, Number_of_cells-1, min_arity, prop);
+    break;
+  }
   case SELECT_CONCENTRIC: id = select_concentric(0, First_skolem_cell-1, Ordered_cells, prop); break;
   case SELECT_CONCENTRIC_BAND: id = select_concentric_band(0, First_skolem_cell-1, max_constrained, Ordered_cells, prop); break;
   case SELECT_BY_ROW:
@@ -253,9 +259,8 @@ Selection::select_cell(int max_constrained, int First_skolem_cell, int Number_of
 
   if (id >= 0)
     return id;
-
   switch (LADR_GLOBAL_OPTIONS.parm(Opt->selection_order)) {
-  case SELECT_LINEAR: id = select_linear(First_skolem_cell, Number_of_cells-1, prop); break;
+  case SELECT_LINEAR: id = select_linear(0, Number_of_cells-1, 0, prop); break;
   case SELECT_CONCENTRIC: id = select_concentric(First_skolem_cell, Number_of_cells-1, Ordered_cells, prop); break;
   case SELECT_CONCENTRIC_BAND: id = select_concentric_band(First_skolem_cell, Number_of_cells-1, max_constrained, Ordered_cells, prop); break;
   case SELECT_BY_ROW:
