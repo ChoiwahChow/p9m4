@@ -53,7 +53,7 @@ private:
   void selection_measure(int id, int *max, int *max_id, propagate* prop, int* secondary_max);
 
 public:
-  int select_linear(int min_id, int max_id, propagate* prop);
+  int select_linear(int min_id, int max_id, int min_arity, propagate* prop);
   int select_concentric(int min_id, int max_id, Cell Ordered_cells[], propagate* prop);
   int select_concentric_band(int min_id, int max_id, int max_constrained, Cell Ordered_cells[], propagate* prop);
   int select_cell(int max_constrained, int First_skolem_cell, int Number_of_cells, Cell Ordered_cells[], propagate* prop);

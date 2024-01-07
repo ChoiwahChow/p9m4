@@ -11,7 +11,7 @@
 
 class CmdLine {
 public:
-  static constexpr auto PROGRAM_NAME = "Mace4";
+  static constexpr auto PROGRAM_NAME = "Mace4c";
 
   CmdLine() = delete;
   CmdLine(const CmdLine&) = delete;

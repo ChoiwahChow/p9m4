@@ -7,6 +7,17 @@
 #include <vector>
 #include "cell.h"
 
+
+class permutation {
+public:
+   size_t a;
+   size_t b;    // a < b
+
+   permutation(size_t a, size_t b): a(a), b(b) {};
+   size_t apply(size_t c) { if (c==a) return b; else if (c==b) return a; else return c;};
+   // bool operator==(const permutation& x) const { return a==x.a && b == x.b;};
+};
+
 struct Breaker{
     int     max_last;
 
@@ -67,6 +78,11 @@ private:
     int    change_in_cell_value(size_t low_el, size_t high_el, int val);
     bool   is_end_of_circle(int id);
     int    moved_to_cell(int orig_id, size_t low_el, size_t high_el);
+    size_t pi(size_t a, size_t b, size_t c) { if (c==a) return b; else if (c==b) return a; else return c;};
+    int    check_lexmin(size_t row, size_t col, const std::vector<size_t>& binop);
+    int    check_binop(size_t row, size_t col,
+                  const std::vector<size_t>& row_idx, const std::vector<size_t>& col_idx,
+                  const std::vector<size_t>& binop);
     
 public:
     Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_cells, int cube_options, int sym_breaking);
@@ -85,6 +101,9 @@ public:
     bool break_symmetries(int parent_id, int id, int val);
     bool break_symmetries(int parent_id);
     bool is_inside_input_cube() { return initialized && current_pos < max_pos; };
+
+public:
+    int  check_lexmin(size_t cell_id, bool is_model = false);
 };
 
 

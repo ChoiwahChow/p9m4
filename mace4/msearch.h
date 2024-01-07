@@ -82,9 +82,11 @@ private:
   std::string unknown_str;
 
   // Isofiltering
-  IsoFilter  isofilter;
-  bool       non_iso_cache_exceeded;
-  bool       isomorph_free;
+  std::string check_ops;
+  IsoFilter   isofilter;
+  bool        non_iso_cache_exceeded;
+  bool        isomorph_free;
+  bool        lexmin;    // follow lex min ordering in function/cell selection
 
   /*
    * The following are "env/global" data used by a number of cooperating objects (e.g. msearch, select etc)
@@ -97,7 +99,7 @@ private:
   Cell*       Ordered_cells;     /* (pointers to) permutation of Cells */
   int         First_skolem_cell;
   int         Domain_size;       /* domain size to search */
-  int         print_cubes;		 // print the cubes of length "print_cubes". -1 means do not print
+  int         print_cubes;       // print the cubes of length "print_cubes". -1 means do not print
   int         cubes_options;     // 0 nothing, bit 1-use work stealing, bit 2-  bit 3 -
   Term*       Domain;            /* array of terms representing (shared) domain elements  */
   bool        Skolems_last;
@@ -143,7 +145,13 @@ private:
                          std::vector<std::vector<int>>& un_ops,
                          std::vector<std::vector<std::vector<int>>>& bin_ops,
                          std::vector<std::vector<std::vector<int>>>& bin_rels,
-                         bool ignore_constants = true);
+                         bool ignore_constants = true, const std::string& ops_list = "");
+  /*
+  size_t construct_model(std::vector<int>&  constants, std::vector<size_t>& un_ops,
+                        std::vector<std::vector<size_t>>& bin_ops,
+                        std::vector<std::vector<size_t>>& bin_rels,
+                        bool ignore_constants, const std::string& ops_list = "");
+  */
   void p_model(bool print_head);
   void p_matom(Term atom);
   int  eterms_count(Term t);
@@ -155,7 +163,7 @@ private:
   void init_for_domain_size(void);
   void built_in_assignments(void);
   void special_assignments(void);
-  int  possible_model(Cube& splitter);
+  int  possible_model(Cube& splitter, size_t parent_id);
   Term interp_term(void);
   int  mace_megs(void);
   int  current_time(void) const { return (int) myClock::user_seconds(); };
@@ -165,8 +173,8 @@ private:
   int  mace4n(Plist clauses, int order);
   bool iterate_ok(int n, const std::string& class_name);
   int  next_domain_size(int n);
-  bool is_new_non_isomorphic(bool print_canonical, std::string& cg, bool ignore_constants = true);
-  bool is_minlex_model(bool ignore_constant = true);
+  bool is_new_non_isomorphic(bool print_canonical, std::string& cg, bool ignore_constants = true, const std::string& check_ops = "");
+  bool is_lexmin_model(bool ignore_constant = true, const std::string& check_ops = "");
 
 public:
   Search() = delete;

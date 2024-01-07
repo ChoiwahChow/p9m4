@@ -8,6 +8,8 @@
 #include "inc/isonaut/isofilter.h"
 #include "inc/lexmin/minlex_filter.h"
 
+#include <chrono>
+
 #include <zlib.h>
 #include "msearch.h"
 #include "select.h"
@@ -46,13 +48,17 @@
 long long Search::next_message = 1;
 int Search::Next_report = 0;
 
+size_t total_lexmin_time = 0;
+size_t total_model_time = 0;
+size_t total_lexmin_model_calls = 0;
+
 Search::Search(Mace4VGlobais* g) : Mace4vglobais(g), Domain_size(0), Domain(nullptr), max_models_str("max_models"), all_models_str("all_models"),
   exhausted_str("exhausted"), max_megs_yes_str("max_megs_yes"), max_megs_no_str("max_megs_no"), max_sec_yes_str("max_sec_yes"),
   max_sec_no_str("max_sec_no"), mace_sigint_str("mace_sigint"), mace_sigsegv_str("mace_sigsegv"), unknown_str("???"), Skolems_last(false),
   Number_of_cells(0), Cells(nullptr), Ordered_cells(nullptr), First_skolem_cell(0), Max_domain_element_in_input(0),
   Symbols(nullptr), Sn_to_mace_sn(nullptr), Sn_map_size(0), Models(nullptr), Grounder(nullptr), non_iso_cache_exceeded(false),
   Total_models(0), Start_domain_seconds(0), Start_seconds(0), Start_megs(0), propagator(nullptr), print_cubes(-2), cubes_options(0),
-  interp_file_name("models.out"), isomorph_free(false), minlex(false)
+  interp_file_name("models.out"), isomorph_free(false), lexmin(false)
 {
   // Note: command line arguments are not available yet!  They are set in Search::initialize_for_search()!
 }
@@ -116,6 +122,10 @@ Search::initialize_for_search(Plist clauses) {
   print_cubes = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_cubes);
   cubes_options = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->cubes_options);
 
+  if (!Mace4vglobais->m_opts.check_ops.empty()) {
+     check_ops = Mace4vglobais->m_opts.check_ops;
+  }
+
   Options opt;
   opt.out_cg = false;
   opt.max_cache = -1;
@@ -126,9 +136,9 @@ Search::initialize_for_search(Plist clauses) {
   opt.shorten_str = true;
   // 50% slower, 55% the size,   opt.compress = true;
   isofilter.set_options(opt);
-  minlex = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->selection_order) == Selection::SELECT_BY_ROW; 
+  lexmin = LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->selection_order) == Selection::SELECT_BY_ROW; 
   std::cerr << "% Search setting: isomorph_free (bool) " << isomorph_free << std::endl;
-  std::cerr << "% Search setting: minlex ordering in search (bool) " << minlex << std::endl;
+  std::cerr << "% Search setting: lexmin ordering in search (bool) " << lexmin << std::endl;
 }
 
 
@@ -184,7 +194,7 @@ Search::init_for_domain_size(void)
   }
 
   bool verbose = LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->verbose);
-  First_skolem_cell = CellContainer::order_cells(verbose, Cells, Number_of_cells, Skolems_last, minlex, Ordered_cells);
+  First_skolem_cell = CellContainer::order_cells(verbose, Cells, Number_of_cells, Skolems_last, lexmin, Ordered_cells);
 }
 
 void
@@ -286,16 +296,18 @@ Search::interp_term(void)
 
 
 bool
-Search::is_minlex_model(bool ignore_constants)
+Search::is_lexmin_model(bool ignore_constants, const std::string& ops_list)
 {
+  total_lexmin_model_calls++;
+
   std::vector<int>  constants;
   std::vector<std::vector<int>>  un_ops;
   std::vector<std::vector<std::vector<int>>>  bin_ops;
   std::vector<std::vector<std::vector<int>>>  bin_rels;
 
-  construct_model(constants, un_ops, bin_ops, bin_rels, ignore_constants);
+  construct_model(constants, un_ops, bin_ops, bin_rels, ignore_constants, ops_list);
   if (un_ops.size() != 0 || bin_rels.size() != 0 || bin_ops.size() != 1) {
-    std::cerr << "Only one bin op is supported for minlex filtering" << std::endl;
+    std::cerr << "Only one bin op is supported for lexmin filtering" << std::endl;
     return false;
   }
 
@@ -303,14 +315,14 @@ Search::is_minlex_model(bool ignore_constants)
 }
 
 bool
-Search::is_new_non_isomorphic(bool print_canonical, std::string& cg, bool ignore_constants)
+Search::is_new_non_isomorphic(bool print_canonical, std::string& cg, bool ignore_constants, const std::string& ops_list)
 {
   bool is_new_non_isomorphic = true;
   std::vector<int>  constants;
   std::vector<std::vector<int>>  un_ops;
   std::vector<std::vector<std::vector<int>>>  bin_ops;
   std::vector<std::vector<std::vector<int>>>  bin_rels;
-  size_t num_ops = construct_model(constants, un_ops, bin_ops, bin_rels, ignore_constants);
+  size_t num_ops = construct_model(constants, un_ops, bin_ops, bin_rels, ignore_constants, ops_list);
   if (num_ops == 0)
     return true;
 
@@ -333,7 +345,7 @@ Search::is_new_non_isomorphic(bool print_canonical, std::string& cg, bool ignore
 }
 
 int
-Search::possible_model(Cube& splitter)
+Search::possible_model(Cube& splitter, size_t parent_id)
 {
   if (LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->arithmetic)) {
     if (!propagator->check_with_arithmetic())
@@ -355,10 +367,22 @@ Search::possible_model(Cube& splitter)
   bool to_output = true;
   if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->filter_models) != 0 ||
       LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_canonical) ) {
-    to_output = is_new_non_isomorphic(LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_canonical), cg, true);
+    to_output = is_new_non_isomorphic(LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->print_canonical), cg, true, check_ops);
   }
-  else if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->minlex) > 0) {
-    to_output = is_minlex_model(true);
+  else if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->lexmin) > 0) {
+    auto start = std::chrono::high_resolution_clock::now();
+    auto is_lexmin = splitter.check_lexmin(parent_id, true);
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    total_lexmin_time += duration.count();
+    if (is_lexmin < 0) {
+       return SEARCH_GO_NO_MODELS;
+    }
+    start = stop;
+    to_output = is_lexmin_model(true, check_ops);
+    stop = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    total_model_time += duration.count();
   }
   if (to_output) {
     Total_models++;
@@ -476,18 +500,31 @@ Search::search(int max_constrained, int depth, Cube& splitter, int parent_id)
     int id = selector.select_cell(max_constrained, First_skolem_cell, Number_of_cells, Ordered_cells, propagator);
 
     if (id == -1) {
-      rc = possible_model(splitter);
+      rc = possible_model(splitter, parent_id);
       return rc;
     }
     else {
       Mstats.num_cubes++;
       std::string cg;
       if (isomorph_free && parent_id >= 0 && Cells[parent_id].get_arity() > 0 && 
-          !is_new_non_isomorphic(false, cg, false)) {
+          !is_new_non_isomorphic(false, cg, false, "")) {
         if (!splitter.is_inside_input_cube() ) {
           Mstats.num_cubes_cut++;
     	  return SEARCH_GO_NO_MODELS;
         }
+      }
+      else if (lexmin && parent_id >= 0) {
+        auto start = std::chrono::high_resolution_clock::now();
+        if (splitter.check_lexmin(parent_id, false) < 0) {
+          auto stop = std::chrono::high_resolution_clock::now();
+          auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+          total_lexmin_time += duration.count();
+          Mstats.num_cubes_cut++;
+    	  return SEARCH_GO_NO_MODELS;
+        }
+        auto stop = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+        total_lexmin_time += duration.count();
       }
 
       int x = Cells[id].max_index;
@@ -532,7 +569,8 @@ Search::search(int max_constrained, int depth, Cube& splitter, int parent_id)
       if (print_cubes >= 0 && splitter.real_depth(depth, id) >= print_cubes) {
         std::string cg;
         // TODO: adjust!
-        is_new_non_isomorphic(false, cg, false);
+        if (isomorph_free)
+            is_new_non_isomorphic(false, cg, false, "");
       	splitter.print_new_cube(print_cubes, splitter.num_cells_filled(Cells), cg);
     	return SEARCH_GO_NO_MODELS;
       }
@@ -631,7 +669,7 @@ Search::mace4n(Plist clauses, int order)
     std::flush(std::cout);
   }
 
-  Cube splitter(order, Cells, Ordered_cells, Number_of_cells, cubes_options, LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->minlex));
+  Cube splitter(order, Cells, Ordered_cells, Number_of_cells, cubes_options, LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->lexmin));
 
   /* Here we go! */
   int rc = SEARCH_GO_NO_MODELS;
@@ -781,6 +819,9 @@ Search::mace4(Plist clauses)
     fatal::fatal_error("mace4: unknown return code");
 
   Memory::enable_max_megs_check(true);
+std::cerr << "Total lexmin time " << total_lexmin_time/1000000.0 << " seconds" << std::endl;
+std::cerr << "Total model time " << total_model_time/1000000.0 << " seconds" << std::endl;
+std::cerr << "Total # lexmin model calls " << total_lexmin_model_calls << std::endl;
   return results;
 }
 
@@ -906,17 +947,60 @@ Search::p_model(bool print_head)
 
 }
 
+/*
 size_t
-Search::construct_model(std::vector<int>&  constants,
-                        std::vector<std::vector<int>>& un_ops,
-                        std::vector<std::vector<std::vector<int>>>& bin_ops,
-                        std::vector<std::vector<std::vector<int>>>& bin_rels,
-                        bool ignore_constants)
+Search::construct_model(std::vector<int>&  constants, std::vector<size_t>& un_ops,
+                        std::vector<std::vector<size_t>>& bin_ops,
+                        std::vector<std::vector<size_t>>& bin_rels,
+                        bool ignore_constants, const std::string& ops_list)
 {
   InterpContainer   interp_con;
 
   for (Symbol_data s = Symbols; s != nullptr; s = s->next) {
     if (s->attribute != EQUALITY_SYMBOL) {
+      if (!ops_list.empty() && ops_list.find(Symbol_dataContainer::get_op_symbol(s->get_sn())) == std::string::npos) {
+        continue;
+      }
+
+      int n = interp_con.int_power(Domain_size, s->arity);
+      if (s->arity == 0) {
+        if (!ignore_constants) {
+            constants.push_back(s->base);
+        }
+      }
+      else if (s->arity == 1) {
+        un_ops.push_back(s->base);
+      }
+      else if (s->arity == 2) {
+        std::vector<size_t>  row_heads;
+        for (size_t idx = s->base; idx < s->base+n; idx += Domain_size) {
+          row_heads.push_back(idx); 
+        }
+        if (s->type == type_FUNCTION)
+          bin_ops.push_back(row_heads);
+        else
+          bin_rels.push_back(row_heads);
+      }
+    }
+  }
+  return constants.size() + un_ops.size() + bin_ops.size() + bin_rels.size();
+}
+*/
+
+size_t
+Search::construct_model(std::vector<int>&  constants,
+                        std::vector<std::vector<int>>& un_ops,
+                        std::vector<std::vector<std::vector<int>>>& bin_ops,
+                        std::vector<std::vector<std::vector<int>>>& bin_rels,
+                        bool ignore_constants, const std::string& ops_list)
+{
+  InterpContainer   interp_con;
+
+  for (Symbol_data s = Symbols; s != nullptr; s = s->next) {
+    if (s->attribute != EQUALITY_SYMBOL) {
+      if (!ops_list.empty() && ops_list.find(Symbol_dataContainer::get_op_symbol(s->get_sn())) == std::string::npos) {
+        continue;
+      }
 
       int n = interp_con.int_power(Domain_size, s->arity);
       if (s->arity == 0) {

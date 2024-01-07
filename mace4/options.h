@@ -39,7 +39,7 @@ struct mace_options {
   int end_size;
   int iterate_up_to;
   int increment;
-  int minlex;
+  int lexmin;
   int max_models;
   int restart_count;       // run the external script and restart the count when the count is restart_count
   int selection_order;     // 3 - strictly concentric, 4 - strictly by row
@@ -58,6 +58,7 @@ struct mace_options {
 struct mace_local_options {
   std::string hook_cmd;
   std::string models_file;
+  std::string check_ops;
 
   std::string assign_stringparm(char id, const char* optarg);
 };

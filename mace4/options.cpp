@@ -19,7 +19,7 @@ mace_options::mace_options()
   report_stderr     = LADR_GLOBAL_OPTIONS.init_parm("report_stderr",     -1,   -1, INT_MAX);
   print_cubes       = LADR_GLOBAL_OPTIONS.init_parm("print_cubes",       -2,   -2, INT_MAX);
   cubes_options     = LADR_GLOBAL_OPTIONS.init_parm("cubes_options",     0,     0, INT_MAX); 
-  minlex            = LADR_GLOBAL_OPTIONS.init_parm("minlex",            0,     0, 2); 
+  lexmin            = LADR_GLOBAL_OPTIONS.init_parm("minlex",            0,     0, 2); 
   print_models_interp    = LADR_GLOBAL_OPTIONS.init_parm("print_models_interp",    0, -1, INT_MAX);
   filter_models     = LADR_GLOBAL_OPTIONS.init_parm("filter_models",     0,    -1, INT_MAX);
 
@@ -77,11 +77,12 @@ mace_local_options::assign_stringparm(char id, const char* optarg)
     case 'a':
         models_file = optarg;
         return models_file;
-        break;
     case 'x':
         hook_cmd = optarg;
         return hook_cmd;
-        break;
+    case 'o':
+        check_ops = optarg;
+        return check_ops;
     default:
         std::cerr << "Ignored: unknown string option " << id << "." << std::endl;
     }

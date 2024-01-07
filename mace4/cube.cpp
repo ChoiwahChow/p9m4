@@ -298,7 +298,7 @@ Cube::sum_val(int& sum, bool& counted, size_t base_id, size_t id, std::vector<si
 bool
 Cube::break_symmetries(int parent_id)
 {
-    // a model is found, make sure it is not a non-minlex model
+    // a model is found, make sure it is not a non-lexmin model
     // returns true if it is sure that it is not min lex
 
     return false;
@@ -809,7 +809,7 @@ Cube::compare_cubes(size_t base_id, size_t end_id, int val, size_t low_el, size_
             cur_val = Cells[cur_id].get_value();
 
         // if the cell value have moved up to high_val by the cycle  
-        // LNH prevents this value be assigned to this cell, so this is not a minlex cube of its class
+        // LNH prevents this value be assigned to this cell, so this is not a lexmin cube of its class
         int mdn_plus1 = max(max_value_so_far, Cells[cur_id].get_max_index()) + 1;
         if (sigma_val > mdn_plus1) 
             return 1;
@@ -829,39 +829,120 @@ Cube::compare_cubes(size_t base_id, size_t end_id, int val, size_t low_el, size_
     else
         return 0;
 }
-/*
+
+
 int
-Cube::compare_cubes_by_row(size_t base_id, size_t end_id, int val, size_t low_el, size_t high_el)
+Cube::check_binop(size_t row, size_t col,
+                  const std::vector<size_t>& row_idx, const std::vector<size_t>& col_idx, 
+                  const std::vector<size_t>& binop)
 {
-    // this is used when a row (the high_el row) is completely filled
-    // low_el < high_el, and the cycle to test is (low_el, high_el)
+    // check whether binop is made lex smaller when permuted by the permutation
+    // of rows and columns (represented by pi1 and pi2).
 
-    size_t base_pos = find_pos_in_search(base_id);
-    size_t end_pos = find_pos_in_search(end_id);
-    bool   seen_smaller = false;
-    int    max_value_so_far = -1;
-
-    // Goes down (0, 0), (0,1), (0, 2), ,,,, (0, n), (1,0) ...  (high_el, n)
-    // before (low_el-1, low_el-1), cells are not moved and cycle applies only to val 
-    size_t ptr = base_pos;
-    for (size_t ptr = base_pos; ptr <= end_pos; ++ptr) {
-        size_t cur_id = cell_ids[ptr];
-        int    cur_val;
-        int    new_cell_id = moved_to_cell(cur_id, low_el, high_el);
-        int    sigma_val;
-        // cell for the end_id has not been set in the Cells array yet.
-        if (new_cell_id == end_id) 
-            sigma_val = swap_value(low_el, high_el, val);
-        else 
-            sigma_val = swap_value(low_el, high_el, Cells[new_cell_id].get_value()); 
-        if (cur_id == end_id)
-            cur_val = val;
-        else
-            cur_val = Cells[cur_id].get_value();
-
-        // if the cell value have moved up to high_val by the cycle  
+    size_t col_end = order;
+    // Check each cell, row by row and column by column starting with row zero
+    for (size_t ridx=0; ridx <= row; ++ridx) {
+        if (row == ridx)
+            col_end = col + 1;
+        for (size_t cidx = 0; cidx < col_end; ++cidx) {
+            int diff = row_idx[col_idx[Cells[binop[row_idx[col_idx[ridx]]] + row_idx[col_idx[cidx]]].get_value()]] - 
+                       Cells[binop[ridx] + cidx].get_value();
+            if (diff != 0)
+                return diff;
+        }
     }
-    
     return 0;
 }
-*/
+
+
+int
+Cube::check_lexmin(size_t id, bool is_model)
+{
+    if (!is_model) {
+        while (Cells[id+1].has_value())
+            ++id;
+    }
+//    else  return 0;
+    std::vector<size_t> rows(order, 0);
+    size_t row = Cells[id].get_index(0);
+    size_t col = Cells[id].get_index(1);
+    
+    if ((row == col && col != order - 1) || col == row+1)
+        return 0;
+
+    size_t offset = row * order + col;
+    size_t base_id = id - offset;      // TODO optimize by storing this
+    if (is_model) {
+        row = order - 1;
+        col = order - 1;
+    }
+
+    for (size_t ridx=0; ridx < order; ++ridx)
+        rows[ridx] = base_id + ridx*order;
+
+    return check_lexmin(row, col, rows);
+}
+
+int
+Cube::check_lexmin(size_t row, size_t col, const std::vector<size_t>& binop)
+{
+    // return -1 if it is not lexmin, 0 if it is not proven lexmin, 1 if it is lexmin
+    // the cell to add or just added is (row, col).
+    // We only check for permutations that move the cell (row, col), assuming
+    // the previous cube is lexmin
+    // Note that row permutation and column permutation are disjooint
+
+    std::vector<size_t> row_idx(order);
+    std::iota(row_idx.begin(), row_idx.end(), 0);
+    std::vector<size_t> col_idx(order);
+    std::iota(col_idx.begin(), col_idx.end(), 0);
+
+    size_t start_col = 0;
+    if (col > row+1)
+        start_col = row+1;
+    size_t start_row = row;  // no row permutation
+    if (col == order - 1 && row < order - 1)
+        start_row = 0;
+    size_t end_col = col;
+    if (row > 0 && col == order - 1)
+        end_col++;
+    for (size_t ridx = start_row; ridx <= row; ++ridx) {
+        row_idx[ridx] = row;
+        row_idx[row] = ridx;
+        for (size_t cidx = start_col; cidx < end_col; ++cidx) {
+            col_idx[cidx] = col;
+            col_idx[col] = cidx;
+            int check = check_binop(row, col, row_idx, col_idx, binop);
+            if (check == -1)
+                return -1;
+            col_idx[cidx] = cidx;
+            col_idx[col] = col;
+        }
+        row_idx[row] = row;
+        row_idx[ridx] = ridx;
+    }
+
+    size_t val = Cells[binop[row] + col].get_value();
+// std::cerr << val << std::endl;
+    size_t start_val = val;
+    size_t end_val = val;
+    if (val < col && (val < row || (val == row && col == order - 1))) {
+        start_val = 0;
+    }
+    else if (val > row && val > col+1) {
+        start_val = std::max(row, col) + 1;
+    }
+// std::cerr << "  start_val: " << start_val << " row: " << row << " col: " << col << std::endl;
+    for (size_t cidx = start_val; cidx < end_val; ++cidx) {
+        col_idx[cidx] = val;
+        col_idx[val] = cidx;
+        int check = check_binop(row, col, row_idx, col_idx, binop);
+        if (check == -1)
+            return -1;
+        col_idx[cidx] = cidx;
+        col_idx[val] = val;
+    }
+
+    return 0;
+}
+
