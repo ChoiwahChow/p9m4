@@ -8,6 +8,7 @@
 #include "inc/isonaut/isofilter.h"
 #include "inc/lexmin/minlex_filter.h"
 
+#include <ctime>
 #include <chrono>
 
 #include <zlib.h>
@@ -397,8 +398,10 @@ Search::possible_model(Cube& splitter, size_t parent_id)
   else
       return SEARCH_GO_NO_MODELS;
   if (next_message == Total_models) {
-    std::cout << "\nModel " << Total_models << " has been found." << std::endl;
-    if (Total_models >= 100000000)
+    time_t now = time(0);
+    char* date_time = ctime(&now);
+    std::cout << "Model " << Total_models << " has been found.   " << date_time << std::endl;
+    if (Total_models >= 10000000)
       next_message *= 2;
     else
       next_message *= 10;
