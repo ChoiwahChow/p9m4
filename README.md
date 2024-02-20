@@ -8,7 +8,7 @@ Mace4 can internally do isomorphic model filtering using Nauty (sparse mode) to 
 
 E.g.:
 ```text
-mace4 -n5 -N5 -m-1 -A1 -W-1 -f <input-file>
+mace4 -n5 -N5 -m-1 -A-1 -W-1 -f <input-file>
 ```
 
 The option -W tells Mace4 to do isomorphic model filter. `0` means the feature is off (default is 0), -1 means no 
