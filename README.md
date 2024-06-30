@@ -1,7 +1,21 @@
 # p9m4
 Prover9/Mace4 with LADR library. But mainly for Mace4.
 
-## Mace4
+The software is developed and tested in the Linux platform only.
+
+## Mace4 Dependencies
+
+Mace4 has dependency on the following external libraries:
+
+1. Nauty.  .../p9m4/mace4/lib/nauty.a
+2. Isonaut.  .../p9m4/mace4/libisonaut.a
+3. Minisat.   .../p9m4/mace4/lib/libminisat.a
+4. Mlex.    .../p9m4/mace4/lib/libmlex.a
+
+Mace4 uses Isonaut, which in turn uses Nauty, to isomorphism checking between models.  Mlex uses Minisat to compute the lexigraphically smallest multiplication tables of a model.
+
+Nauty is available in `https://users.cecs.anu.edu.au/~bdm/nauty/`. Isonaut is available in `https://github.com/ChoiwahChow/isonaut`. Mlex (and Minisat) is available in `https://github.com/MikolasJanota/mlex`.  
+
 
 ## Integration of Nauty (sparse mode) into Mace4 
 Mace4 can internally do isomorphic model filtering using Nauty (sparse mode) to output non-isomorphic models.
