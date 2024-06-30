@@ -1,7 +1,7 @@
 # p9m4
 Prover9/Mace4 with LADR library. But mainly for Mace4.
 
-The software is developed and tested in the Linux platform only.
+The software is developed and tested on the Linux platform only.
 
 ## Mace4 Dependencies
 
