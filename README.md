@@ -16,6 +16,16 @@ Mace4 uses Isonaut, which in turn uses Nauty, to isomorphism checking between mo
 
 Nauty is available in `https://users.cecs.anu.edu.au/~bdm/nauty/`. Isonaut is available in `https://github.com/ChoiwahChow/isonaut`. Mlex (and Minisat) is available in `https://github.com/MikolasJanota/mlex`.  
 
+## Building p9m4
+
+In the top level directory:
+
+```text
+mkdir build
+cd build
+cmake ..
+make
+```
 
 ## Integration of Nauty (sparse mode) into Mace4 
 Mace4 can internally do isomorphic model filtering using Nauty (sparse mode) to output non-isomorphic models.
