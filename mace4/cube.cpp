@@ -672,8 +672,10 @@ Cube::print_new_cube(int cube_length, int num_cells_filled, const std::string& c
     // std::cout << " " << num_cells_filled;
     for (int idx = 0; idx < cube_length; ++idx)
         std::cout << " " << last_printed[idx];
+    /*
     if (!cg.empty())
         std::cout << " %c%" << cg;
+    */
     std::cout << std::endl;
 }
 
