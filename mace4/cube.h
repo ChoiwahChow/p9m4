@@ -51,6 +51,7 @@ private:
     size_t            mult_table_size;    // total size of multiplication tables
     std::vector<int>  last_printed;
     bool              do_work_stealing;
+    std::vector<int>  cube_cell_ids;
     std::vector<std::string> all_cubes;
     size_t            last_check_time;
     size_t            current_time;
@@ -92,7 +93,7 @@ public:
     bool reinitialize_cube();
     void set_time(size_t seconds) {current_time = seconds;}
     int  value(size_t depth, size_t id);
-    void print_new_cube(int cube_length, int num_cells_filled, const std::string& cg);
+    void print_new_cube(int cube_length, const std::vector<std::vector<int>>&  all_nodes, const std::string& cg);
     // size_t mark_root(size_t id, size_t from_index, size_t last);
     bool move_on(size_t id, std::vector<std::vector<int>>& all_nodes);
     size_t real_depth(size_t depth, size_t id);
@@ -101,6 +102,7 @@ public:
     bool break_symmetries(int parent_id, int id, int val);
     bool break_symmetries(int parent_id);
     bool is_inside_input_cube() { return initialized && current_pos < max_pos; };
+    int  value_assignment(int pos, int& value);
 
 public:
     int  check_lexmin(size_t cell_id, bool is_model = false);

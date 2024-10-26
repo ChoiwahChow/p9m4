@@ -65,12 +65,14 @@ private:
 private:
   static int  sum_indexes(Term t);
   static bool equal_index(Term t);
+  static bool row_col_comp(const Term& t1, const Term& t2);
   static OrderType compare_cells(Cell a, struct cell* b);
   static OrderType compare_cells_by_row(Cell a, struct cell* b);
+  static OrderType compare_cells_by_diag_row(Cell a, Cell b);
 
 public:
   static int id_to_domain_size(int id, Cell Cells, int Domain_size);
-  static int order_cells(bool verbose, Cell Cells, int Number_of_cells, bool Skolems_last, bool by_row, Cell Ordered_cells[]);
+  static int order_cells(bool verbose, Cell Cells, int Number_of_cells, bool Skolems_last, int select_order, Cell Ordered_cells[]);
 
 };
 

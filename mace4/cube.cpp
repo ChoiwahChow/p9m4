@@ -20,18 +20,22 @@ Cube::~Cube() {
 bool
 Cube::initialize_cube()
 {
+    // all_cubes is a vector of integers. Each 2 consective integers
+    // are cell_id and cell_value
     initialized = false;
     if (all_cubes.empty())
         return initialized;
 
     std::istringstream config(all_cubes.front());
-    int cell_value;
-    config >> cell_value;
+    int in_value;
+    config >> in_value;
     std::cout << "Debug Cube::initialize_cube ";
     while (config) {
-        std::cout << cell_ids[max_pos] << "|" << cell_value << " ";
-        cell_values[cell_ids[max_pos++]] = cell_value;
-        config >> cell_value;
+        cube_cell_ids[max_pos] = in_value;
+        config >> in_value;
+        std::cout << cube_cell_ids[max_pos] << "|" << in_value << " ";
+        cell_values[cube_cell_ids[max_pos++]] = in_value;
+        config >> in_value;
     }
     std::cout << std::endl;
     all_cubes.erase(all_cubes.begin());  // first cube is to be processed now
@@ -86,6 +90,7 @@ Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_c
     }
     int max_id = *std::max_element(std::begin(cell_ids), std::end(cell_ids));
     cell_values.resize(max_id+1, -1);
+    cube_cell_ids.resize(max_id+1, -1);
     real_depths.resize(max_id+1, 0);
     for (size_t idx = 0; idx < mult_table_size; ++idx)
         real_depths[cell_ids[idx]] = idx;
@@ -128,6 +133,20 @@ Cube::num_cells_filled(Cell Cells)
     return count;
 }
 
+int
+Cube::value_assignment(int pos, int& value) 
+{
+   // for the pos-th value-assignment in the cube,
+   // return the "term" as function return value, and the value of the assignment in "value"
+   if (initialized && pos < max_pos) {
+        value = cell_values[cube_cell_ids[pos]];
+        return cube_cell_ids[pos];
+   }
+   else {
+       value = -1;
+       return -1;
+   }
+}
 
 int
 Cube::value(size_t depth, size_t id) {
@@ -172,7 +191,6 @@ Cube::work_stealing_requested() {
 
 bool
 Cube::move_on(size_t id, std::vector<std::vector<int>>& all_nodes) {
-    // std::cout << "debug @@@@@@@@@@@@ " << real_depths.size() << " " << real_depths[id] << " " << cut_off << std::endl;
     if (!initialized)
         return false;
     if (all_cubes.empty() && real_depths[id] > cut_off)
@@ -651,31 +669,28 @@ Cube::break_symmetries(int id, int val)
 }
 
 void
-Cube::print_new_cube(int cube_length, int num_cells_filled, const std::string& cg) {
+Cube::print_new_cube(int cube_length, const std::vector<std::vector<int>>&  all_nodes, const std::string& cg) 
+{
     bool same = true;
     if (last_printed.size() < cube_length)
         last_printed.insert(last_printed.end(), cube_length, -1);
     for (int idx = 0; idx < cube_length; ++idx) {
-        if (last_printed[idx] != Cells[cell_ids[idx]].get_value()) {
-            last_printed[idx] = Cells[cell_ids[idx]].get_value();
+        if (last_printed[idx] != Cells[all_nodes[idx][0]].get_value()) {
+            last_printed[idx] = Cells[all_nodes[idx][0]].get_value();
             same = false;
         }
     }
-    if (same)
+    if (same) {
         return;
+    }
     /* debug print
       for (int idx = 0; idx < print_cubes; ++idx)
           std::cout << " " << splitter.cell_ids[idx] << "|" << Cells[splitter.cell_ids[idx]].get_symbol();
       std::cout << std::endl;
       */
     std::cout << "cube";
-    // std::cout << " " << num_cells_filled;
     for (int idx = 0; idx < cube_length; ++idx)
-        std::cout << " " << last_printed[idx];
-    /*
-    if (!cg.empty())
-        std::cout << " %c%" << cg;
-    */
+        std::cout << " " << all_nodes[idx][0] << " " << last_printed[idx];
     std::cout << std::endl;
 }
 

@@ -12,7 +12,7 @@ mace_options::mace_options()
   max_models        = LADR_GLOBAL_OPTIONS.init_parm("max_models",        1,    -1, INT_MAX);
   max_seconds       = LADR_GLOBAL_OPTIONS.init_parm("max_seconds",      -1,    -1, INT_MAX);
   max_seconds_per   = LADR_GLOBAL_OPTIONS.init_parm("max_seconds_per",  -1,    -1, INT_MAX);
-  selection_order   = LADR_GLOBAL_OPTIONS.init_parm("selection_order",   2,     0, 4);        // default: SELECT_CONCENTRIC_BAND
+  selection_order   = LADR_GLOBAL_OPTIONS.init_parm("selection_order",   2,     0, 5);        // default: SELECT_CONCENTRIC_BAND
   selection_measure = LADR_GLOBAL_OPTIONS.init_parm("selection_measure", 4,     0, 5);        // default: MOST_CROSSED
   increment         = LADR_GLOBAL_OPTIONS.init_parm("increment",         1,     1, INT_MAX);
   max_megs          = LADR_GLOBAL_OPTIONS.init_parm("max_megs",          500,  -1, INT_MAX);

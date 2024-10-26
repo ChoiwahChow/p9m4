@@ -195,7 +195,7 @@ Search::init_for_domain_size(void)
   }
 
   bool verbose = LADR_GLOBAL_OPTIONS.flag(Mace4vglobais->Opt->verbose);
-  First_skolem_cell = CellContainer::order_cells(verbose, Cells, Number_of_cells, Skolems_last, lexmin, Ordered_cells);
+  First_skolem_cell = CellContainer::order_cells(verbose, Cells, Number_of_cells, Skolems_last, LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->selection_order), Ordered_cells);
 }
 
 void
@@ -500,8 +500,12 @@ Search::search(int max_constrained, int depth, Cube& splitter, int parent_id)
   else {
     Selection selector(Domain_size, Domain, Cells, &EScon, &Mstats, Mace4vglobais->Opt);
     // TODO: [cc] check correctness of conversion to C++
-    int id = selector.select_cell(max_constrained, First_skolem_cell, Number_of_cells, Ordered_cells, propagator);
 
+    // get value-assignment in the search path if it is extending some cubes
+    int value = -1;
+    int id = splitter.value_assignment(all_nodes.size(), value);
+    if (id == -1)
+      id = selector.select_cell(max_constrained, First_skolem_cell, Number_of_cells, Ordered_cells, propagator);
     if (id == -1) {
       rc = possible_model(splitter, parent_id);
       return rc;
@@ -557,24 +561,20 @@ Search::search(int max_constrained, int depth, Cube& splitter, int parent_id)
       // begin for cubes
       ParseContainer   pc;
       int from_index = 0;
-      int value = splitter.value(depth, id);
       if (value >= 0) {
     	  if (last < value) {
               std::cout << "debug Search::search exceeded bounds ***************************** do cell id = " << id << std::endl;
     	      return SEARCH_GO_NO_MODELS;
     	  }
-    	  std::cout << "debug Search::search ******************* do cell id = " << id
-    			    << ", cell value = " << value << ",  op = " << Symbol_dataContainer::get_op_symbol(Cells[id].get_sn())
-    	  	  	    << ", updated max_constrained " << max_constrained << ", depth = " << depth << std::endl;
     	  from_index = value;
     	  last = value;
       }
-      if (print_cubes >= 0 && splitter.real_depth(depth, id) >= print_cubes) {
+      if (print_cubes >= 0 && all_nodes.size() >= print_cubes) {
         std::string cg;
         // TODO: adjust!
         if (isomorph_free)
             is_new_non_isomorphic(false, cg, false, "");
-      	splitter.print_new_cube(print_cubes, splitter.num_cells_filled(Cells), cg);
+      	splitter.print_new_cube(print_cubes, all_nodes, cg);
     	return SEARCH_GO_NO_MODELS;
       }
       // end for cubes

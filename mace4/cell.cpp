@@ -1,6 +1,7 @@
 
 #include "../ladr/parse.h"
 #include "cell.h"
+#include "select.h"
 
 
 bool CellContainer::Skolems_last = false;
@@ -29,7 +30,26 @@ CellContainer::sum_indexes(Term t)
   }
 }
 
-// cube-and-conquer related change
+
+bool
+CellContainer::row_col_comp(const Term& t1, const Term& t2)
+{
+	if (ARITY(t1) > 1 && ARITY(t2) > 1) {
+		int first_index = VARNUM(ARG(t1, 0));
+		int second_index = VARNUM(ARG(t1, 1));
+		int first_index2 = VARNUM(ARG(t2, 0));
+		int second_index2 = VARNUM(ARG(t2, 1));
+                if (first_index == first_index2)
+                	return second_index <= second_index2;
+                if (second_index == second_index2)
+                	return first_index <= first_index2;
+                if (first_index <= second_index2)
+			return true;
+		return false;
+	}
+	return false;
+}
+
 bool
 CellContainer::equal_index(Term t)
 {
@@ -124,8 +144,50 @@ CellContainer::compare_cells_by_row(Cell a, Cell b)
 
 }
 
+OrderType
+CellContainer::compare_cells_by_diag_row(Cell a, Cell b)
+{
+  if (a->symbol->attribute == EQUALITY_SYMBOL &&
+      b->symbol->attribute != EQUALITY_SYMBOL)       return OrderType::GREATER_THAN;
+
+  else if (a->symbol->attribute != EQUALITY_SYMBOL &&
+           b->symbol->attribute == EQUALITY_SYMBOL)  return OrderType::LESS_THAN;
+
+  else if (Skolems_last &&
+           a->symbol->attribute == SKOLEM_SYMBOL &&
+           b->symbol->attribute != SKOLEM_SYMBOL)    return OrderType::GREATER_THAN;
+
+  else if (Skolems_last &&
+           a->symbol->attribute != SKOLEM_SYMBOL &&
+           b->symbol->attribute == SKOLEM_SYMBOL)    return OrderType::LESS_THAN;
+
+  // cube-and-conquer related change, f(x,x) is searched before f(x,y)
+
+  else if (equal_index(a->eterm) &&
+  		  !equal_index(b->eterm))            return OrderType::LESS_THAN;
+
+  else if (!equal_index(a->eterm) &&
+  		  equal_index(b->eterm))             return OrderType::GREATER_THAN;
+
+  if (a->id - a->symbol->base < b->id - b->symbol->base)
+    return OrderType::LESS_THAN;
+
+  else if (a->id - a->symbol->base > b->id - b->symbol->base)
+    return OrderType::GREATER_THAN;
+
+  else if (a->symbol->mace_sn < b->symbol->mace_sn)  return OrderType::LESS_THAN;
+
+  else if (a->symbol->mace_sn > b->symbol->mace_sn)  return OrderType::GREATER_THAN;
+
+  else
+    return OrderType::SAME_AS;  /* For now, let f(0,1) be the same as f(1,0), etc.  */
+
+}
+
+
 int
-CellContainer::order_cells(bool verbose, Cell Cells, int Number_of_cells, bool Skolems_last, bool by_row, Cell Ordered_cells[])
+CellContainer::order_cells(bool verbose, Cell Cells, int Number_of_cells, bool Skolems_last, 
+                           int select_order, Cell Ordered_cells[])
 {
   int First_skolem_cell = Number_of_cells;
 
@@ -134,9 +196,12 @@ CellContainer::order_cells(bool verbose, Cell Cells, int Number_of_cells, bool S
 
   CellContainer::Skolems_last = Skolems_last;
 
-  if (by_row)
+  if (select_order == Selection::SELECT_BY_ROW)
     myOrder::merge_sort((void**)Ordered_cells, Number_of_cells,
                         (OrderType (*) (void*,void*))compare_cells_by_row);
+  else if (select_order == Selection::SELECT_BY_DIAG_ROW)
+    myOrder::merge_sort((void**)Ordered_cells, Number_of_cells,
+                        (OrderType (*) (void*,void*))compare_cells_by_diag_row);
   else
     myOrder::merge_sort((void**)Ordered_cells, Number_of_cells,
                         (OrderType (*) (void*,void*))compare_cells);
