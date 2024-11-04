@@ -1,0 +1,7 @@
+
+
+formulas(assumptions).
+
+x * y = x * y.
+
+end_of_list.

@@ -1,0 +1,17 @@
+
+% cloops
+
+formulas(assumptions).
+
+
+x * y = x * z -> y = z.
+x * z = y * z -> x = y.
+
+x * 0 = x.          % def - rigft identity
+0 * x = x.          % def - left identity
+
+x * (y * (y * z)) = ((x * y) * y) * z.
+
+end_of_list.
+
+
