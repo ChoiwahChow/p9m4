@@ -64,7 +64,7 @@ Cube::read_config_multi(const char* config_file_path) {
     while (std::getline(config, line))
     {
         std::string a_cube = line;
-        std::cout << "Debug cube line****" << line << "*****" << std::endl;
+        // std::cout << "Debug cube line****" << line << "*****" << std::endl;
         all_cubes.push_back(a_cube);
     }
     return true;
