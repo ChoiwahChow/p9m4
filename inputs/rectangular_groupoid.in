@@ -1,0 +1,7 @@
+
+formulas(sos).
+
+w * x = y * z -> w * x = w * z.
+
+end_of_list.
+
