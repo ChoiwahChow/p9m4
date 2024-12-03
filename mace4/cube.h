@@ -28,7 +28,7 @@ class Cube {
 public:
     static const std::string  steal_signal_file_path;
     static const std::string  steal_cube_file_path;
-    static const int min_check_interval = 2;
+    static const int min_check_interval = 10;
     std::vector<size_t> cell_ids;
     int                 cubes_options;  // lsb for do work stealing, next for outputing num cells filled
 private:
@@ -39,7 +39,6 @@ private:
 
     std::vector<int>  cell_values;
     size_t            order;
-    std::vector<size_t>  real_depths;
     Cell              Cells;
     bool              initialized;
     bool              marked;       // root id marked for the process
@@ -57,7 +56,7 @@ private:
     size_t            current_time;
 
 private:
-    bool print_unprocessed_cubes(int root_id, size_t from, size_t to);
+    bool print_unprocessed_cubes(const std::vector<std::vector<int>>& all_nodes, int root_id, size_t from, size_t to);
     inline bool work_stealing_requested ();
     //bool read_config(const char* config_file_path);
     bool read_config_multi(const char* config_file_path);

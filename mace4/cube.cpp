@@ -91,9 +91,6 @@ Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_c
     int max_id = *std::max_element(std::begin(cell_ids), std::end(cell_ids));
     cell_values.resize(max_id+1, -1);
     cube_cell_ids.resize(max_id+1, -1);
-    real_depths.resize(max_id+1, 0);
-    for (size_t idx = 0; idx < mult_table_size; ++idx)
-        real_depths[cell_ids[idx]] = idx;
 
     read_config_multi("cube.config");
     //    return;
@@ -103,23 +100,9 @@ Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_c
         initialize_cube();
 
     std::cout << "\ndebug constructor Cube*********************** cubes_options " << cubes_options << " max_pos = " << max_pos << std::endl;
-    // /* debug
-    for (size_t idx = 0; idx < mult_table_size && idx < 65; ++idx) {
-      std::cout <<  idx << "|" << Ordered_cells[idx]->get_symbol() << "|" << Ordered_cells[idx]->get_id() << "  ";
-    }
-    std::cout << "Debug order_cells ********************" << std::endl;
-    for (size_t idx = 0; idx < mult_table_size && idx < 65; ++idx) {
-      std::cout <<  idx << "|" << real_depths[idx] << "  ";
-    }
-    std::cout << "Debug real_depths end ******************** mult_table_size: " << mult_table_size << " Number_of_cells:" << Number_of_cells << std::endl;
     std::cout << "Debug ******************** cut_off: " << cut_off << std::endl;
-    // */
 }
 
-size_t
-Cube::real_depth(size_t depth, size_t id) {
-    return real_depths[id];
-}
 
 int
 Cube::num_cells_filled(Cell Cells)
@@ -185,7 +168,7 @@ Cube::work_stealing_requested() {
     // time_t now = time(0);
     // char* date_time = ctime(&now);
     // std::cout << "debug Current working directory: " << get_current_dir_name() << " " << date_time << std::endl;
-    std::cout << "debug work_stealing_requested:" << steal_signal_file_path.c_str() << signal_exists << " and" << steal_cube_file_path.c_str() << pending_cubes << std::endl;
+    std::cout << "debug work_stealing_requested: " << steal_signal_file_path.c_str() << signal_exists << " and " << steal_cube_file_path.c_str() << pending_cubes << std::endl;
     return signal_exists && !pending_cubes;
 }
 
@@ -193,24 +176,24 @@ bool
 Cube::move_on(size_t id, std::vector<std::vector<int>>& all_nodes) {
     if (!initialized)
         return false;
-    if (all_cubes.empty() && real_depths[id] > cut_off)
-        return false;
     if (current_time - last_check_time > min_check_interval) {
         last_check_time = current_time;
         // cut_off++;
         if (work_stealing_requested()) {
             // std::cout << "debug move_on, work_stealing_requested" << std::endl;
             if (!all_cubes.empty())
-                return print_unprocessed_cubes(-1, 0, 0);
+                return print_unprocessed_cubes(all_nodes, -1, 0, 0);
             size_t first_pos = 0;
+	    // Find shortest cubes to print out
             while (all_nodes[first_pos][1] == all_nodes[first_pos][2]) {
                 first_pos ++;
                 if (first_pos >= all_nodes.size())
                     return false;
             }
-            if (real_depths[all_nodes[first_pos][0]] > cut_off)
+            std::cout << "debug move_on, first_pos " << first_pos << " " << all_nodes[first_pos][1]+1 << " " << all_nodes[first_pos][2] << std::endl;
+            if (first_pos > cut_off)
                 return false;
-            if (print_unprocessed_cubes(all_nodes[first_pos][0], all_nodes[first_pos][1]+1, all_nodes[first_pos][2])) {
+            if (print_unprocessed_cubes(all_nodes, all_nodes[first_pos][0], all_nodes[first_pos][1]+1, all_nodes[first_pos][2])) {
                 all_nodes[first_pos][2] = all_nodes[first_pos][1];
                 return true;
             }
@@ -220,18 +203,19 @@ Cube::move_on(size_t id, std::vector<std::vector<int>>& all_nodes) {
 }
 
 bool
-Cube::print_unprocessed_cubes(int root_id, size_t from, size_t to)
+Cube::print_unprocessed_cubes(const std::vector<std::vector<int>>& all_nodes, int root_id, size_t from, size_t to)
 {
     bool ret_value = true;
     std::stringstream buffer;
     if (all_cubes.empty()) {
+	std::cout << "print_unprocessed_cubes " << root_id << " " << from << " " << to << std::endl;
         for (size_t idx=from; idx<=to; idx++) {
             size_t pos = 0;
-            while (cell_ids[pos] != root_id) {
-                buffer << Cells[cell_ids[pos]].get_value() << " ";
+            while (all_nodes[pos][0] != root_id) {
+                buffer << all_nodes[pos][0] << " " << Cells[all_nodes[pos][0]].get_value() << " ";
                 pos++;
             }
-            buffer << idx << std::endl;
+            buffer << root_id << " " << idx << std::endl;
         }
     }
     else {
