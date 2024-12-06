@@ -59,7 +59,7 @@ Search::Search(Mace4VGlobais* g) : Mace4vglobais(g), Domain_size(0), Domain(null
   Number_of_cells(0), Cells(nullptr), Ordered_cells(nullptr), First_skolem_cell(0), Max_domain_element_in_input(0),
   Symbols(nullptr), Sn_to_mace_sn(nullptr), Sn_map_size(0), Models(nullptr), Grounder(nullptr), non_iso_cache_exceeded(false),
   Total_models(0), Start_domain_seconds(0), Start_seconds(0), Start_megs(0), propagator(nullptr), print_cubes(-2), cubes_options(0),
-  interp_file_name("models.out"), isomorph_free(false), lexmin(false)
+  cubes_file_name("cubes.out"), interp_file_name("models.out"), isomorph_free(false), lexmin(false)
 {
   // Note: command line arguments are not available yet!  They are set in Search::initialize_for_search()!
 }
@@ -574,7 +574,7 @@ Search::search(int max_constrained, int depth, Cube& splitter, int parent_id)
         // TODO: adjust!
         if (isomorph_free)
             is_new_non_isomorphic(false, cg, false, "");
-      	splitter.print_new_cube(print_cubes, all_nodes, cg);
+      	splitter.print_new_cube(*cubes_file_stream, print_cubes, all_nodes, cg);
     	return SEARCH_GO_NO_MODELS;
       }
       // end for cubes
@@ -767,6 +767,10 @@ Search::mace4(Plist clauses)
 	  models_interp_file_stream = new ofstream();
 	  models_interp_file_stream->open(Search::interp_file_name, std::ios_base::app);
   }
+  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_cubes) >= 0) {
+	  cubes_file_stream = new ofstream();
+	  cubes_file_stream->open(Search::cubes_file_name, std::ios_base::app);
+  }
 
   int n = next_domain_size(0);  /* returns -1 if we're done */
   int rc = SEARCH_GO_NO_MODELS;
@@ -799,6 +803,10 @@ Search::mace4(Plist clauses)
   if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_models_interp) != 0) {
 	  models_interp_file_stream->close();
 	  models_interp_file_stream = nullptr;
+  }
+  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_cubes) >= 0) {
+    cubes_file_stream->close();
+    cubes_file_stream = nullptr;
   }
   /* free memory used for all domain sizes */
   EScon.free_estack_memory();

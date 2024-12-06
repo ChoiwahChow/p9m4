@@ -1,7 +1,6 @@
 
 #include <ctime>
 #include <iostream>
-#include <fstream>
 #include <sstream>
 #include <algorithm>
 #include <numeric>
@@ -653,7 +652,7 @@ Cube::break_symmetries(int id, int val)
 }
 
 void
-Cube::print_new_cube(int cube_length, const std::vector<std::vector<int>>&  all_nodes, const std::string& cg) 
+Cube::print_new_cube(ofstream& cubes_file, int cube_length, const std::vector<std::vector<int>>&  all_nodes, const std::string& cg) 
 {
     bool same = true;
     if (last_printed.size() < cube_length)
@@ -672,10 +671,10 @@ Cube::print_new_cube(int cube_length, const std::vector<std::vector<int>>&  all_
           std::cout << " " << splitter.cell_ids[idx] << "|" << Cells[splitter.cell_ids[idx]].get_symbol();
       std::cout << std::endl;
       */
-    std::cout << "cube";
+    // std::cout << "cube";
     for (int idx = 0; idx < cube_length; ++idx)
-        std::cout << " " << all_nodes[idx][0] << " " << last_printed[idx];
-    std::cout << std::endl;
+        cubes_file << " " << all_nodes[idx][0] << " " << last_printed[idx];
+    cubes_file << std::endl;
 }
 
 bool

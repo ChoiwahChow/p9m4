@@ -132,6 +132,8 @@ private:
   // printing functions
   std::string interp_file_name;
   ofstream* models_interp_file_stream = nullptr;
+  std::string cubes_file_name;
+  ofstream* cubes_file_stream = nullptr;
   size_t out_models_count = 0;
   int    max_count = 0;
   size_t file_count = 1;
