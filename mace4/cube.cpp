@@ -29,15 +29,15 @@ Cube::initialize_cube()
     std::istringstream config(all_cubes.front());
     int in_value;
     config >> in_value;
-    std::cout << "Debug Cube::initialize_cube ";
+    std::cout << "Debug Cube::initialize_cube " << std::endl;
     while (config) {
         cube_cell_ids[max_pos] = in_value;
         config >> in_value;
-        std::cout << cube_cell_ids[max_pos] << "|" << in_value << " ";
+        // std::cout << cube_cell_ids[max_pos] << "|" << in_value << " ";
         cell_values[cube_cell_ids[max_pos++]] = in_value;
         config >> in_value;
     }
-    std::cout << std::endl;
+    // std::cout << std::endl;
     all_cubes.erase(all_cubes.begin());  // first cube is to be processed now
     initialized = true;
     return initialized;
@@ -59,7 +59,7 @@ Cube::read_config_multi(const char* config_file_path) {
     if (!config.is_open()) {
         return false;
     }
-    std::cout << "Debug Cube::read_config_multi ";
+    std::cout << "Debug Cube::read_config_multi " << std::endl;
     std::string line;
     while (std::getline(config, line))
     {
@@ -135,7 +135,7 @@ int
 Cube::value(size_t depth, size_t id) {
     //if (initialized && current_pos < max_pos) {
     if (is_inside_input_cube()) {
-        std::cout << "Debug, Cube::value, incoming id " << id << " current_pos " << current_pos << " depth: " << depth << std::endl;
+        // std::cout << "Debug, Cube::value, incoming id " << id << " current_pos " << current_pos << " depth: " << depth << std::endl;
         while (id != cell_ids[current_pos] && current_pos < max_pos) {
             if ((Cells[cell_ids[current_pos]].get_value() != cell_values[cell_ids[current_pos]]) && (cell_values[cell_ids[current_pos]] != -1)) {
                 std::cout << "Debug, Cube::value, Mis-matched cell id =" << cell_ids[current_pos] << ", cell value = " << cell_values[cell_ids[current_pos]]
@@ -152,7 +152,7 @@ Cube::value(size_t depth, size_t id) {
         if (id == cell_ids[current_pos]) {
             current_pos++;
         }
-        std::cout << "Debug Cube::value pos " << current_pos << " max position " << max_pos << " cell value: " << cell_values[id] << std::endl;
+        // std::cout << "Debug Cube::value pos " << current_pos << " max position " << max_pos << " cell value: " << cell_values[id] << std::endl;
         return cell_values[id];
     }
     return -1;
@@ -190,7 +190,7 @@ Cube::move_on(size_t id, std::vector<std::vector<int>>& all_nodes) {
                 if (first_pos >= all_nodes.size())
                     return false;
             }
-            std::cout << "debug move_on, first_pos " << first_pos << " " << all_nodes[first_pos][1]+1 << " " << all_nodes[first_pos][2] << std::endl;
+            // std::cout << "debug move_on, first_pos " << first_pos << " " << all_nodes[first_pos][1]+1 << " " << all_nodes[first_pos][2] << std::endl;
             if (first_pos > cut_off)
                 return false;
             if (print_unprocessed_cubes(all_nodes, all_nodes[first_pos][0], all_nodes[first_pos][1]+1, all_nodes[first_pos][2])) {
