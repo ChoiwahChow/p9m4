@@ -46,6 +46,7 @@ private:
     size_t            current_pos;  // current position of the search in Ordered_cells
     size_t            max_pos;      // max value of current position
     size_t            cut_off;      // must be less than cut_off from the start cube position to release cubes for work stealing
+    size_t            num_new_cubes_printed;
     size_t            early_cut_off;
     size_t            top_cut_off;
     size_t            mult_table_size;    // total size of multiplication tables
@@ -103,6 +104,7 @@ public:
     bool break_symmetries(int parent_id);
     bool is_inside_input_cube() { return initialized && current_pos < max_pos; };
     int  value_assignment(int pos, int& value);
+    size_t get_num_new_cubes_printed() { return num_new_cubes_printed; };
 
 public:
     int  check_lexmin(size_t cell_id, bool is_model = false);

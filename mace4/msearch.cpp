@@ -52,6 +52,7 @@ int Search::Next_report = 0;
 size_t total_lexmin_time = 0;
 size_t total_model_time = 0;
 size_t total_lexmin_model_calls = 0;
+size_t total_new_cubes_printed = 0;
 
 Search::Search(Mace4VGlobais* g) : Mace4vglobais(g), Domain_size(0), Domain(nullptr), max_models_str("max_models"), all_models_str("all_models"),
   exhausted_str("exhausted"), max_megs_yes_str("max_megs_yes"), max_megs_no_str("max_megs_no"), max_sec_yes_str("max_sec_yes"),
@@ -691,6 +692,7 @@ Search::mace4n(Plist clauses, int order)
 
   /* Free all of the memory associated with the current domain size. */
 
+  total_new_cubes_printed = splitter.get_num_new_cubes_printed();
   EScon.restore_from_stack(initial_state->stack);
   MScon.free_mstate(initial_state);
 
@@ -833,6 +835,9 @@ Search::mace4(Plist clauses)
 std::cerr << "Total lexmin time " << total_lexmin_time/1000000.0 << " seconds" << std::endl;
 std::cerr << "Total model time " << total_model_time/1000000.0 << " seconds" << std::endl;
 std::cerr << "Total # lexmin model calls " << total_lexmin_model_calls << std::endl;
+if (total_new_cubes_printed > 0)
+  std::cerr << "Total new cubes printed " << total_new_cubes_printed << std::endl;
+
   return results;
 }
 
