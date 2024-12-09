@@ -28,7 +28,7 @@ Cube::initialize_cube()
     std::istringstream config(all_cubes.front());
     int in_value;
     config >> in_value;
-    std::cout << "Debug Cube::initialize_cube " << std::endl;
+    std::cout << "Debug Cube::initialize_cube " << ++num_input_cubes_processed << std::endl;
     while (config) {
         cube_cell_ids[max_pos] = in_value;
         config >> in_value;
@@ -73,7 +73,7 @@ Cube::read_config_multi(const char* config_file_path) {
 Cube::Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_cells, int cubes_options, int sym_breaking):
         initialized(false), marked(false), order(domain_size), Cells(Cells), current_pos(0), max_pos(0), Ordered_cells(Ordered_cells),
         cut_off(5), mult_table_size(0), cubes_options(cubes_options), do_work_stealing(cubes_options & 1), 
-        last_check_time(0), current_time(0), sym_breaking_by_row(false), sym_breaking_concentric(false), sym_breaking(sym_breaking), num_new_cubes_printed(0)
+        last_check_time(0), current_time(0), sym_breaking_by_row(false), sym_breaking_concentric(false), sym_breaking(sym_breaking), num_new_cubes_printed(0), num_input_cubes_processed(0)
 {
     switch (sym_breaking) {
     case 1:  sym_breaking_by_row = true; break;
@@ -672,8 +672,11 @@ Cube::print_new_cube(ofstream& cubes_file, int cube_length, const std::vector<st
       std::cout << std::endl;
       */
     // std::cout << "cube";
-    for (int idx = 0; idx < cube_length; ++idx)
-        cubes_file << " " << all_nodes[idx][0] << " " << last_printed[idx];
+    const char* spacer = "";
+    for (int idx = 0; idx < cube_length; ++idx) {
+        cubes_file << spacer << all_nodes[idx][0] << " " << last_printed[idx];
+        if (idx <= 0)  spacer = " ";
+    }
     cubes_file << std::endl;
     num_new_cubes_printed++;
 }
