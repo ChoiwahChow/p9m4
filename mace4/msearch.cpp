@@ -769,7 +769,7 @@ Search::mace4(Plist clauses)
 	  models_interp_file_stream = new ofstream();
 	  models_interp_file_stream->open(Search::interp_file_name, std::ios_base::app);
   }
-  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_cubes) >= 0) {
+  if (print_cubes >= 0) {
 	  cubes_file_stream = new ofstream();
 	  cubes_file_stream->open(Search::cubes_file_name, std::ios_base::app);
   }
@@ -806,7 +806,7 @@ Search::mace4(Plist clauses)
 	  models_interp_file_stream->close();
 	  models_interp_file_stream = nullptr;
   }
-  if (LADR_GLOBAL_OPTIONS.parm(Mace4vglobais->Opt->print_cubes) >= 0) {
+  if (print_cubes >= 0) {
     cubes_file_stream->close();
     cubes_file_stream = nullptr;
   }
