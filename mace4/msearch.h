@@ -86,7 +86,6 @@ private:
   IsoFilter   isofilter;
   bool        non_iso_cache_exceeded;
   bool        isomorph_free;
-  bool        lexmin;    // follow lex min ordering in function/cell selection
 
   /*
    * The following are "env/global" data used by a number of cooperating objects (e.g. msearch, select etc)
@@ -176,7 +175,6 @@ private:
   bool iterate_ok(int n, const std::string& class_name);
   int  next_domain_size(int n);
   bool is_new_non_isomorphic(bool print_canonical, std::string& cg, bool ignore_constants = true, const std::string& check_ops = "");
-  bool is_lexmin_model(bool ignore_constant = true, const std::string& check_ops = "");
 
 public:
   Search() = delete;

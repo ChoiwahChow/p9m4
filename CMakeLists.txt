@@ -87,7 +87,7 @@ add_executable(unfast ./apps/inputs_util.cpp ./apps/unfast.cpp)
 add_executable(upper-covers ./apps/inputs_util.cpp ./apps/upper-covers.cpp)
 
 target_link_libraries(prover9 libladr)
-target_link_libraries(mace4c libladr libmlex.a libisonaut.a -l:nauty.a libminisat.a)
+target_link_libraries(mace4c libladr libisonaut.a -l:nauty.a libminisat.a)
 # target_link_libraries(mace4c PUBLIC ZLIB::ZLIB)
 target_link_libraries(clausefilter libladr)
 target_link_libraries(clausetester libladr)

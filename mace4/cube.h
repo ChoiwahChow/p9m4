@@ -33,9 +33,6 @@ public:
     std::vector<size_t> cell_ids;
     int                 cubes_options;  // lsb for do work stealing, next for outputing num cells filled
 private:
-    int               sym_breaking;
-    bool              sym_breaking_concentric;
-    bool              sym_breaking_by_row;
     Cell*             Ordered_cells;
 
     std::vector<int>  cell_values;
@@ -64,31 +61,22 @@ private:
     //bool read_config(const char* config_file_path);
     bool read_config_multi(const char* config_file_path);
     bool initialize_cube();
-    bool check_sym(size_t base_id, size_t a, size_t b, size_t col, int val);
     bool count_appearance(bool& counted, size_t base_id, size_t id, std::vector<size_t>& appear);
     int  sum_val(int& sum, bool& counted, size_t base_id, size_t id, std::vector<size_t>& appear);
     bool has_value(size_t start_id, size_t end_id, int val);
     int  swap_value(size_t a, size_t b, int v) const { if (v==a) return b; else if (v==b) return a; return v;};
-    bool no_change(size_t base_id, size_t row, size_t lcol, size_t rcol);
-    bool break_symmetries(int id, int val);
 
     size_t find_pos_in_search(int id);
-    bool   break_symmetries_by_row(int parent_id, int id, int val);
-    bool   break_symmetries_by_row(int id, int val);
-    bool   break_symmetries_concentric(int parent_id, int id, int val);
-    bool   break_symmetries_concentric(int id, int val);
-    int    compare_cubes(size_t base_id, size_t end_id, int val, size_t low_el, size_t high_el);
     int    change_in_cell_value(size_t low_el, size_t high_el, int val);
     bool   is_end_of_circle(int id);
     int    moved_to_cell(int orig_id, size_t low_el, size_t high_el);
     size_t pi(size_t a, size_t b, size_t c) { if (c==a) return b; else if (c==b) return a; else return c;};
-    int    check_lexmin(size_t row, size_t col, const std::vector<size_t>& binop);
     int    check_binop(size_t row, size_t col,
                   const std::vector<size_t>& row_idx, const std::vector<size_t>& col_idx,
                   const std::vector<size_t>& binop);
     
 public:
-    Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_cells, int cube_options, int sym_breaking);
+    Cube(size_t domain_size, Cell Cells, Cell Ordered_cells[], int Number_of_cells, int cube_options);
 
     virtual ~Cube();
 
@@ -101,14 +89,10 @@ public:
     size_t real_depth(size_t depth, size_t id);
     int  num_cells_filled(Cell Cells);
     // void print_ordered_cells(int number_of_cells) const;
-    bool break_symmetries(int parent_id, int id, int val);
-    bool break_symmetries(int parent_id);
     bool is_inside_input_cube() { return initialized && current_pos < max_pos; };
     int  value_assignment(int pos, int& value);
     size_t get_num_new_cubes_printed() { return num_new_cubes_printed; };
 
-public:
-    int  check_lexmin(size_t cell_id, bool is_model = false);
 };
 
 
