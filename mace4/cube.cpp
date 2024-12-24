@@ -22,13 +22,16 @@ Cube::initialize_cube()
     // all_cubes is a vector of integers. Each 2 consective integers
     // are cell_id and cell_value
     initialized = false;
-    if (all_cubes.empty())
+    if (all_cubes.empty()) 
         return initialized;
+ 
 
     std::istringstream config(all_cubes.front());
     int in_value;
     config >> in_value;
-    std::cout << "Debug Cube::initialize_cube " << ++num_input_cubes_processed << std::endl;
+    ++num_input_cubes_processed;
+    // if (num_input_cubes_processed % 1000 == 0)
+    //    std::cout << "Debug Cube::initialize_cube " << num_input_cubes_processed << std::endl;
     while (config) {
         cube_cell_ids[max_pos] = in_value;
         config >> in_value;
@@ -39,6 +42,8 @@ Cube::initialize_cube()
     // std::cout << std::endl;
     all_cubes.erase(all_cubes.begin());  // first cube is to be processed now
     initialized = true;
+    if (all_cubes.empty())
+        std::cout << "Debug Cube::initialize last cube " << num_input_cubes_processed << std::endl;
     return initialized;
 }
 
@@ -228,7 +233,7 @@ Cube::print_unprocessed_cubes(const std::vector<std::vector<int>>& all_nodes, in
         }
     }
     buffer << "End" << std::endl;
-    std::cout << "debug print_unprocessed_cubes: " << from << " " << to << "\n" << buffer.str() << std::endl;
+    // std::cout << "debug print_unprocessed_cubes: " << from << " " << to << "\n" << buffer.str() << std::endl;
     ofstream cube_file;
     cube_file.open (steal_cube_file_path);
     cube_file << buffer.str();
